@@ -1,8 +1,22 @@
+# Money Wrapped
+
+2024 Year in Review
+
+Design plan here: [Read-Only Figjam](https://www.figma.com/board/I8YjX2pepHcef3eDUXMXcL/Untitled?node-id=0-1&t=YXcitpvH01exS69Z-1)
+
+
+
+
+
+
+
+
+
+
+
 # Welcome to React Router!
 
 A modern, production-ready template for building full-stack React applications using React Router.
-
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
 
 ## Features
 
