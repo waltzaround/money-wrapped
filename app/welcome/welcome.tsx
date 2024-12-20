@@ -1,48 +1,63 @@
+import { Link } from "react-router";
 import logoDark from "./logo-dark.svg";
 import logoLight from "./logo-light.svg";
 
 export function Welcome() {
   return (
-    <main className="flex items-center justify-center pt-16 pb-4">
-      <div className="flex-1 flex flex-col items-center gap-16 min-h-0">
-        <header className="flex flex-col items-center gap-9">
-          <div className="w-[500px] max-w-[100vw] p-4">
-            <img
-              src={logoLight}
-              alt="React Router"
-              className="block w-full dark:hidden"
-            />
-            <img
-              src={logoDark}
-              alt="React Router"
-              className="hidden w-full dark:block"
-            />
-          </div>
-        </header>
-        <div className="max-w-[300px] w-full space-y-6 px-4">
-          <nav className="rounded-3xl border border-gray-200 p-6 dark:border-gray-700 space-y-4">
-            <p className="leading-6 text-gray-700 dark:text-gray-200 text-center">
-              What&apos;s next?
-            </p>
-            <ul>
-              {resources.map(({ href, text, icon }) => (
-                <li key={href}>
-                  <a
-                    className="group flex items-center gap-3 self-stretch p-3 leading-normal text-blue-700 hover:underline dark:text-blue-500"
-                    href={href}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {icon}
-                    {text}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </nav>
+    <>
+      <main className="flex items-center justify-center pt-16 pb-4">
+        <div className="flex-1 flex flex-col items-center gap-16 min-h-0">
+          <header className="flex flex-col items-center gap-9"></header>
+          <section className="w-full max-w-[80rem] mx-auto">
+            <div className=" ">
+              <h1 className="text-4xl font-bold">
+                Akahu Financial Year in Review
+              </h1>
+              <p>Check how you made the most of your money this year</p>
+            </div>
+            <div>
+              <h2>There are two ways to do this</h2>
+              <div className="flex gap-4">
+                <Link
+                  to="/"
+                  className="flex-1 rounded-lg border border-gray-800 p-4"
+                >
+                  <h3 className="text-2xl font-bold underline text-blue-400">
+                    Sign up with Akahu
+                  </h3>
+                  <p>Use Akahu to get your bank data processed</p>
+                </Link>
+                <Link
+                  to="/prepare"
+                  className="flex-1 rounded-lg border border-gray-800 p-4"
+                >
+                  <h3 className="text-2xl font-bold underline text-blue-400">
+                    Upload a CSV
+                  </h3>
+                  <p>
+                    Dont trust the website? That's okay - Upload a CSV and we
+                    can still process your spending for the year. We don't store
+                    your data and you can verify this at the repo below - our
+                    code is open source and transparent.
+                  </p>
+                </Link>
+              </div>
+
+              <div className="w-full rounded-md border min-h-40 mt-24">
+                Example report
+              </div>
+            </div>
+          </section>
         </div>
-      </div>
-    </main>
+      </main>
+      <footer>
+        <a href="github">Github Repo</a>
+        <p>
+          Made by Walter Lim, Jasper Miller-Waugh, Young-Ju Lee and the Akahu
+          Team
+        </p>
+      </footer>
+    </>
   );
 }
 
