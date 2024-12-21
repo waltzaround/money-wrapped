@@ -77,6 +77,7 @@ export function Welcome() {
 
               <div className="w-full rounded-md border min-h-40 mt-8 p-4">
                 <h2 className="text-xl font-semibold">Monthly Breakdown</h2>
+                <p>Graph to go here</p>
                 <ul className="list-disc list-inside">
                   <li>January: $1,000</li>
                   <li>February: $900</li>
