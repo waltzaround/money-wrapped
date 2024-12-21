@@ -39,7 +39,7 @@ export function Welcome() {
                     Upload a CSV
                   </h3>
                   <p className=" text-gray-700 mb-4">
-                    Dont trust the website? That's okay - Upload a CSV and we
+                    Dont trust the website? That's okay - Upload a CSV and it
                     can still process your spending for the year. We don't store
                     your data and you can verify this at the repo below - our
                     code is fully open source.
