@@ -119,10 +119,10 @@ export function Welcome() {
       </main>
       <footer className="flex flex-col items-center gap-4 p-4">
         <a href="github">Github Repo</a>
-        <p>
+        {/* <p>
           Made by Walter Lim, Jasper Miller-Waugh, Young-Ju Lee and the Akahu
           Team
-        </p>
+        </p> */}
       </footer>
     </>
   );
