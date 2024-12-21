@@ -1,5 +1,6 @@
 import {
   isRouteErrorResponse,
+  Link,
   Links,
   Meta,
   Outlet,
@@ -43,7 +44,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
         />
         <Links />
       </head>
+
       <body>
+        <header className="flex border-b justify-between items-center p-4 border-gray-400">
+          <p>Money Wrapped</p>
+          <div className="flex gap-8 text-blue-600 underline">
+            <a href="https;//github.com/waltzaround/money-wrapped">GitHub </a>
+            <Link to={"/"}>Upload CSV</Link>
+            <Link to={"/prepare"}>Connect with Akahu</Link>
+          </div>
+        </header>
         {children}
         <ScrollRestoration />
         <Scripts />
