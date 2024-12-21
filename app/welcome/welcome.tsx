@@ -93,7 +93,6 @@ export function Welcome() {
                 <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-lg w-16 h-16"></div>
                 <div>
                   <h1 className="text-4xl font-semibold">Money Wrapped</h1>
-                  <p className="text-sm text-gray-500">Powered by Akahu</p>
                 </div>
               </div>
               <p className="text-2xl mt-8">
@@ -108,7 +107,7 @@ export function Welcome() {
                   className="flex-1 rounded-lg border border-gray-300 p-4 bg-white hover:border-blue-500"
                 >
                   <h3 className="text-2xl font-bold underline text-blue-700 mb-2">
-                    Sign up to Akahu
+                    Connect your bank accounts with Akahu
                   </h3>
                   <p className=" text-gray-700 mb-4">
                     Use Akahu to get your spending data reviewed faster. We
@@ -116,7 +115,7 @@ export function Welcome() {
                     verify this at the repo link below - the code is fully open
                     source.
                   </p>
-                  <Button>Sign up</Button>
+                  <Button>Connect Accounts</Button>
                 </Link>
                 <Link
                   to="/prepare"
