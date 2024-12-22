@@ -118,7 +118,7 @@ export function Welcome() {
                   <Button>Connect Accounts</Button>
                 </Link>
                 <Link
-                  to="/prepare"
+                  to="/csv"
                   className="flex-1 rounded-lg border border-gray-300 p-4 bg-white"
                 >
                   <h3 className="text-2xl font-bold underline text-blue-700 mb-2 ">
@@ -133,25 +133,29 @@ export function Welcome() {
                   <Button>Upload CSV</Button>
                 </Link>
               </div>
-              <h2 className="mt-12 text-2xl font-semibold">
+              <h2 className="mt-12 text-2xl font-semibold mb-8">
                 Example Demo - Walt's year in review
               </h2>
-              <p className="text-2xl mt-2 mb-4">In 2024, you...</p>
 
               <div className="flex gap-4">
-                <div className="flex-1 rounded-lg border border-gray-300 p-4 bg-white">
-                  <p className="text-xl font-semibold">Spent $12,300</p>
+                <div className="flex-1 aspect-[9/16] rounded-xl border border-gray-300 p-8 bg-gradient-to-b from-emerald-500 to-emerald-700 text-white flex flex-col items-center justify-center">
+                  <p className="text-lg text-emerald-100 mb-2">
+                    This year you spent
+                  </p>
+                  <p className="text-5xl font-bold mb-2">$12,300</p>
+                  <p className="text-lg text-emerald-100">on purchases</p>
                 </div>
 
-                <div className="flex-1 rounded-lg border border-gray-300 p-4 bg-white">
-                  <p className="text-xl font-semibold">
-                    Across 301 different businesses
-                  </p>
+                <div className="flex-1 aspect-[9/16] rounded-xl border border-gray-300 p-8 bg-gradient-to-b from-blue-500 to-blue-700 text-white flex flex-col items-center justify-center">
+                  <p className="text-lg text-blue-100 mb-2">You shopped at</p>
+                  <p className="text-5xl font-bold mb-2">301</p>
+                  <p className="text-lg text-blue-100">different businesses</p>
                 </div>
-                <div className="flex-1 rounded-lg border border-gray-300 p-4 bg-white">
-                  <p className="text-xl font-semibold">
-                    over 1,230 Transactions
-                  </p>
+
+                <div className="flex-1 aspect-[9/16] rounded-xl border border-gray-300 p-8 bg-gradient-to-b from-purple-500 to-purple-700 text-white flex flex-col items-center justify-center">
+                  <p className="text-lg text-purple-100 mb-2">You made</p>
+                  <p className="text-5xl font-bold mb-2">1,230</p>
+                  <p className="text-lg text-purple-100">transactions</p>
                 </div>
               </div>
 
@@ -225,11 +229,76 @@ export function Welcome() {
                   </ResponsiveContainer>
                 </div>
               </div>
-              <div className="w-full rounded-md border min-h-40 mt-8 bg-white">
+              <div className="flex gap-4 mt-8">
+                <div className="flex-1 aspect-[9/16] rounded-xl border border-gray-300 p-8 bg-gradient-to-b from-pink-500 to-pink-700 text-white flex flex-col items-center justify-center">
+                  <p className="text-lg text-pink-100 mb-4">
+                    Your biggest spending day was
+                  </p>
+                  <p className="text-4xl font-bold mb-2">December 24</p>
+                  <p className="text-6xl font-bold mb-2">$432</p>
+                  <p className="text-lg text-pink-100 text-center">
+                    That's more than 87% of your daily spending
+                  </p>
+                </div>
+
+                <div className="flex-1 aspect-[9/16] rounded-xl border border-gray-300 p-8 bg-gradient-to-b from-orange-500 to-orange-700 text-white flex flex-col">
+                  <p className="text-lg text-orange-100 mb-4 text-center">
+                    Your top 5 most places
+                  </p>
+                  <div className="flex-1 flex flex-col justify-center gap-4">
+                    <div className="flex items-center gap-4">
+                      <span className="text-4xl font-bold">1</span>
+                      <div>
+                        <p className="text-xl font-semibold">Countdown</p>
+                        <p className="text-orange-100">42 transactions</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="text-3xl font-bold">2</span>
+                      <div>
+                        <p className="text-lg font-semibold">BP Connect</p>
+                        <p className="text-orange-100">28 transactions</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="text-2xl font-bold">3</span>
+                      <div>
+                        <p className="text-lg font-semibold">Starbucks</p>
+                        <p className="text-orange-100">24 transactions</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="text-xl font-bold">4</span>
+                      <div>
+                        <p className="text-lg font-semibold">McDonald's</p>
+                        <p className="text-orange-100">19 transactions</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="text-xl font-bold">5</span>
+                      <div>
+                        <p className="text-lg font-semibold">Bunnings</p>
+                        <p className="text-orange-100">15 transactions</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex-1 aspect-[9/16] rounded-xl border border-gray-300 p-8 bg-gradient-to-b from-lime-500 to-lime-700 text-white flex flex-col items-center justify-center">
+                  <p className="text-lg text-pink-100 mb-4">
+                    Your biggest purchase was:
+                  </p>
+                  <p className="text-4xl font-bold mb-2">McDonalds</p>
+                  <p className="text-6xl font-bold mb-2">$12,432</p>
+                  <p className="text-lg text-pink-100 text-center">
+                    That's more than 87% of your average purchase
+                  </p>
+                </div>
+              </div>
+              <div className="w-full rounded-md border min-h-4  0 mt-8 bg-white">
                 <h2 className="text-xl font-semibold p-4 border-b">
                   Top Categories
                 </h2>
-                by month / day / we
+
                 <div className="mt-4 h-[400px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
@@ -241,6 +310,7 @@ export function Welcome() {
                         { category: "Dining Out", amount: 1600 },
                       ]}
                       layout="vertical"
+                      margin={{ left: 32, right: 20, top: 20, bottom: 20 }}
                     >
                       <XAxis
                         type="number"
@@ -287,23 +357,87 @@ export function Welcome() {
                   </ResponsiveContainer>
                 </div>
               </div>
+              <div className="flex gap-4 mt-8">
+                <div className="flex-1 aspect-[9/16] rounded-xl border border-gray-300 p-8 bg-gradient-to-b from-pink-500 to-pink-700 text-white flex flex-col items-center justify-center">
+                  <p className="text-lg text-pink-100 mb-4">
+                    You spend on average about
+                  </p>
+
+                  <p className="text-6xl font-bold mb-2">$110</p>
+                  <p className="text-4xl font-bold mb-2">every weekend</p>
+                  <p className="text-lg text-pink-100 text-center">
+                    That's more than 87% of your daily spending
+                  </p>
+                </div>
+
+                <div className="flex-1 aspect-[9/16] rounded-xl border border-gray-300 p-8 bg-gradient-to-b from-orange-500 to-orange-700 text-white flex flex-col">
+                  <p className="text-lg text-orange-100 mb-4 text-center">
+                    Your Top 5 Restaurants
+                  </p>
+                  <div className="flex-1 flex flex-col justify-center gap-4">
+                    <div className="flex items-center gap-4">
+                      <span className="text-4xl font-bold">1</span>
+                      <div>
+                        <p className="text-xl font-semibold">McDonald's</p>
+                        <p className="text-orange-100">$1,230 spent</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="text-3xl font-bold">2</span>
+                      <div>
+                        <p className="text-lg font-semibold">Domino's Pizza</p>
+                        <p className="text-orange-100">$890 spent</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="text-2xl font-bold">3</span>
+                      <div>
+                        <p className="text-lg font-semibold">Burger Fuel</p>
+                        <p className="text-orange-100">$750 spent</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="text-xl font-bold">4</span>
+                      <div>
+                        <p className="text-lg font-semibold">Hell Pizza</p>
+                        <p className="text-orange-100">$680 spent</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="text-xl font-bold">5</span>
+                      <div>
+                        <p className="text-lg font-semibold">Subway</p>
+                        <p className="text-orange-100">$520 spent</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex-1 aspect-[9/16] rounded-xl border border-gray-300 p-8 bg-gradient-to-b from-lime-500 to-lime-700 text-white flex flex-col items-center justify-center">
+                  <p className="text-lg text-pink-100 mb-4">
+                    You visited a cafe
+                  </p>
+
+                  <p className="text-6xl font-bold mb-2">110 times</p>
+                  <p className="text-lg text-pink-100 text-center">This year</p>
+                </div>
+              </div>
               <div className="w-full rounded-md border min-h-40 mt-8 bg-white">
                 <h2 className="text-xl font-semibold p-4 border-b">
                   Top Merchants
                 </h2>
 
-                <div className="mt-4 h-[400px] w-full px-4">
+                <div className="mt-4 h-[400px] w-full ">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={[
-                        { merchant: "Supermarket A", amount: 2000 },
                         { merchant: "Landlord", amount: 6000 },
+                        { merchant: "Supermarket A", amount: 2000 },
                         { merchant: "Utility Company", amount: 1200 },
                         { merchant: "Restaurant B", amount: 800 },
                         { merchant: "Movie Theater", amount: 700 },
                       ]}
                       layout="vertical"
-                      margin={{ left: 120, right: 20, top: 20, bottom: 20 }}
+                      margin={{ left: 0, right: 20, top: 20, bottom: 20 }}
                     >
                       <XAxis
                         type="number"

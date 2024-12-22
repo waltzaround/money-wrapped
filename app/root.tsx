@@ -47,18 +47,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       <body>
         <header className="flex border-b justify-between items-center border-gray-400">
-          <p className=" p-4">Money Wrapped</p>
+          <Link to="/" className=" p-4 font-semibold">
+            Money Wrapped
+          </Link>
           <div className="flex  text-blue-600 underline">
             <a
               className="p-4"
-              href="https;//github.com/waltzaround/money-wrapped"
+              href="https://github.com/waltzaround/money-wrapped"
             >
               GitHub{" "}
             </a>
-            <Link className=" p-4" to={"/"}>
+            <Link className=" p-4" to={"/csv"}>
               Upload CSV
             </Link>
-            <Link className="p-4" to={"/csv"}>
+            <Link className="p-4" to={"/account"}>
               Connect Account
             </Link>
           </div>
