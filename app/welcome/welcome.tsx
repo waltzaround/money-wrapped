@@ -234,7 +234,7 @@ export function Welcome() {
                   <p className="text-lg text-pink-100 mb-4">
                     Your biggest spending day was
                   </p>
-                  <p className="text-4xl font-bold mb-2">December 24</p>
+                  <p className="text-4xl font-bold mb-2">24 December </p>
                   <p className="text-6xl font-bold mb-2">$432</p>
                   <p className="text-lg text-pink-100 text-center">
                     That's more than 87% of your daily spending
@@ -243,7 +243,7 @@ export function Welcome() {
 
                 <div className="flex-1 aspect-[9/16] rounded-xl border border-gray-300 p-8 bg-gradient-to-b from-orange-500 to-orange-700 text-white flex flex-col">
                   <p className="text-lg text-orange-100 mb-4 text-center">
-                    Your top 5 most places
+                    Your top 5 places
                   </p>
                   <div className="flex-1 flex flex-col justify-center gap-4">
                     <div className="flex items-center gap-4">
@@ -283,11 +283,11 @@ export function Welcome() {
                     </div>
                   </div>
                 </div>
-                <div className="flex-1 aspect-[9/16] rounded-xl border border-gray-300 p-8 bg-gradient-to-b from-lime-500 to-lime-700 text-white flex flex-col items-center justify-center">
+                <div className="flex-1 aspect-[9/16] rounded-xl text-center border border-gray-300 p-8 bg-gradient-to-b from-lime-500 to-lime-700 text-white flex flex-col items-center justify-center">
                   <p className="text-lg text-pink-100 mb-4">
                     Your biggest purchase was:
                   </p>
-                  <p className="text-4xl font-bold mb-2">McDonalds</p>
+                  <p className="text-4xl font-bold mb-2 ">NVIDIA GPU RENTALS</p>
                   <p className="text-6xl font-bold mb-2">$12,432</p>
                   <p className="text-lg text-pink-100 text-center">
                     That's more than 87% of your average purchase
