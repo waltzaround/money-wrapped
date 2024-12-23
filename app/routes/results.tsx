@@ -54,12 +54,69 @@ interface ListSlide extends BaseSlide {
 
 type Slide = StandardSlide | ListSlide;
 
+function fadeOutAudio(audio: HTMLAudioElement, duration: number = 2000) {
+  const startVolume = audio.volume;
+  const steps = 20;
+  const volumeStep = startVolume / steps;
+  const stepDuration = duration / steps;
+
+  const fadeInterval = setInterval(() => {
+    if (audio.volume > volumeStep) {
+      audio.volume -= volumeStep;
+    } else {
+      audio.volume = 0;
+      audio.pause();
+      clearInterval(fadeInterval);
+    }
+  }, stepDuration);
+}
+
+function useBackgroundAudio() {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const hasInteractedRef = useRef(false);
+
+  useEffect(() => {
+    // Create audio element
+    audioRef.current = new Audio("/bg.mp3");
+    audioRef.current.loop = true;
+
+    // Add interaction listener to document
+    const startAudio = () => {
+      if (!hasInteractedRef.current && audioRef.current) {
+        hasInteractedRef.current = true;
+        audioRef.current.play().catch((error) => {
+          console.log("Audio playback failed:", error);
+        });
+        // Remove listener after first interaction
+        document.removeEventListener("click", startAudio);
+        document.removeEventListener("touchstart", startAudio);
+      }
+    };
+
+    document.addEventListener("click", startAudio);
+    document.addEventListener("touchstart", startAudio);
+
+    // Cleanup function
+    return () => {
+      document.removeEventListener("click", startAudio);
+      document.removeEventListener("touchstart", startAudio);
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
+  return audioRef;
+}
+
 export default function ResultsPage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
   const [isPlayerReady, setIsPlayerReady] = useState(false);
   const playerRef = useRef<any>(null);
   const navigate = useNavigate();
+  const audioRef = useBackgroundAudio();
 
   const slides: Slide[] = [
     {
@@ -170,6 +227,16 @@ export default function ResultsPage() {
         { rank: 5, name: "Shopping", detail: "$1,520 spent" },
       ],
     },
+    {
+      type: "standard",
+      gradient: "from-indigo-500 to-indigo-700",
+      title: "Thanks for watching",
+      value: "2024",
+      subtitle: "Money Wrapped",
+      description:
+        "We hope you enjoyed this journey through your spending. This was made possible my Akahu.",
+      textColor: "indigo",
+    },
   ];
 
   // Assign random animations to slides
@@ -185,6 +252,12 @@ export default function ResultsPage() {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => {
         const nextSlide = prev + 1;
+        if (nextSlide >= slides.length - 1) {
+          // Start fading out the audio on the last slide
+          if (audioRef.current) {
+            fadeOutAudio(audioRef.current);
+          }
+        }
         if (nextSlide >= slides.length) {
           navigate("/final-results");
           return prev;
@@ -255,12 +328,20 @@ export default function ResultsPage() {
     );
   };
 
+  const toggleMute = () => {
+    if (audioRef.current) {
+      audioRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
+
   return (
     <div className="h-screen flex items-center justify-center bg-gray-900 p-6 relative">
       <Button
         variant="outline"
         size="icon"
-        className="fixed top-6 right-6 z-50 bg-black/10 backdrop-blur-sm hover:bg-white/20 border-none text-blue-400"
+        className="fixed top-4 right-4 z-50 bg-black/10 backdrop-blur-sm hover:bg-white/20 border-none text-blue-400"
+        onClick={toggleMute}
       >
         {isMuted ? (
           <VolumeX className="h-4 w-4" />
@@ -269,9 +350,7 @@ export default function ResultsPage() {
         )}
       </Button>
 
-      <div className="absolute inset-0" style={{ opacity: "0" }}>
-        <div id="youtube-player"></div>
-      </div>
+      <div className="absolute inset-0" style={{ opacity: "0" }}></div>
 
       <div className="relative h-full w-full max-w-5xl">
         {slidesWithAnimations.map((slide, index) => (
