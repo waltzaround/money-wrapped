@@ -129,7 +129,7 @@ export default function FinalResultsPage() {
                 Your year in numbers
               </CardDescription>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-4">
+            <CardContent className="grid grid-cols-2 gap-4 max-md:grid-cols-1">
               <div className="p-4 bg-emerald-50 rounded-lg">
                 <p className="text-gray-700">Total Spent</p>
                 <p className="text-2xl font-bold text-emerald-600">$12,300</p>
@@ -225,7 +225,7 @@ export default function FinalResultsPage() {
               </ResponsiveContainer>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-4 max-md:grid-cols-1">
             <div className="aspect-[9/16] rounded-xl border p-8 bg-gradient-to-b from-emerald-100 to-emerald-200 text-gray-800 flex flex-col items-center justify-center">
               <p className="text-lg text-emerald-700 mb-2">
                 This year you spent
@@ -318,7 +318,7 @@ export default function FinalResultsPage() {
               </div>
             </div>
           </div>
-          <div className="flex gap-4">
+          <div className="flex gap-4 max-md:flex-col">
             <div className="flex-1 aspect-[9/16] rounded-xl border p-8 bg-gradient-to-b from-orange-100 to-orange-200 text-gray-800 flex flex-col items-center justify-center">
               <p className="text-lg text-orange-700 mb-2">
                 You spend on average about
@@ -340,7 +340,7 @@ export default function FinalResultsPage() {
               <p className="text-lg text-purple-700">transactions</p>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 max-md:grid-cols-1 gap-4">
             <div className="col-span-2 rounded-xl  flex flex-col p-8 bg-blue-50 text-gray-800 border">
               <h3 className="text-2xl font-bold text-blue-700 mb-6">
                 Your Top 10 Restaurants &amp; Cafes
@@ -428,7 +428,7 @@ export default function FinalResultsPage() {
               <p className="text-lg text-blue-700">different businesses</p>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3  max-md:grid-cols-1 gap-4">
             <div className="aspect-[9/16] rounded-xl border p-8 bg-gradient-to-b from-emerald-100 to-emerald-200 text-gray-800 flex flex-col items-center justify-center">
               <p className="text-lg text-emerald-700 mb-2">
                 This year you spent
@@ -681,7 +681,10 @@ export default function FinalResultsPage() {
         </div>
 
         <div className="mt-12 text-center text-sm text-gray-400">
-          <p>Money Wrapped 2023</p>
+          <p>
+            Money Wrapped 2024 is built by{" "}
+            <a href="https://walt.online">Walter Lim</a>.
+          </p>
           <p className="mt-2">
             All your financial data stays private and secure.
           </p>
