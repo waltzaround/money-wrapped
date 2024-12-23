@@ -265,9 +265,9 @@ export default function ResultsPage() {
     {
       type: "standard",
       gradient: "from-violet-500 to-violet-700",
-      title: "Coffee addiction",
+      title: "You visitied a cafe",
       value: "110 times",
-      subtitle: "visited cafes this year",
+      subtitle: "this year",
       description: "That's about 2 cafe visits per week",
       textColor: "violet",
     },
