@@ -1,10 +1,14 @@
-import { Link, useLocation } from "react-router";
+import { Link, useLocation, matchPath } from "react-router";
 
 export function Header() {
   const location = useLocation();
 
   // Don't render the header on the results page
-  if (location.pathname.includes("/results")) {
+  const isResultsPath =
+    matchPath("/results/*", location.pathname) !== null ||
+    matchPath("/final-results", location.pathname) !== null;
+
+  if (isResultsPath) {
     return null;
   }
 
