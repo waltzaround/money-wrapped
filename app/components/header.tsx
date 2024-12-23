@@ -4,7 +4,7 @@ export function Header() {
   const location = useLocation();
 
   // Don't render the header on the results page
-  if (location.pathname === "/results") {
+  if (location.pathname == "/results") {
     return null;
   }
 

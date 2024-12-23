@@ -54,7 +54,7 @@ interface ListSlide extends BaseSlide {
 
 type Slide = StandardSlide | ListSlide;
 
-function fadeOutAudio(audio: HTMLAudioElement, duration: number = 2000) {
+function fadeOutAudio(audio: HTMLAudioElement, duration: number = 8000) {
   const startVolume = audio.volume;
   const steps = 20;
   const volumeStep = startVolume / steps;
@@ -302,7 +302,7 @@ export default function ResultsPage() {
       value: "2024",
       subtitle: "Money Wrapped",
       description:
-        "We hope you enjoyed this journey through your spending. This was made possible my Akahu.",
+        "We hope you enjoyed your 2024 Money Wrapped. This was made possible by Akahu.",
       textColor: "indigo",
     },
   ];
@@ -344,7 +344,7 @@ export default function ResultsPage() {
     if (slide.type === "list") {
       return (
         <div
-          className={`w-full h-full  p-8 bg-gradient-to-b ${slide.gradient} text-white flex flex-col`}
+          className={`w-full h-full rounded-xl p-8 bg-gradient-to-b ${slide.gradient} text-white flex flex-col shadow-lg`}
         >
           <p
             className={`text-2xl font-bold text-${slide.textColor}-100 mb-6 text-center`}
@@ -381,7 +381,7 @@ export default function ResultsPage() {
 
     return (
       <div
-        className={`w-full h-full rounded-xl  p-8 bg-gradient-to-b ${slide.gradient} text-white flex flex-col items-center justify-center`}
+        className={`w-full h-full rounded-xl p-8 bg-gradient-to-b ${slide.gradient} text-white flex flex-col items-center justify-center shadow-lg`}
       >
         <p className={`text-lg text-${slide.textColor}-100 mb-2`}>
           {slide.title}
@@ -428,11 +428,11 @@ export default function ResultsPage() {
   };
 
   return (
-    <div className="h-screen flex items-center justify-center bg-gray-900 relative ">
+    <div className="h-screen flex items-center justify-center bg-gray-900 relative p-12 max-md:p-0">
       <Button
         variant="outline"
         size="icon"
-        className="fixed top-4 right-4 z-50 bg-black/10 backdrop-blur-sm hover:bg-white/20 border-none text-blue-400"
+        className="fixed bottom-4 right-4 z-50 bg-black/10 backdrop-blur-sm hover:bg-white/20 border-none text-blue-400"
         onClick={toggleMute}
       >
         {isMuted ? (
@@ -448,7 +448,7 @@ export default function ResultsPage() {
         onSlideClick={handleTimelineClick}
       />
 
-      <div className="relative h-screen w-screen ">
+      <div className="relative h-full w-full ">
         {slidesWithAnimations.map((slide, index) => (
           <div
             key={index}
