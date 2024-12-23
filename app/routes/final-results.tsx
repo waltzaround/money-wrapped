@@ -121,7 +121,7 @@ export default function FinalResultsPage() {
           </p>
         </div>
 
-        <div className="grid gap-6">
+        <div className="grid gap-4">
           <Card className="bg-white border shadow-sm">
             <CardHeader>
               <CardTitle className="">Key Highlights</CardTitle>
