@@ -6,7 +6,7 @@ export function Header() {
   // Don't render the header on the results page
   const isResultsPath =
     matchPath("/results/*", location.pathname) !== null ||
-    matchPath("/final-results", location.pathname) !== null;
+    // matchPath("/final-results", location.pathname) !== null;
 
   if (isResultsPath) {
     return null;
