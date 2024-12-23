@@ -13,53 +13,6 @@ import { Wallet, ClipboardList, LineChart } from "lucide-react";
 import { useNavigate } from "react-router";
 import "~/styles/animations.css";
 
-// YouTube IFrame API types
-declare global {
-  interface Window {
-    onYouTubeIframeAPIReady: () => void;
-    YT: {
-      Player: new (
-        elementId: string,
-        config: {
-          videoId: string;
-          playerVars?: {
-            autoplay?: number;
-            controls?: number;
-            modestbranding?: number;
-            loop?: number;
-            playlist?: string;
-            start?: number;
-            mute?: number;
-            origin?: string;
-            enablejsapi?: number;
-          };
-          events?: {
-            onReady?: (event: {
-              target: {
-                playVideo: () => void;
-                setVolume: (volume: number) => void;
-                mute: () => void;
-                unMute: () => void;
-                isMuted: () => boolean;
-                destroy: () => void;
-              };
-            }) => void;
-            onError?: (event: { data: number }) => void;
-            onStateChange?: (event: { data: number }) => void;
-          };
-        }
-      ) => void;
-      PlayerState: {
-        ENDED: number;
-        PLAYING: number;
-        PAUSED: number;
-        BUFFERING: number;
-        CUED: number;
-      };
-    };
-  }
-}
-
 interface ListItem {
   rank: number;
   name: string;
@@ -107,99 +60,6 @@ export default function ResultsPage() {
   const [isPlayerReady, setIsPlayerReady] = useState(false);
   const playerRef = useRef<any>(null);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    // Create a promise to handle when the API is ready
-    const loadYouTubeAPI = new Promise<void>((resolve) => {
-      // If the API is already loaded, resolve immediately
-      if (window.YT) {
-        resolve();
-        return;
-      }
-
-      // Otherwise, load the API script
-      const tag = document.createElement("script");
-      tag.src = "https://www.youtube.com/iframe_api";
-      const firstScriptTag = document.getElementsByTagName("script")[0];
-      firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
-
-      // Set up the callback for when the API is ready
-      window.onYouTubeIframeAPIReady = () => {
-        resolve();
-      };
-    });
-
-    let player: any = null;
-
-    // Initialize the player once the API is ready
-    loadYouTubeAPI
-      .then(() => {
-        try {
-          player = new window.YT.Player("youtube-player", {
-            videoId: "kANalBOlCOQ",
-            playerVars: {
-              autoplay: 1,
-              controls: 0,
-              modestbranding: 1,
-              loop: 1,
-              playlist: "kANalBOlCOQ",
-              start: 0,
-              mute: 0,
-              origin: window.location.origin,
-              enablejsapi: 1,
-            },
-            events: {
-              onReady: (event) => {
-                console.log("YouTube player is ready");
-                playerRef.current = event.target;
-                event.target.playVideo();
-                event.target.setVolume(30);
-                setIsPlayerReady(true);
-              },
-              onError: (event) => {
-                console.error("YouTube player error:", event.data);
-                setIsPlayerReady(false);
-              },
-              onStateChange: (event) => {
-                if (event.data === window.YT.PlayerState.ENDED) {
-                  if (playerRef.current) {
-                    playerRef.current.playVideo();
-                  }
-                }
-              },
-            },
-          });
-        } catch (error) {
-          console.error("Error creating YouTube player:", error);
-        }
-      })
-      .catch((error) => {
-        console.error("Error loading YouTube API:", error);
-      });
-
-    return () => {
-      if (playerRef.current) {
-        try {
-          playerRef.current.destroy();
-        } catch (error) {
-          console.error("Error destroying YouTube player:", error);
-        }
-      }
-      window.onYouTubeIframeAPIReady = () => {};
-    };
-  }, []);
-
-  const toggleMute = () => {
-    if (playerRef.current && isPlayerReady) {
-      if (isMuted) {
-        playerRef.current.unMute();
-        playerRef.current.setVolume(30);
-      } else {
-        playerRef.current.mute();
-      }
-      setIsMuted(!isMuted);
-    }
-  };
 
   const slides: Slide[] = [
     {
@@ -396,12 +256,11 @@ export default function ResultsPage() {
   };
 
   return (
-    <div className="h-[calc(100vh_-_57px)] flex items-center justify-center bg-gray-900 p-6 relative">
+    <div className="h-screen flex items-center justify-center bg-gray-900 p-6 relative">
       <Button
         variant="outline"
         size="icon"
-        className="fixed top-20 right-6 z-50 bg-black/10 backdrop-blur-sm hover:bg-white/20 border-none text-blue-400"
-        onClick={toggleMute}
+        className="fixed top-6 right-6 z-50 bg-black/10 backdrop-blur-sm hover:bg-white/20 border-none text-blue-400"
       >
         {isMuted ? (
           <VolumeX className="h-4 w-4" />

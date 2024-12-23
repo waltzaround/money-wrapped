@@ -649,8 +649,8 @@ export default function FinalResultsPage() {
             <CardContent>
               <p className="text-gray-600">
                 Experience secure, reliable access to your financial data
-                through Akahu's open banking platform. Learn more about how
-                we're making banking better for everyone.
+                through Akahu's open finance platform. Learn more about how
+                Akahu makes account connectivity better for everyone.
               </p>
               <Button className="mt-4 gap-2" variant="default" asChild>
                 <a href="https://akahu.nz" target="_blank">

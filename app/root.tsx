@@ -10,6 +10,7 @@ import {
 
 import type { Route } from "./+types/root";
 import stylesheet from "./app.css?url";
+import { Header } from "~/components/header";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -46,25 +47,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
 
       <body>
-        <header className="flex border-b justify-between items-center border-gray-400">
-          <Link to="/" className=" p-4 font-semibold">
-            Money Wrapped
-          </Link>
-          <div className="flex  text-blue-600 underline">
-            <a
-              className="p-4"
-              href="https://github.com/waltzaround/money-wrapped"
-            >
-              GitHub{" "}
-            </a>
-            <Link className=" p-4" to={"/csv"}>
-              Upload CSV
-            </Link>
-            <Link className="p-4" to={"/account"}>
-              Connect Account
-            </Link>
-          </div>
-        </header>
+        <Header />
         {children}
         <ScrollRestoration />
         <Scripts />
