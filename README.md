@@ -4,15 +4,7 @@
 
 Design plan here: [Read-Only Figjam](https://www.figma.com/board/I8YjX2pepHcef3eDUXMXcL/Untitled?node-id=0-1&t=YXcitpvH01exS69Z-1)
 
-
-
-
-
-
-
-
-
-
+Chat & Support: [Discord](https://discord.gg/59ajaQ92)
 
 # Welcome to React Router!
 

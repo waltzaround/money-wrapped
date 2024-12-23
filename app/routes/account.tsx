@@ -19,7 +19,7 @@ export default function PreparePage() {
             <Wallet className="w-12 h-12 text-primary" />
             <div>
               <CardTitle className="text-xl">
-                Step 1: Connect your bank account
+                Step 1: Connect your account with Akahu
               </CardTitle>
               <CardDescription>
                 Log into your bank account with Akahu and choose the accounts
@@ -30,35 +30,33 @@ export default function PreparePage() {
           </CardHeader>
         </Card>
 
-        <Card className="p-8 py-4 flex flex-row items-center gap-4">
-          <ClipboardList className="w-12 h-12 text-primary" />
-          <div className="">
-            <CardHeader className="flex flex-row items-center gap-4">
-              <div>
-                <CardTitle>Review Transactions</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                View and categorize your transactions from the past year.
-              </p>
-            </CardContent>
-          </div>
-        </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center gap-4">
-            <LineChart className="w-8 h-8 text-primary" />
+            <ClipboardList className="w-12 h-12 text-primary" />
             <div>
-              <CardTitle>Generate Insights</CardTitle>
-              <CardDescription>Discover your spending habits</CardDescription>
+              <CardTitle className="text-xl">
+                Step 2: Select the accounts you want to review
+              </CardTitle>
+              <CardDescription>
+                Log into your bank account with Akahu and choose the accounts
+                you want reviewed. It can only see your transactions, and can't
+                do anything else.
+              </CardDescription>
             </div>
           </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Get detailed analytics about where your money goes.
-            </p>
-          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-4">
+            <LineChart className="w-12 h-12 text-primary" />
+            <div>
+              <CardTitle className="text-xl">Step 3: See results</CardTitle>
+              <CardDescription>
+                Log into your bank account with Akahu and choose the accounts
+                you want reviewed. It can only see your transactions, and can't
+                do anything else.
+              </CardDescription>
+            </div>
+          </CardHeader>
         </Card>
       </div>
 

@@ -103,7 +103,7 @@ export function Welcome() {
             <div className="mt-8">
               <div className="flex gap-4">
                 <Link
-                  to="/"
+                  to="/account"
                   className="flex-1 rounded-lg border border-gray-300 p-4 bg-white hover:border-blue-500"
                 >
                   <h3 className="text-2xl font-bold underline text-blue-700 mb-2">

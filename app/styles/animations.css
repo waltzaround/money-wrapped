@@ -1,0 +1,102 @@
+@keyframes slideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(100px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-100px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes zoomFade {
+  0% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes rotateFade {
+  0% {
+    opacity: 0;
+    transform: rotate(-8deg) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(0) scale(1);
+  }
+}
+
+@keyframes bounceFade {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.1);
+  }
+  70% {
+    opacity: 0.8;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Base transition for all slides */
+[class*="-enter"] {
+  animation-duration: 600ms;
+  animation-fill-mode: both;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.slide-fade-enter {
+  animation: zoomFade 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.slide-up-enter {
+  animation: slideUp 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.slide-down-enter {
+  animation: slideDown 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.zoom-fade-enter {
+  animation: zoomFade 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.rotate-fade-enter {
+  animation: rotateFade 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.bounce-fade-enter {
+  animation: bounceFade 800ms cubic-bezier(0.36, 0, 0.66, 1) forwards;
+}
+
+.slide-exit {
+  opacity: 1;
+}
+
+.slide-exit-active {
+  opacity: 0;
+  transition: opacity 500ms ease-in;
+}
