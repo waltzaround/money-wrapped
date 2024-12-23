@@ -71,7 +71,7 @@ function fadeOutAudio(audio: HTMLAudioElement, duration: number = 2000) {
   }, stepDuration);
 }
 
-function useBackgroundAudio() {
+function useBackgroundAudio(): React.RefObject<HTMLAudioElement | null> {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const hasInteractedRef = useRef(false);
 
@@ -110,6 +110,73 @@ function useBackgroundAudio() {
   return audioRef;
 }
 
+// Add this new component before ResultsPage
+function TimelineSlider({
+  totalSlides,
+  currentSlide,
+  onSlideClick,
+}: {
+  totalSlides: number;
+  currentSlide: number;
+  onSlideClick: (index: number) => void;
+}) {
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    setProgress(0);
+    const startTime = Date.now();
+    const duration = 8000;
+
+    const animationFrame = () => {
+      const elapsed = Date.now() - startTime;
+      const newProgress = Math.min(elapsed / duration, 1);
+      setProgress(newProgress);
+
+      if (newProgress < 1) {
+        requestAnimationFrame(animationFrame);
+      }
+    };
+
+    const animation = requestAnimationFrame(animationFrame);
+    return () => cancelAnimationFrame(animation);
+  }, [currentSlide]);
+
+  return (
+    <div className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 flex gap-1 px-4 w-full max-w-[90%] sm:max-w-[600px] md:max-w-[720px] justify-center">
+      {Array.from({ length: totalSlides }).map((_, index) => (
+        <button
+          key={index}
+          onClick={() => onSlideClick(index)}
+          className="group relative h-1 flex-1 min-w-[20px] max-w-[40px] bg-white/30 rounded-full overflow-hidden cursor-pointer"
+        >
+          <div
+            className={`absolute inset-0 bg-white rounded-full origin-left
+              ${index < currentSlide ? "scale-x-100" : "scale-x-0"}
+              ${
+                index === currentSlide
+                  ? "transition-transform duration-100"
+                  : "transition-transform duration-200"
+              }
+              ${index === currentSlide ? "opacity-100" : "opacity-75"}`}
+            style={{
+              transform:
+                index === currentSlide
+                  ? `scaleX(${progress})`
+                  : index < currentSlide
+                  ? "scaleX(1)"
+                  : "scaleX(0)",
+            }}
+          />
+          <div
+            className={`absolute inset-0 bg-white/50 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200 ease-out rounded-full
+              ${index <= currentSlide ? "opacity-0" : ""}`}
+          />
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export default function ResultsPage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
@@ -117,6 +184,7 @@ export default function ResultsPage() {
   const playerRef = useRef<any>(null);
   const navigate = useNavigate();
   const audioRef = useBackgroundAudio();
+  const timerRef = useRef<any>(null);
 
   const slides: Slide[] = [
     {
@@ -249,11 +317,10 @@ export default function ResultsPage() {
   }, []);
 
   useEffect(() => {
-    const timer = setInterval(() => {
+    timerRef.current = setInterval(() => {
       setCurrentSlide((prev) => {
         const nextSlide = prev + 1;
         if (nextSlide >= slides.length - 1) {
-          // Start fading out the audio on the last slide
           if (audioRef.current) {
             fadeOutAudio(audioRef.current);
           }
@@ -266,14 +333,18 @@ export default function ResultsPage() {
       });
     }, 8000);
 
-    return () => clearInterval(timer);
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
   }, [navigate, slides.length]);
 
   const renderSlideContent = (slide: Slide) => {
     if (slide.type === "list") {
       return (
         <div
-          className={`w-full h-full rounded-xl  p-8 bg-gradient-to-b ${slide.gradient} text-white flex flex-col`}
+          className={`w-full h-full  p-8 bg-gradient-to-b ${slide.gradient} text-white flex flex-col`}
         >
           <p
             className={`text-2xl font-bold text-${slide.textColor}-100 mb-6 text-center`}
@@ -335,8 +406,29 @@ export default function ResultsPage() {
     }
   };
 
+  const handleTimelineClick = (index: number) => {
+    setCurrentSlide(index);
+    // Reset the timer when manually changing slides
+    clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setCurrentSlide((prev) => {
+        const nextSlide = prev + 1;
+        if (nextSlide >= slides.length - 1) {
+          if (audioRef.current) {
+            fadeOutAudio(audioRef.current);
+          }
+        }
+        if (nextSlide >= slides.length) {
+          navigate("/final-results");
+          return prev;
+        }
+        return nextSlide;
+      });
+    }, 8000);
+  };
+
   return (
-    <div className="h-screen flex items-center justify-center bg-gray-900 p-6 relative">
+    <div className="h-screen flex items-center justify-center bg-gray-900 relative ">
       <Button
         variant="outline"
         size="icon"
@@ -350,9 +442,13 @@ export default function ResultsPage() {
         )}
       </Button>
 
-      <div className="absolute inset-0" style={{ opacity: "0" }}></div>
+      <TimelineSlider
+        totalSlides={slides.length}
+        currentSlide={currentSlide}
+        onSlideClick={handleTimelineClick}
+      />
 
-      <div className="relative h-full w-full max-w-5xl">
+      <div className="relative h-screen w-screen ">
         {slidesWithAnimations.map((slide, index) => (
           <div
             key={index}
