@@ -6,8 +6,23 @@ interface Transaction {
 
 interface MonthlySpending {
   month: string;
+  monthName: string;
   total: number;
   transactionCount: number;
+}
+
+interface MerchantSpending {
+  name: string;
+  total: number;
+  transactionCount: number;
+}
+
+interface WeekendSpending {
+  total: number;
+  transactionCount: number;
+  averagePerDay: number;
+  weekdayAverage: number;
+  percentageHigher: number;
 }
 
 interface TransactionAnalytics {
@@ -17,6 +32,9 @@ interface TransactionAnalytics {
   totalSpent: number;
   averageTransactionAmount: number;
   transactionCount: number;
+  topMerchants: MerchantSpending[];
+  weekendSpending: WeekendSpending;
+  monthlySpendingArray: MonthlySpending[];
   earliestTransaction: {
     date: string;
     description: string;
@@ -32,12 +50,21 @@ interface TransactionAnalytics {
 export function analyzeTransactions(transactions: Transaction[]): TransactionAnalytics {
   if (!transactions.length) {
     return {
-      highestSpendingMonth: { month: '', total: 0, transactionCount: 0 },
-      lowestSpendingMonth: { month: '', total: 0, transactionCount: 0 },
+      highestSpendingMonth: { month: '', monthName: '', total: 0, transactionCount: 0 },
+      lowestSpendingMonth: { month: '', monthName: '', total: 0, transactionCount: 0 },
       largestTransactions: [],
       totalSpent: 0,
       averageTransactionAmount: 0,
       transactionCount: 0,
+      topMerchants: [],
+      monthlySpendingArray: [],
+      weekendSpending: {
+        total: 0,
+        transactionCount: 0,
+        averagePerDay: 0,
+        weekdayAverage: 0,
+        percentageHigher: 0
+      },
       earliestTransaction: { date: '', description: '', amount: 0 },
       latestTransaction: { date: '', description: '', amount: 0 }
     };
@@ -55,10 +82,15 @@ export function analyzeTransactions(transactions: Transaction[]): TransactionAna
   const earliestTransaction = sortedByDate[0];
   const latestTransaction = sortedByDate[sortedByDate.length - 1];
 
-  // Group transactions by month
+  // Track spending by merchant and monthly
+  const merchantSpending = new Map<string, MerchantSpending>();
   const monthlySpending = new Map<string, MonthlySpending>();
   
   let totalSpent = 0;
+  let weekendTotal = 0;
+  let weekendCount = 0;
+  let weekdayTotal = 0;
+  let weekdayCount = 0;
   
   // Process each transaction
   transactions.forEach(transaction => {
@@ -77,63 +109,95 @@ export function analyzeTransactions(transactions: Transaction[]): TransactionAna
     }
 
     const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    const amount = Math.abs(transaction.amount);
     
+    // Track weekend vs weekday spending
+    const dayOfWeek = date.getDay();
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6; // 0 is Sunday, 6 is Saturday
+    
+    if (isWeekend) {
+      weekendTotal += amount;
+      weekendCount += 1;
+    } else {
+      weekdayTotal += amount;
+      weekdayCount += 1;
+    }
+
     // Update monthly spending
     if (!monthlySpending.has(monthKey)) {
       monthlySpending.set(monthKey, {
         month: monthKey,
+        monthName: '',
         total: 0,
         transactionCount: 0
       });
     }
     
     const monthData = monthlySpending.get(monthKey)!;
-    const amount = Math.abs(transaction.amount);
     monthData.total += amount;
     monthData.transactionCount += 1;
-    
     totalSpent += amount;
-  });
-  
-  // Convert to array and sort for analysis
-  const monthlySpendingArray = Array.from(monthlySpending.values())
-    .sort((a, b) => {
-      const [yearA, monthA] = a.month.split('-').map(Number);
-      const [yearB, monthB] = b.month.split('-').map(Number);
-      return yearA === yearB ? monthA - monthB : yearA - yearB;
-    });
-  
-  if (!monthlySpendingArray.length) {
-    return {
-      highestSpendingMonth: { month: '', total: 0, transactionCount: 0 },
-      lowestSpendingMonth: { month: '', total: 0, transactionCount: 0 },
-      largestTransactions: [],
-      totalSpent: 0,
-      averageTransactionAmount: 0,
-      transactionCount: 0,
-      earliestTransaction: { date: '', description: '', amount: 0 },
-      latestTransaction: { date: '', description: '', amount: 0 }
+
+    // Update merchant spending
+    const merchant = transaction.description;
+    const currentSpending = merchantSpending.get(merchant) || {
+      name: merchant,
+      total: 0,
+      transactionCount: 0
     };
-  }
+    
+    currentSpending.total += amount;
+    currentSpending.transactionCount += 1;
+    merchantSpending.set(merchant, currentSpending);
+  });
+
+  // Convert monthly spending to array and sort
+  const monthlySpendingArray = Array.from(monthlySpending.values())
+    .map(month => {
+      // Convert YYYY-MM format to month name
+      const [year, monthNum] = month.month.split('-').map(Number);
+      const date = new Date(year, monthNum - 1);
+      const monthName = date.toLocaleString('en-US', { month: 'long' });
+      return {
+        ...month,
+        monthName
+      };
+    })
+    .sort((a, b) => b.total - a.total); // Sort by total spent, highest first
+
+  const highestSpendingMonth = monthlySpendingArray[0];
+  const lowestSpendingMonth = monthlySpendingArray[monthlySpendingArray.length - 1];
+
+  // Convert merchant spending to array and sort by total spent
+  const topMerchants = Array.from(merchantSpending.values())
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 5);
 
   // Sort transactions by amount for largest transactions
   const sortedTransactions = [...transactions]
     .filter(t => !isNaN(t.amount))
     .sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount));
   
+  const weekendAveragePerDay = weekendTotal / (weekendCount || 1);
+  const weekdayAveragePerDay = weekdayTotal / (weekdayCount || 1);
+  const percentageHigher = ((weekendAveragePerDay - weekdayAveragePerDay) / weekdayAveragePerDay) * 100;
+
   return {
-    highestSpendingMonth: monthlySpendingArray.reduce((max, month) => 
-      month.total > max.total ? month : max, 
-      monthlySpendingArray[0]
-    ),
-    lowestSpendingMonth: monthlySpendingArray.reduce((min, month) => 
-      month.total < min.total ? month : min, 
-      monthlySpendingArray[0]
-    ),
-    largestTransactions: sortedTransactions.slice(0, 10), // Top 5 largest transactions
+    highestSpendingMonth,
+    lowestSpendingMonth,
+    largestTransactions: sortedTransactions.slice(0, 10),
     totalSpent: Number(totalSpent),
     averageTransactionAmount: Number(totalSpent / transactions.length),
     transactionCount: transactions.length,
+    topMerchants,
+    monthlySpendingArray,
+    weekendSpending: {
+      total: weekendTotal,
+      transactionCount: weekendCount,
+      averagePerDay: weekendAveragePerDay,
+      weekdayAverage: weekdayAveragePerDay,
+      percentageHigher: percentageHigher
+    },
     earliestTransaction,
     latestTransaction
   };

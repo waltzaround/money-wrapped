@@ -16,8 +16,10 @@ import {
 } from "lucide-react";
 import { Header } from "~/components/header";
 import { cn } from "~/lib/utils";
+import { useNavigate } from "react-router";
 
 export default function PreparePage() {
+  const navigate = useNavigate();
   const [isUploading, setIsUploading] = useState(false);
   const [isDragActive, setIsDragActive] = useState(false);
   const [currentFiles, setCurrentFiles] = useState<File[]>([]);
@@ -121,6 +123,11 @@ export default function PreparePage() {
 
       const jsonResponse = await response.json();
       console.log("Upload response:", jsonResponse);
+
+      // Navigate to results with the analytics data
+      navigate("/results", { 
+        state: { analytics: jsonResponse }
+      });
 
       // Handle successful upload
       setCurrentFiles([]);

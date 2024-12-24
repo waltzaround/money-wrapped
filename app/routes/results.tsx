@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Button } from "~/components/ui/button";
 import { Volume2, VolumeX } from "lucide-react";
 
@@ -10,7 +10,7 @@ import {
   CardContent,
 } from "~/components/ui/card";
 import { Wallet, ClipboardList, LineChart } from "lucide-react";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import "~/styles/animations.css";
 
 interface ListItem {
@@ -71,43 +71,69 @@ function fadeOutAudio(audio: HTMLAudioElement, duration: number = 8000) {
   }, stepDuration);
 }
 
-function useBackgroundAudio(): React.RefObject<HTMLAudioElement | null> {
+function useBackgroundAudio(): [React.RefObject<HTMLAudioElement | null>, boolean, () => void] {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const hasInteractedRef = useRef(false);
+  const hasStartedRef = useRef(false);
+  const [isMuted, setIsMuted] = useState(false);
 
   useEffect(() => {
-    // Create audio element
-    audioRef.current = new Audio("/bg.mp3");
-    audioRef.current.loop = true;
+    // Create audio element if it doesn't exist
+    if (!audioRef.current) {
+      audioRef.current = new Audio("/bg.mp3");
+      audioRef.current.loop = true;
+    }
+    
+    const audio = audioRef.current;
 
-    // Add interaction listener to document
-    const startAudio = () => {
-      if (!hasInteractedRef.current && audioRef.current) {
-        hasInteractedRef.current = true;
-        audioRef.current.play().catch((error) => {
-          console.log("Audio playback failed:", error);
-        });
-        // Remove listener after first interaction
-        document.removeEventListener("click", startAudio);
-        document.removeEventListener("touchstart", startAudio);
+    const startAudio = async () => {
+      if (!hasStartedRef.current && audio) {
+        hasStartedRef.current = true;
+        try {
+          await audio.play();
+        } catch (error) {
+          console.log("Autoplay failed, waiting for interaction:", error);
+          // If autoplay fails, fall back to click/touch interaction
+          document.addEventListener("click", handleInteraction);
+          document.addEventListener("touchstart", handleInteraction);
+        }
       }
     };
 
-    document.addEventListener("click", startAudio);
-    document.addEventListener("touchstart", startAudio);
+    const handleInteraction = () => {
+      if (audio && !hasStartedRef.current) {
+        hasStartedRef.current = true;
+        audio.play().catch(console.error);
+        document.removeEventListener("click", handleInteraction);
+        document.removeEventListener("touchstart", handleInteraction);
+      }
+    };
+
+    // Try to start audio immediately
+    startAudio();
 
     // Cleanup function
     return () => {
-      document.removeEventListener("click", startAudio);
-      document.removeEventListener("touchstart", startAudio);
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
+      document.removeEventListener("click", handleInteraction);
+      document.removeEventListener("touchstart", handleInteraction);
     };
   }, []);
 
-  return audioRef;
+  // Update audio mute state whenever isMuted changes
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.muted = isMuted;
+    }
+  }, [isMuted]);
+
+  const toggleMute = useCallback(() => {
+    if (audioRef.current) {
+      const newMutedState = !isMuted;
+      audioRef.current.muted = newMutedState;
+      setIsMuted(newMutedState);
+    }
+  }, [isMuted]);
+
+  return [audioRef, isMuted, toggleMute];
 }
 
 // Add this new component before ResultsPage
@@ -179,133 +205,269 @@ function TimelineSlider({
 
 export default function ResultsPage() {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [isMuted, setIsMuted] = useState(false);
-  const [isPlayerReady, setIsPlayerReady] = useState(false);
-  const playerRef = useRef<any>(null);
+  const [audioRef, isMuted, toggleMute] = useBackgroundAudio();
   const navigate = useNavigate();
-  const audioRef = useBackgroundAudio();
+  const location = useLocation();
+  const analytics = location.state?.analytics;
   const timerRef = useRef<any>(null);
 
-  const slides: Slide[] = [
-    {
-      type: "standard",
-      gradient: "from-emerald-500 to-emerald-700",
-      title: "This year you spent",
-      value: "$12,300",
-      subtitle: "on purchases",
-      textColor: "emerald",
-    },
-    {
-      type: "standard",
-      gradient: "from-blue-500 to-blue-700",
-      title: "You shopped at",
-      value: "301",
-      subtitle: "different businesses",
-      textColor: "blue",
-    },
-    {
-      type: "standard",
-      gradient: "from-purple-500 to-purple-700",
-      title: "You made",
-      value: "1,230",
-      subtitle: "transactions",
-      textColor: "purple",
-    },
-    {
-      type: "standard",
-      gradient: "from-pink-500 to-pink-700",
-      title: "Your biggest spending day was",
-      value: "$432",
-      subtitle: "24 December",
-      description: "That's more than 87% of your daily spending",
-      textColor: "pink",
-    },
-    {
-      type: "standard",
-      gradient: "from-orange-500 to-orange-700",
-      title: "Your favorite restaurant was",
-      value: "McDonald's",
-      subtitle: "$1,230 spent on 42 visits",
-      description: "That's 3x more than your second most visited restaurant",
-      textColor: "orange",
-    },
-    {
-      type: "standard",
-      gradient: "from-lime-500 to-lime-700",
-      title: "Your biggest purchase",
-      value: "$12,432",
-      subtitle: "NVIDIA GPU RENTALS",
-      description: "That's more than 87% of your average purchase",
-      textColor: "lime",
-    },
-    {
-      type: "standard",
-      gradient: "from-cyan-500 to-cyan-700",
-      title: "Weekend warrior",
-      value: "$110",
-      subtitle: "average weekend spending",
-      description: "You tend to spend 40% more on weekends",
-      textColor: "cyan",
-    },
-    {
-      type: "standard",
-      gradient: "from-violet-500 to-violet-700",
-      title: "You visitied a cafe",
-      value: "110 times",
-      subtitle: "this year",
-      description: "That's about 2 cafe visits per week",
-      textColor: "violet",
-    },
-    {
-      type: "list",
-      gradient: "from-rose-500 to-rose-700",
-      title: "Your Top 5 Restaurants",
-      textColor: "rose",
-      items: [
-        { rank: 1, name: "McDonald's", detail: "$1,230 spent" },
-        { rank: 2, name: "Domino's Pizza", detail: "$890 spent" },
-        { rank: 3, name: "Burger Fuel", detail: "$750 spent" },
-        { rank: 4, name: "Hell Pizza", detail: "$680 spent" },
-        { rank: 5, name: "Subway", detail: "$520 spent" },
-      ],
-    },
-    {
-      type: "list",
-      gradient: "from-amber-500 to-amber-700",
-      title: "Most Expensive Months",
-      textColor: "amber",
-      items: [
-        { rank: 1, name: "December", detail: "$2,430 spent" },
-        { rank: 2, name: "July", detail: "$1,890 spent" },
-        { rank: 3, name: "November", detail: "$1,750 spent" },
-        { rank: 4, name: "August", detail: "$1,680 spent" },
-        { rank: 5, name: "March", detail: "$1,520 spent" },
-      ],
-    },
-    {
-      type: "list",
-      gradient: "from-teal-500 to-teal-700",
-      title: "Top Shopping Categories",
-      textColor: "teal",
-      items: [
-        { rank: 1, name: "Groceries", detail: "$3,230 spent" },
-        { rank: 2, name: "Dining Out", detail: "$2,890 spent" },
-        { rank: 3, name: "Entertainment", detail: "$1,750 spent" },
-        { rank: 4, name: "Transport", detail: "$1,680 spent" },
-        { rank: 5, name: "Shopping", detail: "$1,520 spent" },
-      ],
-    },
-    {
-      type: "standard",
-      gradient: "from-indigo-500 to-indigo-700",
-      title: "Thanks for watching",
-      value: "2024",
-      subtitle: "Money Wrapped",
-      description:
-        "We hope you enjoyed your 2024 Money Wrapped. This was made possible by Akahu.",
-      textColor: "indigo",
-    },
-  ];
+  // If no analytics data, redirect to upload page
+  useEffect(() => {
+    if (!analytics) {
+      navigate("/csv");
+    }
+  }, [analytics, navigate]);
+
+  const slides: Slide[] = useMemo(() => {
+    const placeholderSlides: Slide[] = [
+      {
+        type: "standard",
+        gradient: "from-emerald-500 to-emerald-700",
+        title: "This year you spent",
+        value: "$12,300",
+        subtitle: "on purchases",
+        textColor: "emerald",
+      },
+      {
+        type: "standard",
+        gradient: "from-blue-500 to-blue-700",
+        title: "You shopped at",
+        value: "301",
+        subtitle: "different businesses",
+        textColor: "blue",
+      },
+      {
+        type: "standard",
+        gradient: "from-purple-500 to-purple-700",
+        title: "You made",
+        value: "1,230",
+        subtitle: "transactions",
+        textColor: "purple",
+      },
+      {
+        type: "standard",
+        gradient: "from-pink-500 to-pink-700",
+        title: "Your biggest spending day was",
+        value: "$432",
+        subtitle: "24 December",
+        description: "That's more than 87% of your daily spending",
+        textColor: "pink",
+      },
+      {
+        type: "standard",
+        gradient: "from-orange-500 to-orange-700",
+        title: "Your favorite restaurant was",
+        value: "McDonald's",
+        subtitle: "$1,230 spent on 42 visits",
+        description: "That's 3x more than your second most visited restaurant",
+        textColor: "orange",
+      },
+      {
+        type: "standard",
+        gradient: "from-lime-500 to-lime-700",
+        title: "Your biggest purchase",
+        value: "$12,432",
+        subtitle: "NVIDIA GPU RENTALS",
+        description: "That's more than 87% of your average purchase",
+        textColor: "lime",
+      },
+      {
+        type: "standard",
+        gradient: "from-cyan-500 to-cyan-700",
+        title: "Weekend warrior",
+        value: "$110",
+        subtitle: "average weekend spending",
+        description: "You tend to spend 40% more on weekends",
+        textColor: "cyan",
+      },
+      {
+        type: "standard",
+        gradient: "from-violet-500 to-violet-700",
+        title: "You visitied a cafe",
+        value: "110 times",
+        subtitle: "this year",
+        description: "That's about 2 cafe visits per week",
+        textColor: "violet",
+      },
+      {
+        type: "list",
+        gradient: "from-rose-500 to-rose-700",
+        title: "Your Top 5 Restaurants",
+        textColor: "rose",
+        items: [
+          { rank: 1, name: "McDonald's", detail: "$1,230 spent" },
+          { rank: 2, name: "Domino's Pizza", detail: "$890 spent" },
+          { rank: 3, name: "Burger Fuel", detail: "$750 spent" },
+          { rank: 4, name: "Hell Pizza", detail: "$680 spent" },
+          { rank: 5, name: "Subway", detail: "$520 spent" },
+        ],
+      },
+      {
+        type: "list",
+        gradient: "from-amber-500 to-amber-700",
+        title: "Most Expensive Months",
+        textColor: "amber",
+        items: [
+          { rank: 1, name: "December", detail: "$2,430 spent" },
+          { rank: 2, name: "July", detail: "$1,890 spent" },
+          { rank: 3, name: "November", detail: "$1,750 spent" },
+          { rank: 4, name: "August", detail: "$1,680 spent" },
+          { rank: 5, name: "March", detail: "$1,520 spent" },
+        ],
+      },
+      {
+        type: "list",
+        gradient: "from-teal-500 to-teal-700",
+        title: "Top Shopping Categories",
+        textColor: "teal",
+        items: [
+          { rank: 1, name: "Groceries", detail: "$3,230 spent" },
+          { rank: 2, name: "Dining Out", detail: "$2,890 spent" },
+          { rank: 3, name: "Entertainment", detail: "$1,750 spent" },
+          { rank: 4, name: "Transport", detail: "$1,680 spent" },
+          { rank: 5, name: "Shopping", detail: "$1,520 spent" },
+        ],
+      },
+      {
+        type: "standard",
+        gradient: "from-indigo-500 to-indigo-700",
+        title: "Thanks for watching",
+        value: "2024",
+        subtitle: "Money Wrapped",
+        description:
+          "We hope you enjoyed your 2024 Money Wrapped. This was made possible by Akahu.",
+        textColor: "indigo",
+      },
+    ];
+
+    if (!analytics) return placeholderSlides;
+
+    // Override slides with real data where available
+    const formattedTotal = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(analytics.totalSpent);
+
+    // Update total spent
+    placeholderSlides[0] = {
+      ...placeholderSlides[0],
+      value: formattedTotal,
+    };
+
+    // Update transaction count
+    placeholderSlides[2] = {
+      ...placeholderSlides[2],
+      value: analytics.transactionCount.toString(),
+    };
+
+    // If we have highest spending month data
+    if (analytics.highestSpendingMonth) {
+      placeholderSlides[3] = {
+        type: "standard",
+        gradient: "from-pink-500 to-pink-700",
+        title: "Your highest spending month was",
+        value: new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD'
+        }).format(analytics.highestSpendingMonth.total),
+        subtitle: analytics.highestSpendingMonth.month,
+        description: "That's your biggest spending month!",
+        textColor: "pink",
+      };
+    }
+
+    // If we have top merchants data
+    if (analytics.topMerchants?.length > 0) {
+      const topMerchant = analytics.topMerchants[0];
+      placeholderSlides[4] = {
+        type: "standard",
+        gradient: "from-orange-500 to-orange-700",
+        title: "Your favorite merchant was",
+        value: topMerchant.name,
+        subtitle: `${new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD'
+        }).format(topMerchant.total)} spent on ${topMerchant.transactionCount} visits`,
+        description: "That's where you spent the most money this year",
+        textColor: "orange",
+      };
+
+      // Also update the top restaurants list if we have enough merchants
+      if (analytics.topMerchants.length >= 5) {
+        placeholderSlides[8] = {
+          type: "list",
+          gradient: "from-rose-500 to-rose-700",
+          title: "Your Top 5 Merchants",
+          textColor: "rose",
+          items: analytics.topMerchants.map((merchant, index) => ({
+            rank: index + 1,
+            name: merchant.name,
+            detail: new Intl.NumberFormat('en-US', {
+              style: 'currency',
+              currency: 'USD'
+            }).format(merchant.total) + " spent"
+          })),
+        };
+      }
+    }
+
+    // If we have largest transactions data
+    if (analytics.largestTransactions?.length > 0) {
+      const biggestPurchase = analytics.largestTransactions[0];
+      const percentageOfAverage = (Math.abs(biggestPurchase.amount) / analytics.averageTransactionAmount) * 100;
+      
+      placeholderSlides[5] = {
+        type: "standard",
+        gradient: "from-lime-500 to-lime-700",
+        title: "Your biggest purchase",
+        value: new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD'
+        }).format(Math.abs(biggestPurchase.amount)),
+        subtitle: biggestPurchase.description,
+        description: `That's ${Math.round(percentageOfAverage)}% more than your average purchase`,
+        textColor: "lime",
+      };
+    }
+
+    // If we have weekend spending data
+    if (analytics.weekendSpending) {
+      placeholderSlides[6] = {
+        type: "standard",
+        gradient: "from-cyan-500 to-cyan-700",
+        title: "Weekend warrior",
+        value: new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD'
+        }).format(analytics.weekendSpending.averagePerDay),
+        subtitle: "average weekend spending",
+        description: analytics.weekendSpending.percentageHigher > 0 
+          ? `You tend to spend ${Math.round(analytics.weekendSpending.percentageHigher)}% more on weekends`
+          : `You actually spend ${Math.round(Math.abs(analytics.weekendSpending.percentageHigher))}% less on weekends`,
+        textColor: "cyan",
+      };
+    }
+
+    // If we have monthly spending data
+    if (analytics.monthlySpendingArray?.length > 0) {
+      placeholderSlides[9] = {
+        type: "list",
+        gradient: "from-amber-500 to-amber-700",
+        title: "Most Expensive Months",
+        textColor: "amber",
+        items: analytics.monthlySpendingArray.slice(0, 5).map((month, index) => ({
+          rank: index + 1,
+          name: month.monthName,
+          detail: new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD'
+          }).format(month.total) + " spent"
+        })),
+      };
+    }
+
+    return placeholderSlides;
+  }, [analytics]);
 
   // Assign random animations to slides
   const slidesWithAnimations = useMemo(() => {
@@ -314,7 +476,7 @@ export default function ResultsPage() {
       animation:
         slideAnimations[Math.floor(Math.random() * slideAnimations.length)],
     }));
-  }, []);
+  }, [slides]);
 
   useEffect(() => {
     timerRef.current = setInterval(() => {
@@ -326,7 +488,9 @@ export default function ResultsPage() {
           }
         }
         if (nextSlide >= slides.length) {
-          navigate("/final-results");
+          navigate("/final-results", { 
+            state: { analytics } 
+          });
           return prev;
         }
         return nextSlide;
@@ -338,7 +502,7 @@ export default function ResultsPage() {
         clearInterval(timerRef.current);
       }
     };
-  }, [navigate, slides.length]);
+  }, [navigate, slides.length, audioRef, analytics]);
 
   const renderSlideContent = (slide: Slide) => {
     if (slide.type === "list") {
@@ -399,13 +563,6 @@ export default function ResultsPage() {
     );
   };
 
-  const toggleMute = () => {
-    if (audioRef.current) {
-      audioRef.current.muted = !isMuted;
-      setIsMuted(!isMuted);
-    }
-  };
-
   const handleTimelineClick = (index: number) => {
     setCurrentSlide(index);
     // Reset the timer when manually changing slides
@@ -419,7 +576,9 @@ export default function ResultsPage() {
           }
         }
         if (nextSlide >= slides.length) {
-          navigate("/final-results");
+          navigate("/final-results", { 
+            state: { analytics } 
+          });
           return prev;
         }
         return nextSlide;
