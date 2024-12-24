@@ -20,7 +20,7 @@ import { cn } from "~/lib/utils";
 export default function PreparePage() {
   const [isUploading, setIsUploading] = useState(false);
   const [isDragActive, setIsDragActive] = useState(false);
-  const [currentFile, setCurrentFile] = useState<File | null>(null);
+  const [currentFiles, setCurrentFiles] = useState<File[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -30,7 +30,6 @@ export default function PreparePage() {
     if (!file) return;
 
     setIsUploading(true);
-    setCurrentFile(file);
     setUploadError(null);
 
     try {
@@ -49,18 +48,17 @@ export default function PreparePage() {
 
       if (uniqueTransactions.size < 200) {
         throw new Error(
-          `Not enough  transactions. Found ${uniqueTransactions.size}, need at least 200.`
+          `Not enough transactions in ${file.name}. Found ${uniqueTransactions.size}, need at least 200.`
         );
       }
 
-      // If validation passes, continue with processing
-      await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate processing
+      // If validation passes, add to current files
+      setCurrentFiles((prev) => [...prev, file]);
     } catch (error) {
       console.error("Error processing file:", error);
       setUploadError(
         error instanceof Error ? error.message : "Error processing file"
       );
-      setCurrentFile(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -74,10 +72,8 @@ export default function PreparePage() {
     e.preventDefault();
     setIsDragActive(false);
 
-    const file = e.dataTransfer.files[0];
-    if (file?.type === "text/csv") {
-      handleFile(file);
-    }
+    const files = Array.from(e.dataTransfer.files);
+    files.filter((file) => file.type === "text/csv").forEach(handleFile);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -95,30 +91,29 @@ export default function PreparePage() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      handleFile(file);
-    }
+    const files = Array.from(e.target.files || []);
+    files.forEach(handleFile);
   };
 
   const handleSubmit = async () => {
-    if (!currentFile) return;
+    if (!currentFiles.length) return;
 
     setIsSubmitting(true);
     setUploadError(null);
 
     try {
       const formData = new FormData();
-      formData.append("file", currentFile);
+      console.log(`Sending ${currentFiles.length} files to server`);
+      
+      currentFiles.forEach((file, index) => {
+        console.log(`Adding file ${index + 1}: ${file.name}, size: ${file.size} bytes`);
+        formData.append("files", file);
+      });
 
       const response = await fetch("http://localhost:8787/upload-csv", {
         method: "POST",
         body: formData,
       });
-
-      if (response.status === 200) {
-        console.log("Raw response:", response);
-      }
 
       if (!response.ok) {
         throw new Error(`Upload failed: ${response.statusText}`);
@@ -128,7 +123,7 @@ export default function PreparePage() {
       console.log("Upload response:", jsonResponse);
 
       // Handle successful upload
-      setCurrentFile(null);
+      setCurrentFiles([]);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -198,43 +193,46 @@ export default function PreparePage() {
               </div>
             </CardHeader>
           </Card>
-          {currentFile ? (
+          {currentFiles.length > 0 ? (
             <div className="space-y-4">
-              <Card>
-                <CardHeader className="flex flex-row items-center gap-4">
-                  <FileText className="w-12 h-12 text-primary" />
-                  <div className="flex-1">
-                    <CardTitle className="text-xl">
-                      {currentFile.name}
-                    </CardTitle>
-                    <CardDescription>
-                      {(currentFile.size / 1024).toFixed(2)} KB
-                    </CardDescription>
-                  </div>
-                  {isProcessing ? (
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span className="text-sm text-muted-foreground">
-                        Processing...
-                      </span>
+              {currentFiles.map((file, index) => (
+                <Card key={index}>
+                  <CardHeader className="flex flex-row items-center gap-4">
+                    <FileText className="w-12 h-12 text-primary" />
+                    <div className="flex-1">
+                      <CardTitle className="text-xl">
+                        {file.name}
+                      </CardTitle>
+                      <CardDescription>
+                        {(file.size / 1024).toFixed(2)} KB
+                      </CardDescription>
                     </div>
-                  ) : (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setCurrentFile(null);
-                        if (fileInputRef.current) {
-                          fileInputRef.current.value = "";
-                        }
-                      }}
-                    >
-                      Remove
-                    </Button>
-                  )}
-                </CardHeader>
-              </Card>
-
+                    {isProcessing ? (
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span className="text-sm text-muted-foreground">
+                          Processing...
+                        </span>
+                      </div>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setCurrentFiles((prev) =>
+                            prev.filter((f) => f !== file)
+                          );
+                          if (fileInputRef.current) {
+                            fileInputRef.current.value = "";
+                          }
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    )}
+                  </CardHeader>
+                </Card>
+              ))}
               {uploadError && (
                 <p className="text-sm text-red-500 mt-2">{uploadError}</p>
               )}
@@ -243,7 +241,7 @@ export default function PreparePage() {
                 <Button
                   variant="ghost"
                   onClick={() => {
-                    setCurrentFile(null);
+                    setCurrentFiles([]);
                     if (fileInputRef.current) {
                       fileInputRef.current.value = "";
                     }
@@ -262,7 +260,7 @@ export default function PreparePage() {
                       Uploading...
                     </>
                   ) : (
-                    "Upload File"
+                    "Upload Files"
                   )}
                 </Button>
               </div>
@@ -284,6 +282,7 @@ export default function PreparePage() {
                     ref={fileInputRef}
                     type="file"
                     accept=".csv"
+                    multiple
                     onChange={handleChange}
                     className="hidden"
                   />

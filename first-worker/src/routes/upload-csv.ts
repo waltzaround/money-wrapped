@@ -7,61 +7,87 @@ function parseCsvToTransactions(csvText: string) {
 	const lines = csvText.split('\n');
 	const headers = lines[0].split(',');
 
-	return lines
+	const transactions = lines
 		.slice(1)
 		.filter((line) => line.trim())
 		.map((line) => {
 			const values = line.split(',');
+			const amount = parseFloat(values[1].replace(/[^-\d.]/g, '')); // Remove any currency symbols and keep negative signs
+			const description = values[2].trim();
+			const date = values[0].trim();
+			
+			// Parse the date to check year
+			const [day, month, year] = date.split('/').map(Number);
+			if (year !== 2024) {
+				return null;
+			}
+			
+			// Skip online payment thank you transactions
+			if (description === 'Online       Payment -  Thank You') {
+				return null;
+			}
+
+			if (isNaN(amount)) {
+				console.error('Invalid amount:', values[1], 'in line:', line);
+				return null;
+			}
+
 			return {
-				date: values[0],
-				amount: parseFloat(values[1]),
-				description: values[2],
+				date,
+				amount,
+				description,
 			};
-		});
+		})
+		.filter((t): t is NonNullable<typeof t> => t !== null); // Remove any null transactions
+
+	console.log('Parsed transactions:', transactions.slice(0, 3)); // Log first 3 transactions
+	console.log(`Filtered to ${transactions.length} transactions from 2024`);
+	return transactions;
 }
 
 export async function handleCsvUpload(request: Request, env: Env, origin: string): Promise<Response> {
 	try {
 		const formData = await request.formData();
-		const csvFile = formData.get('file');
+		const files = formData.getAll('files');
 
-		if (!csvFile || !(csvFile instanceof File)) {
-			return new Response('No CSV file provided', {
+		console.log(`Processing ${files.length} CSV files`);
+
+		if (!files.length || !files.every(file => file instanceof File)) {
+			return new Response('No CSV files provided', {
 				status: 400,
 				headers: corsHeaders(origin),
 			});
 		}
 
-		// Read and parse CSV file
-		const csvText = await csvFile.text();
-		const transactions = parseCsvToTransactions(csvText);
-
-		// Send transactions to Akahu
-		const akahuResponse = await fetch(`${env.AKAHU_API_URL}/transactions/bulk`, {
-			method: 'POST',
-			headers: {
-				'Authorization': `Bearer ${env.AKAHU_APP_TOKEN}`,
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({ transactions }),
-		});
-
-		if (!akahuResponse.ok) {
-			const errorData = await akahuResponse.json();
-			throw new Error(`Akahu API error: ${JSON.stringify(errorData)}`);
+		// Process all CSV files and combine transactions
+		const allTransactions = [];
+		for (const file of files) {
+			console.log(`Processing file: ${(file as File).name}, size: ${(file as File).size} bytes`);
+			const csvText = await (file as File).text();
+			const fileTransactions = parseCsvToTransactions(csvText);
+			console.log(`Parsed ${fileTransactions.length} transactions from ${(file as File).name}`);
+			allTransactions.push(...fileTransactions);
 		}
 
-		const akahuData = await akahuResponse.json();
+		console.log(`Total combined transactions: ${allTransactions.length}`);
 
-		// Analyze the transactions
-		const analytics = analyzeTransactions(transactions);
+		// Sort all transactions by date
+		allTransactions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-		// Return both the transactions and analytics
-		return new Response(JSON.stringify({ 
-			transactions, 
-			akahuResponse: akahuData,
-			analytics 
-		}), {
+		// Analyze the combined transactions
+		const analytics = analyzeTransactions(allTransactions);
+
+		console.log('Analytics summary:', {
+			totalTransactions: analytics.transactionCount,
+			totalSpent: analytics.totalSpent,
+			dateRange: {
+				earliest: analytics.earliestTransaction.date,
+				latest: analytics.latestTransaction.date
+			}
+		});
+
+		// Return just the analytics
+		return new Response(JSON.stringify(analytics), {
 			status: 200,
 			headers: {
 				...corsHeaders(origin),
