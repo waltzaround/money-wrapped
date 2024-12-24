@@ -11,6 +11,13 @@
  * Learn more at https://developers.cloudflare.com/workers/
  */
 
+import dotenv from 'dotenv';
+dotenv.config();
+
+interface Env {
+	AKAHU_APP_TOKEN: string;
+}
+
 function corsHeaders(origin: string) {
 	return {
 		'Access-Control-Allow-Origin': origin,
@@ -40,7 +47,7 @@ export default {
 						headers: corsHeaders(origin),
 					});
 				}
-				return handleCsvUpload(request, origin);
+				return handleCsvUpload(request, env, origin);
 
 			case '/akahu-auth':
 				if (request.method !== 'GET') {
@@ -60,7 +67,7 @@ export default {
 	},
 } satisfies ExportedHandler<Env>;
 
-async function handleCsvUpload(request: Request, origin: string): Promise<Response> {
+async function handleCsvUpload(request: Request, env: Env, origin: string): Promise<Response> {
 	try {
 		const formData = await request.formData();
 		const csvFile = formData.get('file');
@@ -77,11 +84,12 @@ async function handleCsvUpload(request: Request, origin: string): Promise<Respon
 		const transactions = parseCsvToTransactions(csvText);
 
 		// Submit to Akahu enrichment API
-		const enrichmentResponse = await fetch('https://api.akahu.io/v1/enrichment/transactions', {
+		const token = process.env.AKAHU_APP_TOKEN || env.AKAHU_APP_TOKEN;
+		const enrichmentResponse = await fetch('https://api.oneoff.akahu.io/v1/transactions/code', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
-				'X-Akahu-ID': env.AKAHU_APP_TOKEN,
+				'X-Akahu-ID': token,
 			},
 			body: JSON.stringify({
 				transactions: transactions.map((tx) => ({
@@ -91,6 +99,8 @@ async function handleCsvUpload(request: Request, origin: string): Promise<Respon
 				})),
 			}),
 		});
+		console.log('Prepare to enrich!');
+		console.log(enrichmentResponse);
 
 		if (!enrichmentResponse.ok) {
 			throw new Error(`Akahu API error: ${enrichmentResponse.statusText}`);
@@ -105,8 +115,9 @@ async function handleCsvUpload(request: Request, origin: string): Promise<Respon
 				'Content-Type': 'application/json',
 			},
 		});
-	} catch (error) {
-		return new Response(`Error processing CSV: ${error.message}`, {
+	} catch (error: unknown) {
+		const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+		return new Response(`Error processing CSV: ${errorMessage}`, {
 			status: 500,
 			headers: corsHeaders(origin),
 		});
@@ -132,7 +143,7 @@ function parseCsvToTransactions(csvText: string) {
 }
 
 async function handleAkahuAuth(request: Request, env: Env, origin: string): Promise<Response> {
-	const akahuAuthUrl = 'https://api.akahu.io/v1/auth';
+	const akahuAuthUrl = 'https://api.oneoff.akahu.io/v1/auth';
 
 	return Response.redirect(akahuAuthUrl, 302);
 }

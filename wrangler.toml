@@ -1,0 +1,3 @@
+[vars]
+# For local development
+AKAHU_APP_TOKEN = "your_token_here" 
