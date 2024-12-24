@@ -116,12 +116,18 @@ export default function PreparePage() {
         body: formData,
       });
 
+      if (response.status === 200) {
+        console.log("Raw response:", response);
+      }
+
       if (!response.ok) {
         throw new Error(`Upload failed: ${response.statusText}`);
       }
 
+      const jsonResponse = await response.json();
+      console.log("Upload response:", jsonResponse);
+
       // Handle successful upload
-      console.log("File uploaded successfully");
       setCurrentFile(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
