@@ -72,16 +72,63 @@ async function handleCsvUpload(request: Request, origin: string): Promise<Respon
 			});
 		}
 
-		return new Response('CSV upload successful', {
+		// Read and parse CSV file
+		const csvText = await csvFile.text();
+		const transactions = parseCsvToTransactions(csvText);
+
+		// Submit to Akahu enrichment API
+		const enrichmentResponse = await fetch('https://api.akahu.io/v1/enrichment/transactions', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-Akahu-ID': env.AKAHU_APP_TOKEN,
+			},
+			body: JSON.stringify({
+				transactions: transactions.map((tx) => ({
+					date: tx.date,
+					amount: tx.amount,
+					description: tx.description,
+				})),
+			}),
+		});
+
+		if (!enrichmentResponse.ok) {
+			throw new Error(`Akahu API error: ${enrichmentResponse.statusText}`);
+		}
+
+		const enrichedData = await enrichmentResponse.json();
+
+		return new Response(JSON.stringify(enrichedData), {
 			status: 200,
-			headers: corsHeaders(origin),
+			headers: {
+				...corsHeaders(origin),
+				'Content-Type': 'application/json',
+			},
 		});
 	} catch (error) {
-		return new Response('Error processing CSV', {
+		return new Response(`Error processing CSV: ${error.message}`, {
 			status: 500,
 			headers: corsHeaders(origin),
 		});
 	}
+}
+
+// Helper function to parse CSV
+function parseCsvToTransactions(csvText: string) {
+	const lines = csvText.split('\n');
+	const headers = lines[0].split(',');
+
+	return lines
+		.slice(1)
+		.filter((line) => line.trim())
+		.map((line) => {
+			const values = line.split(',');
+			return {
+				date: values[0], // Adjust index based on your CSV structure
+				amount: parseFloat(values[1]), // Adjust index based on your CSV structure
+				description: values[2], // Adjust index based on your CSV structure
+			};
+		});
 }
 
 async function handleAkahuAuth(request: Request, env: Env, origin: string): Promise<Response> {
