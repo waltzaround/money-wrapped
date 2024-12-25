@@ -360,7 +360,7 @@ export default function ResultsPage() {
       gradient: placeholderSlides[0].gradient,
       title: placeholderSlides[0].title,
       value: formattedTotal,
-      subtitle: (placeholderSlides[0] as StandardSlide).subtitle,
+      subtitle: 'standard' in placeholderSlides[0] ? (placeholderSlides[0] as StandardSlide).subtitle : '',
       textColor: placeholderSlides[0].textColor,
     } as StandardSlide;
 
@@ -370,7 +370,7 @@ export default function ResultsPage() {
       gradient: placeholderSlides[2].gradient,
       title: placeholderSlides[2].title,
       value: analytics.transactionCount.toString(),
-      subtitle: placeholderSlides[2].subtitle,
+      subtitle: 'standard' in placeholderSlides[2] ? (placeholderSlides[2] as StandardSlide).subtitle : '',
       textColor: placeholderSlides[2].textColor,
     };
 
@@ -413,7 +413,7 @@ export default function ResultsPage() {
           gradient: "from-rose-500 to-rose-700",
           title: "Your Top 5 Merchants",
           textColor: "rose",
-          items: analytics.topMerchants.map((merchant, index) => ({
+          items: analytics.topMerchants.map((merchant: { name: any; total: number | bigint; }, index: number) => ({
             rank: index + 1,
             name: merchant.name,
             detail: new Intl.NumberFormat('en-US', {
@@ -469,7 +469,7 @@ export default function ResultsPage() {
         gradient: "from-amber-500 to-amber-700",
         title: "Most Expensive Months",
         textColor: "amber",
-        items: analytics.monthlySpendingArray.slice(0, 5).map((month, index) => ({
+        items: analytics.monthlySpendingArray.slice(0, 5).map((month: { monthName: any; total: number | bigint; }, index: number) => ({
           rank: index + 1,
           name: month.monthName,
           detail: new Intl.NumberFormat('en-US', {
