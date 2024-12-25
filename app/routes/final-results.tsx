@@ -1,6 +1,6 @@
 import React from "react";
-
 import { useState } from "react";
+import { useLocation, useNavigate } from "react-router";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -29,6 +29,7 @@ import {
 } from "recharts";
 
 import { cn } from "~/lib/utils";
+import type { TransactionAnalytics } from "../types";
 
 type SpendCategory = {
   category: string;
@@ -38,74 +39,148 @@ type SpendCategory = {
 
 export default function FinalResultsPage() {
   const [selectedPeriod, setSelectedPeriod] = useState("monthly");
+  const navigate = useNavigate();
+  const location = useLocation();
+  const analytics = location.state?.analytics as TransactionAnalytics;
+
+  // Redirect to upload if no analytics
+  React.useEffect(() => {
+    if (!analytics) {
+      navigate("/csv");
+    }
+  }, [analytics, navigate]);
+
+  // Transform monthly spending data for the chart
+  const monthlySpendingData = React.useMemo(() => {
+    if (!analytics?.monthlySpendingArray) return [];
+    
+    return analytics.monthlySpendingArray
+      .map(month => {
+        const [year, monthNum] = month.month.split('-').map(Number);
+        return {
+          period: month.monthName.substring(0, 3),
+          amount: month.total,
+          sortOrder: year * 12 + monthNum // Use this for sorting
+        };
+      })
+      .sort((a, b) => a.sortOrder - b.sortOrder) // Sort chronologically
+      .map(({ period, amount }) => ({ period, amount })); // Remove the sortOrder field
+  }, [analytics]);
+
+  // Transform weekly spending data for the chart
+  const weeklySpendingData = React.useMemo(() => {
+    if (!analytics?.earliestTransaction || !analytics?.latestTransaction) return [];
+    
+    // Convert dates to Date objects
+    const startDate = new Date(analytics.earliestTransaction.date.split('/').reverse().join('-'));
+    const endDate = new Date(analytics.latestTransaction.date.split('/').reverse().join('-'));
+    
+    // Initialize all weeks with zero
+    const weeklyData: { [key: string]: number } = {};
+    const currentDate = new Date(startDate);
+    while (currentDate <= endDate) {
+      const weekNumber = Math.ceil((currentDate.getDate() + currentDate.getDay()) / 7);
+      const weekKey = `Week ${weekNumber}`;
+      weeklyData[weekKey] = 0;
+      currentDate.setDate(currentDate.getDate() + 7);
+    }
+
+    // Add transaction amounts to the corresponding weeks
+    analytics.largestTransactions.forEach(transaction => {
+      const date = new Date(transaction.date.split('/').reverse().join('-'));
+      const weekNumber = Math.ceil((date.getDate() + date.getDay()) / 7);
+      const weekKey = `Week ${weekNumber}`;
+      weeklyData[weekKey] = (weeklyData[weekKey] || 0) + transaction.amount;
+    });
+
+    return Object.entries(weeklyData)
+      .map(([period, amount]) => ({ period, amount }))
+      .sort((a, b) => parseInt(a.period.split(' ')[1]) - parseInt(b.period.split(' ')[1]));
+  }, [analytics]);
+
+  // Transform daily spending data for the chart
+  const dailySpendingData = React.useMemo(() => {
+    if (!analytics?.earliestTransaction || !analytics?.latestTransaction || !analytics?.allTransactions) return [];
+    
+    // Parse dates correctly
+    const [startDay, startMonth, startYear] = analytics.earliestTransaction.date.split('/').map(Number);
+    const [endDay, endMonth, endYear] = analytics.latestTransaction.date.split('/').map(Number);
+    
+    const startDate = new Date(startYear, startMonth - 1, startDay);
+    const endDate = new Date(endYear, endMonth - 1, endDay);
+    
+    // Initialize all days with zero
+    const dailyData: { [key: string]: number } = {};
+    const currentDate = new Date(startDate);
+    
+    // Initialize all days between start and end
+    while (currentDate <= endDate) {
+      const dayKey = currentDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      dailyData[dayKey] = 0;
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    // Group transactions by day
+    analytics.allTransactions.forEach(transaction => {
+      const [day, month, year] = transaction.date.split('/').map(Number);
+      const date = new Date(year, month - 1, day);
+      const dayKey = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      
+      // Only add positive transactions (spending)
+      if (transaction.amount > 0) {
+        dailyData[dayKey] = (dailyData[dayKey] || 0) + transaction.amount;
+      }
+    });
+
+    // Convert to array and sort chronologically
+    return Object.entries(dailyData)
+      .map(([period, amount]) => ({
+        period,
+        amount: Math.round(amount * 100) / 100
+      }))
+      .sort((a, b) => {
+        const [monthA, dayA] = a.period.split(' ');
+        const [monthB, dayB] = b.period.split(' ');
+        const dateA = new Date(2023, new Date(monthA + ' 1, 2023').getMonth(), parseInt(dayA));
+        const dateB = new Date(2023, new Date(monthB + ' 1, 2023').getMonth(), parseInt(dayB));
+        return dateA.getTime() - dateB.getTime();
+      });
+  }, [analytics]);
+
+  // Transform merchant data for categories
+  const topCategories = React.useMemo(() => {
+    if (!analytics?.topMerchants) return [];
+    
+    const colors = [
+      "rgb(99, 102, 241)", // indigo-500
+      "rgb(168, 85, 247)", // purple-500
+      "rgb(236, 72, 153)", // pink-500
+      "rgb(249, 115, 22)", // orange-500
+      "rgb(234, 179, 8)",  // yellow-500
+    ];
+
+    return analytics.topMerchants.map((merchant, index) => ({
+      category: merchant.name,
+      amount: merchant.total,
+      color: colors[index % colors.length]
+    }));
+  }, [analytics]);
 
   const spendingData = {
-    monthly: [
-      { period: "Jan", amount: 1000 },
-      { period: "Feb", amount: 900 },
-      { period: "Mar", amount: 1100 },
-      { period: "Apr", amount: 950 },
-      { period: "May", amount: 1200 },
-      { period: "Jun", amount: 1050 },
-      { period: "Jul", amount: 1300 },
-      { period: "Aug", amount: 1150 },
-      { period: "Sep", amount: 1000 },
-      { period: "Oct", amount: 1250 },
-      { period: "Nov", amount: 1100 },
-      { period: "Dec", amount: 1300 },
-    ],
-    weekly: Array.from({ length: 52 }, (_, i) => {
-      // Calculate the start date of each week
-      const startDate = new Date(2024, 0, i * 7 + 1); // Jan 1, 2024 + weeks
-      const endDate = new Date(2024, 0, i * 7 + 7);
-
-      // Format the dates as "Jan 1 - Jan 7"
-      const formattedPeriod = `${startDate.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      })} - ${endDate.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      })}`;
-
-      // Generate spending amount (keeping the same logic)
-      const weekNumber = i + 1;
-      const baseAmount = 250;
-      const monthPosition = (weekNumber % 4) / 4;
-      const monthlyVariation = Math.sin(monthPosition * Math.PI) * 50;
-      const seasonalVariation = Math.sin((weekNumber / 52) * 2 * Math.PI) * 100;
-      const randomness = Math.random() * 60 - 30;
-      const amount = Math.round(
-        baseAmount + monthlyVariation + seasonalVariation + randomness
-      );
-
-      return {
-        period: formattedPeriod,
-        amount: Math.max(150, amount),
-      };
-    }),
-    daily: Array.from({ length: 365 }, (_, i) => {
-      const date = new Date(2024, 0, i + 1);
-      const formattedDate = date.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      });
-      const baseAmount = 45;
-      const variation = Math.sin(i / 7) * 20;
-      const randomness = Math.random() * 30 - 15;
-      const amount = Math.round(baseAmount + variation + randomness);
-
-      return {
-        period: formattedDate,
-        amount: Math.max(20, amount),
-      };
-    }),
+    monthly: monthlySpendingData,
+    weekly: weeklySpendingData,
+    daily: dailySpendingData
   };
+
+  const totalSpent = analytics?.totalSpent || 0;
+  const transactionCount = analytics?.transactionCount || 0;
+  const averageTransaction = analytics?.averageTransactionAmount || 0;
+  const topMerchant = analytics?.topMerchants?.[0]?.name || "Unknown";
+  const topMerchantSpend = analytics?.topMerchants?.[0]?.total || 0;
 
   const spendCategories: SpendCategory[] = [
     { category: "Rent", amount: 6000, color: "bg-blue-500" },
     { category: "Groceries", amount: 3000, color: "bg-emerald-500" },
-
     { category: "Dining Out", amount: 1600, color: "bg-rose-500" },
     { category: "Entertainment", amount: 1500, color: "bg-orange-500" },
     { category: "Utilities", amount: 1200, color: "bg-purple-500" },
@@ -132,19 +207,19 @@ export default function FinalResultsPage() {
             <CardContent className="grid grid-cols-2 gap-4 max-md:grid-cols-1">
               <div className="p-4 bg-emerald-50 rounded-lg">
                 <p className="text-gray-700">Total Spent</p>
-                <p className="text-2xl font-bold text-emerald-600">$12,300</p>
+                <p className="text-2xl font-bold text-emerald-600">${totalSpent.toLocaleString()}</p>
               </div>
               <div className="p-4 bg-blue-50 rounded-lg">
                 <p className="text-gray-700">Transactions</p>
-                <p className="text-2xl font-bold text-blue-600">1,230</p>
+                <p className="text-2xl font-bold text-blue-600">{transactionCount}</p>
               </div>
               <div className="p-4 bg-purple-50 rounded-lg">
                 <p className="text-gray-700">Businesses</p>
-                <p className="text-2xl font-bold text-purple-600">301</p>
+                <p className="text-2xl font-bold text-purple-600">{analytics?.uniqueMerchants || 0}</p>
               </div>
               <div className="p-4 bg-pink-50 rounded-lg">
                 <p className="text-gray-700">Biggest Day</p>
-                <p className="text-2xl font-bold text-pink-600">$432</p>
+                <p className="text-2xl font-bold text-pink-600">${analytics?.biggestDay?.toLocaleString() || 0}</p>
               </div>
             </CardContent>
           </Card>
@@ -231,7 +306,7 @@ export default function FinalResultsPage() {
                 This year you spent
               </p>
               <p className="text-5xl font-bold mb-2 text-emerald-800">
-                $12,300
+                ${totalSpent.toLocaleString()}
               </p>
               <p className="text-lg text-emerald-700">on purchases</p>
             </div>
@@ -241,80 +316,15 @@ export default function FinalResultsPage() {
                 Your Top 10 Merchants
               </h3>
               <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-600">#1</span>
-                    <span className="font-medium text-gray-800">
-                      McDonald's
-                    </span>
+                {analytics?.topMerchants?.slice(0, 10).map((merchant, index) => (
+                  <div className="flex justify-between items-center" key={index}>
+                    <div className="flex items-center gap-2">
+                      <span className="text-emerald-600">#{index + 1}</span>
+                      <span className="font-medium text-gray-800">{merchant.name}</span>
+                    </div>
+                    <span className="text-gray-700">${merchant.total.toLocaleString()}</span>
                   </div>
-                  <span className="text-gray-700">$1,230</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-600">#2</span>
-                    <span className="font-medium text-gray-800">Countdown</span>
-                  </div>
-                  <span className="text-gray-700">$980</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-600">#3</span>
-                    <span className="font-medium text-gray-800">BP</span>
-                  </div>
-                  <span className="text-gray-700">$850</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-600">#4</span>
-                    <span className="font-medium text-gray-800">Kmart</span>
-                  </div>
-                  <span className="text-gray-700">$720</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-600">#5</span>
-                    <span className="font-medium text-gray-800">
-                      The Warehouse
-                    </span>
-                  </div>
-                  <span className="text-gray-700">$690</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-600">#6</span>
-                    <span className="font-medium text-gray-800">Pak'nSave</span>
-                  </div>
-                  <span className="text-gray-700">$580</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-600">#7</span>
-                    <span className="font-medium text-gray-800">Z Energy</span>
-                  </div>
-                  <span className="text-gray-700">$520</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-600">#8</span>
-                    <span className="font-medium text-gray-800">Bunnings</span>
-                  </div>
-                  <span className="text-gray-700">$480</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-600">#9</span>
-                    <span className="font-medium text-gray-800">Mitre 10</span>
-                  </div>
-                  <span className="text-gray-700">$450</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-600">#10</span>
-                    <span className="font-medium text-gray-800">New World</span>
-                  </div>
-                  <span className="text-gray-700">$420</span>
-                </div>
+                ))}
               </div>
             </div>
           </div>
@@ -323,20 +333,20 @@ export default function FinalResultsPage() {
               <p className="text-lg text-orange-700 mb-2">
                 You spend on average about
               </p>
-              <p className="text-5xl font-bold mb-2">$110</p>
+              <p className="text-5xl font-bold mb-2">${averageTransaction.toLocaleString()}</p>
               <p className="text-lg text-orange-700">every weekend</p>
             </div>
             <div className="flex-1 aspect-[9/16] rounded-xl border  p-8 bg-gradient-to-b from-lime-200 to-lime-100 text-white flex flex-col items-center justify-center">
               <p className="text-lg text-lime-700 mb-2">You visited a cafe</p>
 
               <p className="text-5xl font-bold text-lime-800  mb-2">
-                110 times
+                {analytics?.cafeVisits || 0} times
               </p>
               <p className="text-lg text-lime-700 text-center">This year</p>
             </div>
             <div className="flex-1 aspect-[9/16] rounded-xl border p-8 bg-gradient-to-b from-purple-100 to-purple-200 text-gray-800 flex flex-col items-center justify-center">
               <p className="text-lg text-purple-700 mb-2">You made</p>
-              <p className="text-5xl font-bold mb-2">1,230</p>
+              <p className="text-5xl font-bold mb-2">{transactionCount}</p>
               <p className="text-lg text-purple-700">transactions</p>
             </div>
           </div>
@@ -346,85 +356,20 @@ export default function FinalResultsPage() {
                 Your Top 10 Restaurants &amp; Cafes
               </h3>
               <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-blue-600">#1</span>
-                    <span className="font-medium text-gray-800">
-                      McDonald's
-                    </span>
+                {analytics?.topMerchants?.slice(0, 10).map((merchant, index) => (
+                  <div className="flex justify-between items-center" key={index}>
+                    <div className="flex items-center gap-2">
+                      <span className="text-blue-600">#{index + 1}</span>
+                      <span className="font-medium text-gray-800">{merchant.name}</span>
+                    </div>
+                    <span className="text-gray-700">${merchant.total.toLocaleString()}</span>
                   </div>
-                  <span className="text-gray-700">$1,230</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-blue-600">#2</span>
-                    <span className="font-medium text-gray-800">Countdown</span>
-                  </div>
-                  <span className="text-gray-700">$980</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-blue-600">#3</span>
-                    <span className="font-medium text-gray-800">BP</span>
-                  </div>
-                  <span className="text-gray-700">$850</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-blue-600">#4</span>
-                    <span className="font-medium text-gray-800">Kmart</span>
-                  </div>
-                  <span className="text-gray-700">$720</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-blue-600">#5</span>
-                    <span className="font-medium text-gray-800">
-                      The Warehouse
-                    </span>
-                  </div>
-                  <span className="text-gray-700">$690</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-blue-600">#6</span>
-                    <span className="font-medium text-gray-800">Pak'nSave</span>
-                  </div>
-                  <span className="text-gray-700">$580</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-blue-600">#7</span>
-                    <span className="font-medium text-gray-800">Z Energy</span>
-                  </div>
-                  <span className="text-gray-700">$520</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-blue-600">#8</span>
-                    <span className="font-medium text-gray-800">Bunnings</span>
-                  </div>
-                  <span className="text-gray-700">$480</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-blue-600">#9</span>
-                    <span className="font-medium text-gray-800">Mitre 10</span>
-                  </div>
-                  <span className="text-gray-700">$450</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-blue-600">#10</span>
-                    <span className="font-medium text-gray-800">New World</span>
-                  </div>
-                  <span className="text-gray-700">$420</span>
-                </div>
+                ))}
               </div>
             </div>
             <div className="flex-1 aspect-[9/16] rounded-xl border p-8 bg-gradient-to-b from-blue-100 to-blue-200 text-gray-800 flex flex-col items-center justify-center">
               <p className="text-lg text-blue-700 mb-2">You shopped at</p>
-              <p className="text-5xl font-bold mb-2">301</p>
+              <p className="text-5xl font-bold mb-2">{analytics?.uniqueMerchants || 0}</p>
               <p className="text-lg text-blue-700">different businesses</p>
             </div>
           </div>
@@ -434,7 +379,7 @@ export default function FinalResultsPage() {
                 This year you spent
               </p>
               <p className="text-5xl font-bold mb-2 text-emerald-800">
-                $12,300
+                ${totalSpent.toLocaleString()}
               </p>
               <p className="text-lg text-emerald-700">on purchases</p>
             </div>
@@ -444,115 +389,31 @@ export default function FinalResultsPage() {
                 Largest transactions this year
               </h3>
               <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-600">#1</span>
-                    <span className="font-medium text-gray-800">
-                      December 23{" "}
-                      <span className="text-gray-500 text-sm">
-                        Christmas Shopping
+                {analytics?.largestTransactions?.slice(0, 10).map((transaction, index) => {
+                  const dateComponents = transaction.date.split('/').map(Number);
+                  const date = new Date(dateComponents[2], dateComponents[1] - 1, dateComponents[0]);
+                  const formattedDate = date.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric'
+                  });
+                  
+                  return (
+                    <div className="flex justify-between items-center" key={index}>
+                      <div className="flex items-center gap-2">
+                        <span className="text-emerald-600">#{index + 1}</span>
+                        <span className="font-medium text-gray-800">
+                          {formattedDate}{" "}
+                          <span className="text-gray-500 text-sm">
+                            {transaction.description}
+                          </span>
+                        </span>
+                      </div>
+                      <span className="text-gray-700">
+                        ${Math.abs(transaction.amount).toLocaleString()}
                       </span>
-                    </span>
-                  </div>
-                  <span className="text-gray-700">$1,230</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-600">#2</span>
-                    <span className="font-medium text-gray-800">
-                      July 15{" "}
-                      <span className="text-gray-500 text-sm">
-                        Home Repairs
-                      </span>
-                    </span>
-                  </div>
-                  <span className="text-gray-700">$980</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-600">#3</span>
-                    <span className="font-medium text-gray-800">
-                      March 3{" "}
-                      <span className="text-gray-500 text-sm">Car Service</span>
-                    </span>
-                  </div>
-                  <span className="text-gray-700">$850</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-600">#4</span>
-                    <span className="font-medium text-gray-800">
-                      September 28{" "}
-                      <span className="text-gray-500 text-sm">Electronics</span>
-                    </span>
-                  </div>
-                  <span className="text-gray-700">$720</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-600">#5</span>
-                    <span className="font-medium text-gray-800">
-                      May 20{" "}
-                      <span className="text-gray-500 text-sm">Furniture</span>
-                    </span>
-                  </div>
-                  <span className="text-gray-700">$690</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-600">#6</span>
-                    <span className="font-medium text-gray-800">
-                      August 12{" "}
-                      <span className="text-gray-500 text-sm">
-                        Travel Booking
-                      </span>
-                    </span>
-                  </div>
-                  <span className="text-gray-700">$580</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-600">#7</span>
-                    <span className="font-medium text-gray-800">
-                      November 25{" "}
-                      <span className="text-gray-500 text-sm">
-                        Black Friday
-                      </span>
-                    </span>
-                  </div>
-                  <span className="text-gray-700">$520</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-600">#8</span>
-                    <span className="font-medium text-gray-800">
-                      February 14{" "}
-                      <span className="text-gray-500 text-sm">
-                        Valentine's Day
-                      </span>
-                    </span>
-                  </div>
-                  <span className="text-gray-700">$480</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-600">#9</span>
-                    <span className="font-medium text-gray-800">
-                      June 5{" "}
-                      <span className="text-gray-500 text-sm">
-                        Home Appliances
-                      </span>
-                    </span>
-                  </div>
-                  <span className="text-gray-700">$450</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-600">#10</span>
-                    <span className="font-medium text-gray-800">New World</span>
-                  </div>
-                  <span className="text-gray-700">$420</span>
-                </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>

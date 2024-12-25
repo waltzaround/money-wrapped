@@ -29,6 +29,7 @@ interface TransactionAnalytics {
   highestSpendingMonth: MonthlySpending;
   lowestSpendingMonth: MonthlySpending;
   largestTransactions: Transaction[];
+  allTransactions: Transaction[];
   totalSpent: number;
   averageTransactionAmount: number;
   transactionCount: number;
@@ -53,6 +54,7 @@ export function analyzeTransactions(transactions: Transaction[]): TransactionAna
       highestSpendingMonth: { month: '', monthName: '', total: 0, transactionCount: 0 },
       lowestSpendingMonth: { month: '', monthName: '', total: 0, transactionCount: 0 },
       largestTransactions: [],
+      allTransactions: [],
       totalSpent: 0,
       averageTransactionAmount: 0,
       transactionCount: 0,
@@ -186,6 +188,7 @@ export function analyzeTransactions(transactions: Transaction[]): TransactionAna
     highestSpendingMonth,
     lowestSpendingMonth,
     largestTransactions: sortedTransactions.slice(0, 10),
+    allTransactions: sortedTransactions,
     totalSpent: Number(totalSpent),
     averageTransactionAmount: Number(totalSpent / transactions.length),
     transactionCount: transactions.length,

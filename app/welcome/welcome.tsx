@@ -106,13 +106,14 @@ export function Welcome() {
                   to="/account"
                   className="flex-1 rounded-lg border border-gray-300 p-4 bg-white hover:border-blue-500"
                 >
+                  <div className="text-xs font-semibold mb-2 rounded-full px-4 py-1 bg-blue-200 w-fit">Automatic</div>
                   <h3 className="text-2xl font-bold underline text-blue-700 mb-2">
-                    Connect your bank accounts with Akahu
+                    Connect to your bank accounts with Akahu
                   </h3>
-                  <p className=" text-gray-700 mb-4">
-                    Use Akahu to get your spending data reviewed faster. We
-                    don't store your data after you leave the site and you can
-                    verify this at the repo link below - the code is fully open
+                  <p className=" text-gray-700 mb-4 min-h-[6rem]">
+                    Use Akahu to extract and review your spending faster. We
+                    don't try to identify you or store your data. You can
+                    verify this at the repository link below - the code is fully open
                     source.
                   </p>
                   <Button>Connect Accounts</Button>
@@ -121,14 +122,13 @@ export function Welcome() {
                   to="/csv"
                   className="flex-1 rounded-lg border border-gray-300 p-4 bg-white"
                 >
+                     <div className="text-xs font-semibold mb-2 rounded-full px-4 py-1 bg-blue-200 w-fit">Manual</div>
                   <h3 className="text-2xl font-bold underline text-blue-700 mb-2 ">
                     Upload a CSV
                   </h3>
-                  <p className=" text-gray-700 mb-4">
-                    Dont trust the website? That's okay - Upload a CSV and it
-                    can still process your spending for the year. We don't store
-                    your data and you can verify this at the repo below - the
-                    code is fully open source.
+                  <p className=" text-gray-700 mb-4 min-h-[6rem]">
+                    Dont trust the website? That's okay - Upload your own CSV files and it
+                    can still process your spending for the year. 
                   </p>
                   <Button>Upload CSV</Button>
                 </Link>
