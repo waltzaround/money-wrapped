@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Button } from "~/components/ui/button";
-import { Volume2, VolumeX } from "lucide-react";
+import { ArrowLeftIcon, ArrowRightIcon, Volume2, VolumeX } from "lucide-react";
 
 import {
   Card,
@@ -38,6 +38,7 @@ interface BaseSlide {
   animation?: SlideAnimation;
 }
 
+// Update the StandardSlide interface
 interface StandardSlide extends BaseSlide {
   type?: "standard";
   title: string;
@@ -46,12 +47,14 @@ interface StandardSlide extends BaseSlide {
   description?: string;
 }
 
+// Update the ListSlide interface
 interface ListSlide extends BaseSlide {
   type: "list";
   title: string;
   items: ListItem[];
 }
 
+// Update the Slide type to be a union
 type Slide = StandardSlide | ListSlide;
 
 function fadeOutAudio(audio: HTMLAudioElement, duration: number = 8000) {
@@ -342,27 +345,38 @@ export default function ResultsPage() {
 
     if (!analytics) return placeholderSlides;
 
-    // Override slides with real data where available
+    // Create a new array for the updated slides
+    const updatedSlides = [...placeholderSlides];
+
+    // Format the total amount
     const formattedTotal = new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD'
     }).format(analytics.totalSpent);
 
-    // Update total spent
-    placeholderSlides[0] = {
-      ...placeholderSlides[0],
+    // Update total spent slide
+    updatedSlides[0] = {
+      type: "standard",
+      gradient: placeholderSlides[0].gradient,
+      title: placeholderSlides[0].title,
       value: formattedTotal,
-    };
+      subtitle: (placeholderSlides[0] as StandardSlide).subtitle,
+      textColor: placeholderSlides[0].textColor,
+    } as StandardSlide;
 
-    // Update transaction count
-    placeholderSlides[2] = {
-      ...placeholderSlides[2],
+    // Update transaction count slide
+    updatedSlides[2] = {
+      type: "standard",
+      gradient: placeholderSlides[2].gradient,
+      title: placeholderSlides[2].title,
       value: analytics.transactionCount.toString(),
+      subtitle: placeholderSlides[2].subtitle,
+      textColor: placeholderSlides[2].textColor,
     };
 
     // If we have highest spending month data
     if (analytics.highestSpendingMonth) {
-      placeholderSlides[3] = {
+      updatedSlides[3] = {
         type: "standard",
         gradient: "from-pink-500 to-pink-700",
         title: "Your highest spending month was",
@@ -379,7 +393,7 @@ export default function ResultsPage() {
     // If we have top merchants data
     if (analytics.topMerchants?.length > 0) {
       const topMerchant = analytics.topMerchants[0];
-      placeholderSlides[4] = {
+      updatedSlides[4] = {
         type: "standard",
         gradient: "from-orange-500 to-orange-700",
         title: "Your favorite merchant was",
@@ -394,7 +408,7 @@ export default function ResultsPage() {
 
       // Also update the top restaurants list if we have enough merchants
       if (analytics.topMerchants.length >= 5) {
-        placeholderSlides[8] = {
+        updatedSlides[8] = {
           type: "list",
           gradient: "from-rose-500 to-rose-700",
           title: "Your Top 5 Merchants",
@@ -416,7 +430,7 @@ export default function ResultsPage() {
       const biggestPurchase = analytics.largestTransactions[0];
       const percentageOfAverage = (Math.abs(biggestPurchase.amount) / analytics.averageTransactionAmount) * 100;
       
-      placeholderSlides[5] = {
+      updatedSlides[5] = {
         type: "standard",
         gradient: "from-lime-500 to-lime-700",
         title: "Your biggest purchase",
@@ -432,7 +446,7 @@ export default function ResultsPage() {
 
     // If we have weekend spending data
     if (analytics.weekendSpending) {
-      placeholderSlides[6] = {
+      updatedSlides[6] = {
         type: "standard",
         gradient: "from-cyan-500 to-cyan-700",
         title: "Weekend warrior",
@@ -450,7 +464,7 @@ export default function ResultsPage() {
 
     // If we have monthly spending data
     if (analytics.monthlySpendingArray?.length > 0) {
-      placeholderSlides[9] = {
+      updatedSlides[9] = {
         type: "list",
         gradient: "from-amber-500 to-amber-700",
         title: "Most Expensive Months",
@@ -466,7 +480,7 @@ export default function ResultsPage() {
       };
     }
 
-    return placeholderSlides;
+    return updatedSlides;
   }, [analytics]);
 
   // Assign random animations to slides
@@ -477,6 +491,27 @@ export default function ResultsPage() {
         slideAnimations[Math.floor(Math.random() * slideAnimations.length)],
     }));
   }, [slides]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'ArrowRight') {
+        handleNextSlide();
+      } else if (event.key === 'ArrowLeft') {
+        handlePrevSlide();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [slides.length]);
+
+  const handlePrevSlide = () => {
+    setCurrentSlide((prev) => Math.max(prev - 1, 0));
+  };
+
+  const handleNextSlide = () => {
+    setCurrentSlide((prev) => Math.min(prev + 1, slides.length - 1));
+  };
 
   useEffect(() => {
     timerRef.current = setInterval(() => {
@@ -599,6 +634,22 @@ export default function ResultsPage() {
         ) : (
           <Volume2 className="h-4 w-4" />
         )}
+      </Button>
+      <Button
+        variant="outline"
+        size="icon"
+        className="fixed bottom-4 left-4 z-50 bg-black/10 backdrop-blur-sm hover:bg-white/20 border-none text-blue-400"
+        onClick={handlePrevSlide}
+      >
+        <ArrowLeftIcon className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="outline"
+        size="icon"
+        className="fixed bottom-4 left-14 z-50 bg-black/10 backdrop-blur-sm hover:bg-white/20 border-none text-blue-400"
+        onClick={handleNextSlide}
+      >
+        <ArrowRightIcon className="h-4 w-4" />
       </Button>
 
       <TimelineSlider
