@@ -121,7 +121,7 @@ export default function FinalResultsPage() {
     }
 
     // Group transactions by day
-    analytics.allTransactions.forEach(transaction => {
+    analytics.allTransactions.forEach((transaction: { date: { split: (arg0: string) => { (): any; new(): any; map: { (arg0: NumberConstructor): [any, any, any]; new(): any; }; }; }; amount: number; }) => {
       const [day, month, year] = transaction.date.split('/').map(Number);
       const date = new Date(year, month - 1, day);
       const dayKey = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
