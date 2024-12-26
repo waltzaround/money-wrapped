@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { motion } from "framer-motion";
 
 export function Welcome() {
   const [selectedPeriod, setSelectedPeriod] = useState("monthly");
@@ -84,423 +85,241 @@ export function Welcome() {
   };
 
   return (
-    <>
-      <main className="flex items-center justify-center pt-16 pb-4 max-2xl:m-6 max-md:m-4 ">
-        <div className="flex-1 flex flex-col items-center gap-16 min-h-0">
-          <section className="w-full max-w-[80rem] mx-auto">
-            <div className=" ">
-              <div className=" flex items-center gap-3">
-                <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-lg w-16 h-16"></div>
-                <div>
-                  <h1 className="text-4xl font-semibold">Money Wrapped</h1>
-                </div>
-              </div>
-              <p className="text-2xl mt-8">
-                Understand how you spent your money in 2024. There are two ways
-                to do this:
+    <motion.main 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="min-h-screen bg-gradient-to-b from-gray-50 to-white"
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        {/* Hero Section */}
+        <motion.section 
+          initial={{ y: 20 }}
+          animate={{ y: 0 }}
+          className="text-start mb-16"
+        >
+          <motion.div 
+            className="inline-block mb-6"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl w-20 h-20 shadow-lg"></div>
+          </motion.div>
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-400 bg-clip-text text-transparent mb-6">
+            Money Wrapped 2024
+          </h1>
+          <p className="text-2xl text-gray-600 max-w-4xl tracking-tight leading-relaxed">
+            Discover your 2024 financial story. Learn about your spending habits in minutes.<br/>Only works for New Zealand bank accounts and transactions.
+            
+          </p>
+        </motion.section>
+
+        {/* Get Started Section */}
+        <section className="mb-20">
+          <div className="grid md:grid-cols-2 gap-6">
+            <motion.div
+              whileHover={{ y: -5 }}
+              className="relative overflow-hidden rounded-2xl border border-emerald-100 bg-white p-6 shadow-lg transition-all hover:shadow-xl"
+            >
+              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-emerald-500/20 to-emerald-500/0 rounded-bl-3xl"></div>
+              <div className="text-xs font-semibold mb-3 rounded-full px-4 py-1 bg-emerald-100 text-emerald-700 w-fit">Automatic</div>
+              <h3 className="text-2xl font-bold text-emerald-700 mb-3">
+                Connect Bank Accounts
+              </h3>
+              <p className="text-gray-600 mb-6 min-h-[6rem]">
+                Securely connect with Akahu for instant analysis. Your data remains private and only you have access to your data - verify this in our open-source code.
               </p>
+              <Link to="/account">
+                <Button className="w-full bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg hover:shadow-xl transition-all">
+                  Connect Accounts →
+                </Button>
+              </Link>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ y: -5 }}
+              className="relative overflow-hidden rounded-2xl border border-blue-100 bg-white p-6 shadow-lg transition-all hover:shadow-xl"
+            >
+              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-500/20 to-blue-500/0 rounded-bl-3xl"></div>
+              <div className="text-xs font-semibold mb-3 rounded-full px-4 py-1 bg-blue-100 text-blue-700 w-fit">Manual</div>
+              <h3 className="text-2xl font-bold text-blue-700 mb-3">
+                Upload CSV Files
+              </h3>
+              <p className="text-gray-600 mb-6 min-h-[6rem]">
+                Don't trust the system with your bank credentials? No worries! Upload your bank statement CSV files instead for the same experience. You will need to do some manual work though.
+              </p>
+              <Link to="/csv">
+                <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white shadow-lg hover:shadow-xl transition-all">
+                  Upload CSV →
+                </Button>
+              </Link>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Demo Section */}
+        <section>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900">
+              Preview Your 2024 Story  
+            </h2>
+            <p className="text-gray-600 mt-2">
+              Here's an example of what your 2024 money wrapped could look like
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 mb-12">
+            <motion.div
+
+              className="rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 p-8 text-white shadow-lg"
+            >
+              <div className="flex flex-col items-center justify-center h-full space-y-4">
+                <p className="text-emerald-100">You spent </p>
+                <p className="text-5xl font-bold">$12,300</p>
+                <p className="text-emerald-100">in 2024</p>
+              </div>
+            </motion.div>
+
+            <motion.div
+
+              className="rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 p-8 text-white shadow-lg"
+            >
+              <div className="flex flex-col items-center justify-center h-full space-y-4">
+                <p className="text-blue-100">You shopped at</p>
+                <p className="text-5xl font-bold">301</p>
+                <p className="text-blue-100">different businesses</p>
+              </div>
+            </motion.div>
+
+            <motion.div
+         
+              className="rounded-2xl bg-gradient-to-br from-purple-500 to-purple-700 p-8 text-white shadow-lg"
+            >
+              <div className="flex flex-col items-center justify-center h-full space-y-4">
+                <p className="text-purple-100">You made</p>
+                <p className="text-5xl font-bold">1,230</p>
+                <p className="text-purple-100">transactions</p>
+              </div>
+            </motion.div>
+          </div>
+
+          <div className="rounded-2xl border border-gray-200 bg-white  shadow-lg">
+            <div className="flex justify-between items-center p-4 mb-4 border-b">
+              <h3 className="text-xl font-semibold text-gray-900">Your Spending</h3>
+              <Select
+                value={selectedPeriod}
+                onValueChange={setSelectedPeriod}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select time period" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="monthly">By Month</SelectItem>
+                  <SelectItem value="weekly">By Week</SelectItem>
+                  <SelectItem value="daily">By Day</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <div className="mt-8">
-              <div className="flex gap-4">
-                <Link
-                  to="/account"
-                  className="flex-1 rounded-lg border border-gray-300 p-4 bg-white hover:border-blue-500"
+
+            <div className="h-[400px] w-full p-6">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={spendingData[selectedPeriod as keyof typeof spendingData]}
                 >
-                  <div className="text-xs font-semibold mb-2 rounded-full px-4 py-1 bg-blue-200 w-fit">Automatic</div>
-                  <h3 className="text-2xl font-bold underline text-blue-700 mb-2">
-                    Connect to your bank accounts with Akahu
-                  </h3>
-                  <p className=" text-gray-700 mb-4 min-h-[6rem]">
-                    Use Akahu to extract and review your spending faster. We
-                    don't try to identify you or store your data. You can
-                    verify this at the repository link below - the code is fully open
-                    source.
-                  </p>
-                  <Button>Connect Accounts</Button>
-                </Link>
-                <Link
-                  to="/csv"
-                  className="flex-1 rounded-lg border border-gray-300 p-4 bg-white"
-                >
-                     <div className="text-xs font-semibold mb-2 rounded-full px-4 py-1 bg-blue-200 w-fit">Manual</div>
-                  <h3 className="text-2xl font-bold underline text-blue-700 mb-2 ">
-                    Upload a CSV
-                  </h3>
-                  <p className=" text-gray-700 mb-4 min-h-[6rem]">
-                    Dont trust the website? That's okay - Upload your own CSV files and it
-                    can still process your spending for the year. 
-                  </p>
-                  <Button>Upload CSV</Button>
-                </Link>
-              </div>
-              <h2 className="mt-12 text-2xl font-semibold mb-8">
-                Example Demo - Walt's year in review
-              </h2>
-
-              <div className="flex gap-4">
-                <div className="flex-1 aspect-[9/16] rounded-xl border border-gray-300 p-8 bg-gradient-to-b from-emerald-500 to-emerald-700 text-white flex flex-col items-center justify-center">
-                  <p className="text-lg text-emerald-100 mb-2">
-                    This year you spent
-                  </p>
-                  <p className="text-5xl font-bold mb-2">$12,300</p>
-                  <p className="text-lg text-emerald-100">on purchases</p>
-                </div>
-
-                <div className="flex-1 aspect-[9/16] rounded-xl border border-gray-300 p-8 bg-gradient-to-b from-blue-500 to-blue-700 text-white flex flex-col items-center justify-center">
-                  <p className="text-lg text-blue-100 mb-2">You shopped at</p>
-                  <p className="text-5xl font-bold mb-2">301</p>
-                  <p className="text-lg text-blue-100">different businesses</p>
-                </div>
-
-                <div className="flex-1 aspect-[9/16] rounded-xl border border-gray-300 p-8 bg-gradient-to-b from-purple-500 to-purple-700 text-white flex flex-col items-center justify-center">
-                  <p className="text-lg text-purple-100 mb-2">You made</p>
-                  <p className="text-5xl font-bold mb-2">1,230</p>
-                  <p className="text-lg text-purple-100">transactions</p>
-                </div>
-              </div>
-
-              <div className="w-full rounded-md border min-h-40 mt-8 bg-white">
-                <div className="flex justify-between items-center p-4 border-b">
-                  <h2 className="text-xl font-semibold">Spending Breakdown</h2>
-                  <Select
-                    value={selectedPeriod}
-                    onValueChange={setSelectedPeriod}
-                  >
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Select time period" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="monthly">By Month</SelectItem>
-                      <SelectItem value="weekly">By Week</SelectItem>
-                      <SelectItem value="daily">By Day</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="mt-4 h-[400px] w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={
-                        spendingData[
-                          selectedPeriod as keyof typeof spendingData
-                        ]
+                  <XAxis
+                    dataKey="period"
+                    stroke="#888888"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis
+                    stroke="#888888"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(value) => `$${value}`}
+                  />
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <div className="rounded-lg border bg-white p-3 shadow-lg">
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="font-medium text-gray-600">
+                                {payload[0].payload.period}
+                              </div>
+                              <div className="text-right font-bold text-emerald-600">
+                                ${payload[0].value}
+                              </div>
+                            </div>
+                          </div>
+                        );
                       }
-                    >
-                      <XAxis
-                        dataKey="period"
-                        stroke="#888888"
-                        fontSize={12}
-                        tickLine={false}
-                        axisLine={false}
-                      />
-                      <YAxis
-                        stroke="#888888"
-                        fontSize={12}
-                        tickLine={false}
-                        axisLine={false}
-                        tickFormatter={(value) => `$${value}`}
-                      />
-                      <Tooltip
-                        content={({ active, payload }) => {
-                          if (active && payload && payload.length) {
-                            return (
-                              <div className="rounded-lg border bg-white p-2 shadow-sm">
-                                <div className="grid grid-cols-2 gap-2">
-                                  <div className="font-medium">
-                                    {payload[0].payload.period}
-                                  </div>
-                                  <div className="text-right font-medium">
-                                    ${payload[0].value}
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          }
-                          return null;
-                        }}
-                      />
-                      <Bar
-                        dataKey="amount"
-                        fill="#10b981"
-                        radius={[4, 4, 0, 0]}
-                        className="fill-emerald-500 hover:fill-emerald-600"
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-              <div className="flex gap-4 mt-8">
-                <div className="flex-1 aspect-[9/16] rounded-xl border border-gray-300 p-8 bg-gradient-to-b from-pink-500 to-pink-700 text-white flex flex-col items-center justify-center">
-                  <p className="text-lg text-pink-100 mb-4">
-                    Your biggest spending day was
-                  </p>
-                  <p className="text-4xl font-bold mb-2">24 December </p>
-                  <p className="text-6xl font-bold mb-2">$432</p>
-                  <p className="text-lg text-pink-100 text-center">
-                    That's more than 87% of your daily spending
-                  </p>
-                </div>
-
-                <div className="flex-1 aspect-[9/16] rounded-xl border border-gray-300 p-8 bg-gradient-to-b from-orange-500 to-orange-700 text-white flex flex-col">
-                  <p className="text-lg text-orange-100 mb-4 text-center">
-                    Your top 5 places
-                  </p>
-                  <div className="flex-1 flex flex-col justify-center gap-4">
-                    <div className="flex items-center gap-4">
-                      <span className="text-4xl font-bold">1</span>
-                      <div>
-                        <p className="text-xl font-semibold">Countdown</p>
-                        <p className="text-orange-100">42 transactions</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className="text-3xl font-bold">2</span>
-                      <div>
-                        <p className="text-lg font-semibold">BP Connect</p>
-                        <p className="text-orange-100">28 transactions</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className="text-2xl font-bold">3</span>
-                      <div>
-                        <p className="text-lg font-semibold">Starbucks</p>
-                        <p className="text-orange-100">24 transactions</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className="text-xl font-bold">4</span>
-                      <div>
-                        <p className="text-lg font-semibold">McDonald's</p>
-                        <p className="text-orange-100">19 transactions</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className="text-xl font-bold">5</span>
-                      <div>
-                        <p className="text-lg font-semibold">Bunnings</p>
-                        <p className="text-orange-100">15 transactions</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex-1 aspect-[9/16] rounded-xl text-center border border-gray-300 p-8 bg-gradient-to-b from-lime-500 to-lime-700 text-white flex flex-col items-center justify-center">
-                  <p className="text-lg text-pink-100 mb-4">
-                    Your biggest purchase was:
-                  </p>
-                  <p className="text-4xl font-bold mb-2 ">NVIDIA GPU RENTALS</p>
-                  <p className="text-6xl font-bold mb-2">$12,432</p>
-                  <p className="text-lg text-pink-100 text-center">
-                    That's more than 87% of your average purchase
-                  </p>
-                </div>
-              </div>
-              <div className="w-full rounded-md border min-h-4  0 mt-8 bg-white">
-                <h2 className="text-xl font-semibold p-4 border-b">
-                  Top Categories
-                </h2>
-
-                <div className="mt-4 h-[400px] w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={[
-                        { category: "Groceries", amount: 3000 },
-                        { category: "Rent", amount: 6000 },
-                        { category: "Utilities", amount: 1200 },
-                        { category: "Entertainment", amount: 1500 },
-                        { category: "Dining Out", amount: 1600 },
-                      ]}
-                      layout="vertical"
-                      margin={{ left: 32, right: 20, top: 20, bottom: 20 }}
-                    >
-                      <XAxis
-                        type="number"
-                        stroke="#888888"
-                        fontSize={12}
-                        tickLine={false}
-                        axisLine={false}
-                        tickFormatter={(value) => `$${value}`}
-                      />
-                      <YAxis
-                        type="category"
-                        dataKey="category"
-                        stroke="#888888"
-                        fontSize={12}
-                        tickLine={false}
-                        axisLine={false}
-                      />
-                      <Tooltip
-                        content={({ active, payload }) => {
-                          if (active && payload && payload.length) {
-                            return (
-                              <div className="rounded-lg border bg-white p-2 shadow-sm">
-                                <div className="grid grid-cols-2 gap-2">
-                                  <div className="font-medium">
-                                    {payload[0].payload.category}
-                                  </div>
-                                  <div className="text-right font-medium">
-                                    ${payload[0].value}
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          }
-                          return null;
-                        }}
-                      />
-                      <Bar
-                        dataKey="amount"
-                        fill="#10b981"
-                        radius={[0, 4, 4, 0]}
-                        className="fill-emerald-500 hover:fill-emerald-600"
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-              <div className="flex gap-4 mt-8">
-                <div className="flex-1 aspect-[9/16] rounded-xl border border-gray-300 p-8 bg-gradient-to-b from-pink-500 to-pink-700 text-white flex flex-col items-center justify-center">
-                  <p className="text-lg text-pink-100 mb-4">
-                    You spend on average about
-                  </p>
-
-                  <p className="text-6xl font-bold mb-2">$110</p>
-                  <p className="text-4xl font-bold mb-2">every weekend</p>
-                  <p className="text-lg text-pink-100 text-center">
-                    That's more than 87% of your daily spending
-                  </p>
-                </div>
-
-                <div className="flex-1 aspect-[9/16] rounded-xl border border-gray-300 p-8 bg-gradient-to-b from-orange-500 to-orange-700 text-white flex flex-col">
-                  <p className="text-lg text-orange-100 mb-4 text-center">
-                    Your Top 5 Restaurants
-                  </p>
-                  <div className="flex-1 flex flex-col justify-center gap-4">
-                    <div className="flex items-center gap-4">
-                      <span className="text-4xl font-bold">1</span>
-                      <div>
-                        <p className="text-xl font-semibold">McDonald's</p>
-                        <p className="text-orange-100">$1,230 spent</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className="text-3xl font-bold">2</span>
-                      <div>
-                        <p className="text-lg font-semibold">Domino's Pizza</p>
-                        <p className="text-orange-100">$890 spent</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className="text-2xl font-bold">3</span>
-                      <div>
-                        <p className="text-lg font-semibold">Burger Fuel</p>
-                        <p className="text-orange-100">$750 spent</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className="text-xl font-bold">4</span>
-                      <div>
-                        <p className="text-lg font-semibold">Hell Pizza</p>
-                        <p className="text-orange-100">$680 spent</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className="text-xl font-bold">5</span>
-                      <div>
-                        <p className="text-lg font-semibold">Subway</p>
-                        <p className="text-orange-100">$520 spent</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex-1 aspect-[9/16] rounded-xl border border-gray-300 p-8 bg-gradient-to-b from-lime-500 to-lime-700 text-white flex flex-col items-center justify-center">
-                  <p className="text-lg text-pink-100 mb-4">
-                    You visited a cafe
-                  </p>
-
-                  <p className="text-6xl font-bold mb-2">110 times</p>
-                  <p className="text-lg text-pink-100 text-center">This year</p>
-                </div>
-              </div>
-              <div className="w-full rounded-md border min-h-40 mt-8 bg-white">
-                <h2 className="text-xl font-semibold p-4 border-b">
-                  Top Merchants
-                </h2>
-
-                <div className="mt-4 h-[400px] w-full ">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={[
-                        { merchant: "Landlord", amount: 6000 },
-                        { merchant: "Supermarket A", amount: 2000 },
-                        { merchant: "Utility Company", amount: 1200 },
-                        { merchant: "Restaurant B", amount: 800 },
-                        { merchant: "Movie Theater", amount: 700 },
-                      ]}
-                      layout="vertical"
-                      margin={{ left: 0, right: 20, top: 20, bottom: 20 }}
-                    >
-                      <XAxis
-                        type="number"
-                        stroke="#888888"
-                        fontSize={12}
-                        tickLine={false}
-                        axisLine={false}
-                        tickFormatter={(value) => `$${value}`}
-                      />
-                      <YAxis
-                        type="category"
-                        dataKey="merchant"
-                        stroke="#888888"
-                        fontSize={12}
-                        tickLine={false}
-                        axisLine={false}
-                        width={100}
-                      />
-                      <Tooltip
-                        content={({ active, payload }) => {
-                          if (active && payload && payload.length) {
-                            return (
-                              <div className="rounded-lg border bg-white p-2 shadow-sm">
-                                <div className="grid grid-cols-2 gap-2">
-                                  <div className="font-medium">
-                                    {payload[0].payload.merchant}
-                                  </div>
-                                  <div className="text-right font-medium">
-                                    ${payload[0].value}
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          }
-                          return null;
-                        }}
-                      />
-                      <Bar
-                        dataKey="amount"
-                        fill="#10b981"
-                        radius={[0, 4, 4, 0]}
-                        className="fill-emerald-500 hover:fill-emerald-600"
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
+                      return null;
+                    }}
+                  />
+                  <Bar
+                    dataKey="amount"
+                    fill="#10b981"
+                    radius={[6, 6, 0, 0]}
+                    className="fill-emerald-500 hover:fill-emerald-600"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
-          </section>
-        </div>
-      </main>
-      <footer className="flex flex-col items-center gap-4 p-4">
-        <a href="github">Github Repo</a>{" "}
-        <p>
-          {" "}
-          Want to do stuff with banking data? Visit{" "}
-          <a href="https://akahu.nz">Akahu.nz</a>
-        </p>
-        {/* <p>
-          Made by Walter Lim, Jasper Miller-Waugh, Young-Ju Lee and the Akahu
-          Team
-        </p> */}
-      </footer>
-    </>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 mt-12">
+            <motion.div
+         
+              className="rounded-2xl bg-gradient-to-br from-pink-500 to-pink-700 p-8 text-white shadow-lg flex items-center justify-center"
+            >
+              <div className="flex flex-col items-center justify-center space-y-4">
+                <p className="text-pink-100">Biggest Spending Day</p>
+                <p className="text-4xl font-bold">24 December</p>
+                <p className="text-6xl font-bold">$3,432</p>
+             
+              </div>
+            </motion.div>
+
+            <motion.div
+     
+              className="rounded-2xl bg-gradient-to-br from-orange-500 to-orange-700 p-8 text-white shadow-lg "
+            >
+              <p className="text-xl font-semibold mb-6">Top Places</p>
+              <div className="space-y-4">
+                {[
+                  { name: "Countdown", count: 42 },
+                  { name: "BP Connect", count: 28 },
+                  { name: "Starbucks", count: 24 },
+                  { name: "McDonald's", count: 19 },
+                  { name: "Bunnings", count: 15 },
+                ].map((place, i) => (
+                  <div key={place.name} className="flex items-center gap-3">
+                    <span className="text-2xl font-bold">{i + 1}</span>
+                    <div>
+                      <p className="font-semibold">{place.name}</p>
+                      <p className="text-orange-200">$2,000 spent over {place.count} visits</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+
+            <motion.div
+     
+              className="rounded-2xl bg-gradient-to-br from-lime-500 to-lime-700 p-8 text-white shadow-lg flex items-center justify-center"
+            >
+              <div className="flex flex-col items-center justify-center space-y-4">
+                <p className="text-lime-100">Largest Purchase</p>
+                <p className="text-3xl font-bold">PB Tech</p>
+                <p className="text-6xl font-bold">$1,432</p>
+              
+              </div>
+            </motion.div>
+          </div>
+        </section>
+      </div>
+    </motion.main>
   );
 }

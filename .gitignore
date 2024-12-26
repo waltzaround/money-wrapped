@@ -5,3 +5,5 @@
 /.react-router/
 /build/
 .env
+wrangler.toml
+wrangler.toml
