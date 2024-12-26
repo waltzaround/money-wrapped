@@ -14,6 +14,7 @@
 import dotenv from 'dotenv';
 import { handleCsvUpload } from './routes/upload-csv';
 import { handleAkahuAuth } from './routes/akahu-auth';
+import { handleAkahuCallback } from './routes/akahu-callback';
 
 dotenv.config();
 
@@ -33,6 +34,7 @@ export default {
 	async fetch(request, env, ctx): Promise<Response> {
 		const url = new URL(request.url);
 		const origin = request.headers.get('Origin') || 'http://localhost:5173';
+		const pathname = url.pathname;
 
 		// Handle CORS preflight requests
 		if (request.method === 'OPTIONS') {
@@ -41,8 +43,17 @@ export default {
 			});
 		}
 
+		// Handle Akahu auth routes
+		if (pathname === '/auth/init') {
+			return handleAkahuAuth(request, env, origin);
+		}
+
+		if (pathname === '/auth/callback') {
+			return handleAkahuCallback(request, env, origin);
+		}
+
 		// Route handling
-		switch (url.pathname) {
+		switch (pathname) {
 			case '/upload-csv':
 				if (request.method !== 'POST') {
 					return new Response('Method not allowed', {

@@ -6,6 +6,7 @@ import {
   CardTitle,
   CardDescription,
 } from "~/components/ui/card";
+import { useToast } from "~/hooks/use-toast";
 import {
   Wallet,
   Upload,
@@ -20,6 +21,7 @@ import { useNavigate } from "react-router";
 
 export default function PreparePage() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
   const [isDragActive, setIsDragActive] = useState(false);
   const [currentFiles, setCurrentFiles] = useState<File[]>([]);
@@ -50,7 +52,7 @@ export default function PreparePage() {
 
       if (uniqueTransactions.size < 200) {
         throw new Error(
-          `Not enough transactions in ${file.name}. Found ${uniqueTransactions.size}, need at least 200.`
+          `Not enough transactions in ${file.name}. Found ${uniqueTransactions.size}, need at least 200 transactions from 2024.`
         );
       }
 
@@ -98,7 +100,14 @@ export default function PreparePage() {
   };
 
   const handleSubmit = async () => {
-    if (!currentFiles.length) return;
+    if (!currentFiles.length) {
+      toast({
+        title: "No files selected",
+        description: "Please upload some CSV files first",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsSubmitting(true);
     setUploadError(null);
@@ -170,174 +179,142 @@ export default function PreparePage() {
   };
 
   return (
-    <>
+    <div className="min-h-screen bg-background">
       <Header />
-      <div className="prepare-page p-6 container max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">Upload transactions</h1>
-        <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6 rounded">
-          <div className="flex items-center gap-3">
-            <Info className="h-5 w-5 text-blue-400" />
-            <p className="text-sm text-blue-700">
-              Your CSV file must contain at least 200 transactions for accurate
-              analysis.
+      <main className="container max-w-3xl mx-auto px-4 py-8">
+        <div className="space-y-8">
+          <div className="text-center space-y-2">
+            <h1 className="text-4xl font-bold tracking-tight">Upload Your Bank Statement</h1>
+            <p className="text-muted-foreground text-lg">
+              We'll analyze your transactions to create your personalized Money Wrapped
             </p>
           </div>
-        </div>
-        <div className="space-y-4 mb-8">
-          <Card
-            className="cursor-pointer hover:bg-accent/50 transition-colors"
-            onClick={handleDownloadExample}
-          >
-            <CardHeader className="flex flex-row items-center gap-4">
-              <FileDown className="w-12 h-12 text-primary" />
-              <div className="flex-1">
-                <CardTitle className="text-xl text-blue-600 underline">
-                  Download Example CSV
-                </CardTitle>
-                <CardDescription>
-                  See how to format and structure your transactions
-                </CardDescription>
+
+          <Card className="relative">
+            <CardHeader className="space-y-1">
+              <CardTitle className="text-2xl flex items-center gap-2">
+                <FileText className="h-6 w-6" />
+                CSV File Upload
+              </CardTitle>
+              <CardDescription>
+                Export your bank transactions as a CSV file and upload it here
+              </CardDescription>
+            </CardHeader>
+            <div
+              className={cn(
+                "p-8 border-2 border-dashed rounded-lg m-6 transition-colors duration-200 ease-in-out",
+                isDragActive
+                  ? "border-primary bg-secondary/50"
+                  : "border-muted-foreground/25",
+                isUploading && "opacity-50 cursor-not-allowed"
+              )}
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onClick={handleClick}
+            >
+              <div className="text-center space-y-4">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".csv"
+                  onChange={handleChange}
+                  className="hidden"
+                  disabled={isUploading}
+                  multiple
+                />
+                <div className="mx-auto w-12 h-12 rounded-full bg-secondary flex items-center justify-center">
+                  {isUploading ? (
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  ) : (
+                    <Upload className="h-6 w-6 text-primary" />
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <p className="font-medium">
+                    {isUploading
+                      ? "Processing your file..."
+                      : "Drag & drop your CSV file here"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    or click to browse your files
+                  </p>
+                </div>
               </div>
+            </div>
+
+            {uploadError && (
+              <div className="mx-6 mb-6 p-4 bg-destructive/10 text-destructive rounded-lg flex items-start gap-2">
+                <Info className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                <p className="text-sm">{uploadError}</p>
+              </div>
+            )}
+
+            {currentFiles.length > 0 && (
+              <div className="mx-6 mb-6 space-y-4">
+                <div className="text-sm font-medium">Uploaded Files:</div>
+                {currentFiles.map((file, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-2 p-3 bg-secondary/50 rounded-lg"
+                  >
+                    <FileText className="h-4 w-4 text-primary" />
+                    <span className="text-sm flex-1">{file.name}</span>
+                    <Button
+                      variant="ghost"
+                      className="text-red-500 hover:bg-red-100 hover:text-red-600"
+                      size="sm"
+                      onClick={() => {
+                        setCurrentFiles((prev) =>
+                          prev.filter((_, i) => i !== index)
+                        );
+                      }}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="flex justify-end px-6 pb-6">
+              <Button
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="w-full"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Wallet className="mr-2 h-4 w-4" />
+                    Analyze Transactions
+                  </>
+                )}
+              </Button>
+            </div>
+          </Card>
+
+          <Card className="bg-secondary/50">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Info className="h-5 w-5" />
+                How to export your bank statement
+              </CardTitle>
+              <CardDescription className="space-y-2">
+                <p>1. Log into your online banking</p>
+                <p>2. Navigate to your transactions or account activity</p>
+                <p>3. Look for an "Export" or "Download" option</p>
+                <p>4. Select CSV format and download your transactions</p>
+                <p>5. Make sure to include at least the last 12 months of transactions</p>
+              </CardDescription>
             </CardHeader>
           </Card>
-          {currentFiles.length > 0 ? (
-            <div className="space-y-4">
-              {currentFiles.map((file, index) => (
-                <Card key={index}>
-                  <CardHeader className="flex flex-row items-center gap-4">
-                    <FileText className="w-12 h-12 text-primary" />
-                    <div className="flex-1">
-                      <CardTitle className="text-xl">
-                        {file.name}
-                      </CardTitle>
-                      <CardDescription>
-                        {(file.size / 1024).toFixed(2)} KB
-                      </CardDescription>
-                    </div>
-                    {isProcessing ? (
-                      <div className="flex items-center gap-2">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span className="text-sm text-muted-foreground">
-                          Processing...
-                        </span>
-                      </div>
-                    ) : (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setCurrentFiles((prev) =>
-                            prev.filter((f) => f !== file)
-                          );
-                          if (fileInputRef.current) {
-                            fileInputRef.current.value = "";
-                          }
-                        }}
-                      >
-                        Remove
-                      </Button>
-                    )}
-                  </CardHeader>
-                </Card>
-              ))}
-              {uploadError && (
-                <p className="text-sm text-red-500 mt-2">{uploadError}</p>
-              )}
-
-              <div className="flex justify-end gap-3">
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setCurrentFiles([]);
-                    if (fileInputRef.current) {
-                      fileInputRef.current.value = "";
-                    }
-                  }}
-                  disabled={isSubmitting}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleSubmit}
-                  disabled={isProcessing || isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Uploading...
-                    </>
-                  ) : (
-                    "Upload Files"
-                  )}
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div>
-              <Card>
-                <div
-                  onDrop={handleDrop}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  className={cn(
-                    "cursor-pointer",
-                    isUploading && "opacity-50 pointer-events-none"
-                  )}
-                  onClick={handleClick}
-                >
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".csv"
-                    multiple
-                    onChange={handleChange}
-                    className="hidden"
-                  />
-                  <CardHeader className="flex flex-row items-center gap-4">
-                    <Wallet className="w-12 h-12 text-primary" />
-                    <div>
-                      <CardTitle className="text-xl">
-                        {isDragActive
-                          ? "Drop your CSV file here"
-                          : "Drag your CSV file here"}
-                      </CardTitle>
-                      <CardDescription>
-                        You can find this in your bank's online banking portal.
-                      </CardDescription>
-                    </div>
-                  </CardHeader>
-                  <div
-                    className={cn(
-                      "p-8 border-t border-dashed flex flex-col items-center justify-center gap-4 transition-colors",
-                      isDragActive && "bg-primary/5"
-                    )}
-                  >
-                    {isUploading ? (
-                      <>
-                        <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                        <p className="text-sm text-muted-foreground">
-                          Uploading your file...
-                        </p>
-                      </>
-                    ) : (
-                      <>
-                        <Upload className="w-8 h-8 text-muted-foreground" />
-                        <p className="text-sm text-muted-foreground">
-                          Drag and drop your CSV file here, or click to select a
-                          file
-                        </p>
-                        <Button variant="secondary" size="sm">
-                          Select File
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </Card>
-            </div>
-          )}
         </div>
-      </div>
-    </>
+      </main>
+    </div>
   );
 }
