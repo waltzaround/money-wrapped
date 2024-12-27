@@ -366,12 +366,10 @@ export default function ResultsPage() {
 
     // Update transaction count slide
     updatedSlides[2] = {
+      ...placeholderSlides[2],
       type: "standard",
-      gradient: placeholderSlides[2].gradient,
-      title: placeholderSlides[2].title,
       value: analytics.transactionCount.toString(),
-      subtitle: 'standard' in placeholderSlides[2] ? (placeholderSlides[2] as StandardSlide).subtitle : '',
-      textColor: placeholderSlides[2].textColor,
+      subtitle: "transactions"
     };
 
     // If we have highest spending month data
@@ -582,15 +580,15 @@ export default function ResultsPage() {
       <div
         className={`w-full h-full rounded-xl p-8 bg-gradient-to-b ${slide.gradient} text-white flex flex-col items-center justify-center shadow-lg`}
       >
-        <p className={`text-lg text-${slide.textColor}-100 mb-2`}>
+        <p className={`text-lg mb-2 opacity-80`}>
           {slide.title}
         </p>
         <p className="text-6xl font-bold mb-2">{slide.value}</p>
-        <p className={`text-lg text-${slide.textColor}-100`}>
+        <p className={`text-lg opacity-80`}>
           {slide.subtitle}
         </p>
         {slide.description && (
-          <p className={`text-lg text-${slide.textColor}-100 mt-4 text-center`}>
+          <p className={`text-lg opacity-80 mt-4 text-center`}>
             {slide.description}
           </p>
         )}

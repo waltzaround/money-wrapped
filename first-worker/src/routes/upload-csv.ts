@@ -4,22 +4,52 @@ import { analyzeTransactions } from '../analytics/transactions';
 import { enrichTransactions } from '../utils/akahu';
 
 // Helper function to parse CSV
-function parseCsvToTransactions(csvText: string) {
+function parseCsvToTransactions(csvText: string, connection?: string) {
+	if (!csvText) {
+		console.error('No CSV text provided to parse');
+		return [];
+	}
+
 	const lines = csvText.split('\n');
+	if (lines.length === 0) {
+		console.error('CSV file is empty');
+		return [];
+	}
+
 	const headers = lines[0].split(',');
+	if (headers.length < 3) {
+		console.error('CSV file does not have enough columns. Expected at least 3 columns for date, amount, and description');
+		return [];
+	}
+
+	// Find the index of each required column
+	const dateIndex = headers.findIndex(h => h.toLowerCase().includes('date'));
+	const amountIndex = headers.findIndex(h => h.toLowerCase().includes('amount'));
+	const detailsIndex = headers.findIndex(h => h.toLowerCase().includes('details'));
+
+	if (dateIndex === -1 || amountIndex === -1 || detailsIndex === -1) {
+		console.error('CSV file missing required columns. Need TransactionDate, Amount, and Details. Found headers:', headers);
+		return [];
+	}
 
 	const transactions = lines
 		.slice(1)
 		.filter((line) => line.trim())
-		.map((line) => {
+		.map((line, index) => {
 			const values = line.split(',');
-			const amount = parseFloat(values[1].replace(/[^-\d.]/g, '')); // Remove any currency symbols and keep negative signs
-			const description = values[2].trim();
-			const date = values[0].trim();
+			const rawAmount = values[amountIndex]?.trim() || '0';
+			const amount = parseFloat(rawAmount.replace(/[^-\d.]/g, '')) || 0; // Convert empty or invalid amounts to 0
+			const description = values[detailsIndex]?.trim() || 'Unknown';
+			const date = values[dateIndex]?.trim() || '';
+			
+			// Skip if no date is provided
+			if (!date) {
+				return null;
+			}
 			
 			// Parse the date to check year
 			const [day, month, year] = date.split('/').map(Number);
-			if (year !== 2024) {
+			if (!year || year !== 2024) {
 				return null;
 			}
 			
@@ -28,21 +58,29 @@ function parseCsvToTransactions(csvText: string) {
 				return null;
 			}
 
-			if (isNaN(amount)) {
-				console.error('Invalid amount:', values[1], 'in line:', line);
-				return null;
+			const transaction: {
+				id: string;
+				description: string;
+				amount: number;
+				direction: 'debit';
+				_connection?: string;
+				date: string;
+			} = {
+				id: `tx_${date.replace(/\//g, '')}_${index}`,
+				description,
+				amount,
+				direction: 'debit',
+				date
+			};
+
+			if (connection) {
+				transaction._connection = connection;
 			}
 
-			return {
-				date,
-				amount,
-				description,
-			};
+			return transaction;
 		})
-		.filter((t): t is NonNullable<typeof t> => t !== null); // Remove any null transactions
+		.filter((t): t is NonNullable<typeof t> => t !== null);
 
-	// console.log('Parsed transactions:', transactions.slice(0, 3)); // Log first 3 transactions
-	// console.log(`Filtered to ${transactions.length} transactions from 2024`);
 	return transactions;
 }
 
@@ -50,8 +88,9 @@ export async function handleCsvUpload(request: Request, env: Env, origin: string
 	try {
 		const formData = await request.formData();
 		const files = formData.getAll('files');
+		const connection = formData.get('connection') as string | null;
 
-		console.log(`Processing ${files.length} CSV files`);
+		console.log(`Processing ${files.length} CSV files${connection ? ` with connection ${connection}` : ''}`);
 
 		if (!files.length || !files.every(file => file instanceof File)) {
 			return new Response('No CSV files provided', {
@@ -60,44 +99,74 @@ export async function handleCsvUpload(request: Request, env: Env, origin: string
 			});
 		}
 
+		if (connection && (typeof connection !== 'string')) {
+			return new Response('Invalid bank connection provided', {
+				status: 400,
+				headers: corsHeaders(origin),
+			});
+		}
+
 		// Process all CSV files and combine transactions
 		const allTransactions = [];
 		for (const file of files) {
-			console.log(`Processing file: ${(file as File).name}, size: ${(file as File).size} bytes`);
-			const csvText = await (file as File).text();
-			const fileTransactions = parseCsvToTransactions(csvText);
-			// console.log(`Parsed ${fileTransactions.length} transactions from ${(file as File).name}`);
-			allTransactions.push(...fileTransactions);
+			try {
+				console.log(`Processing file: ${(file as File).name}, size: ${(file as File).size} bytes`);
+				const csvText = await (file as File).text();
+				if (!csvText) {
+					console.error(`Empty or invalid CSV file: ${(file as File).name}`);
+					continue;
+				}
+				const fileTransactions = parseCsvToTransactions(csvText, connection || undefined);
+				console.log(`Found ${fileTransactions.length} valid transactions in file: ${(file as File).name}`);
+				if (fileTransactions.length === 0) {
+					console.warn(`No valid transactions found in file: ${(file as File).name}`);
+					return new Response(`No valid transactions found in file: ${(file as File).name}. Make sure the CSV has TransactionDate, Amount, and Details columns.`, {
+						status: 400,
+						headers: corsHeaders(origin),
+					});
+				}
+				allTransactions.push(...fileTransactions);
+			} catch (error) {
+				console.error(`Error processing file ${(file as File).name}:`, error);
+				return new Response(`Error processing file ${(file as File).name}: ${error}`, {
+					status: 400,
+					headers: corsHeaders(origin),
+				});
+			}
 		}
 
-		// console.log(`Total combined transactions: ${allTransactions.length}`);
+		if (allTransactions.length === 0) {
+			return new Response('No valid transactions found in uploaded files', {
+				status: 400,
+				headers: corsHeaders(origin),
+			});
+		}
 
 		// Sort all transactions by date
 		allTransactions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-		// Enrich transactions with Akahu API
-		// console.log('Enriching transactions with Akahu API...');
-		const enrichedData = await enrichTransactions(allTransactions, env);
-		
-		// Merge enriched data with original transactions
-		const enrichedTransactions = allTransactions.map((transaction, index) => ({
+		// Temporarily skip Akahu enrichment
+		const enrichedTransactions = allTransactions.map(transaction => ({
 			...transaction,
-			merchant: enrichedData[index].merchant?.name || null,
-			category: enrichedData[index].category?.name || null,
-			categoryGroup: enrichedData[index].category?.group || null,
+			merchant: transaction.description,
+			category: null,
+			categoryGroup: null,
 		}));
 
-		// Analyze the enriched transactions
+		// Analyze the transactions
 		const analytics = analyzeTransactions(enrichedTransactions);
-
-		// console.log('Analytics summary:', {
-		// 	totalTransactions: analytics.transactionCount,
-		// 	totalSpent: analytics.totalSpent,
-		// 	dateRange: {
-		// 		earliest: analytics.earliestTransaction.date,
-		// 		latest: analytics.latestTransaction.date
-		// 	}
-		// });
+		
+		console.log('Analytics results:', JSON.stringify({
+			transactionCount: analytics.transactionCount,
+			totalSpent: analytics.totalSpent,
+			averageTransactionAmount: analytics.averageTransactionAmount,
+			topMerchants: analytics.topMerchants,
+			monthlySpending: analytics.monthlySpendingArray,
+			weekendSpending: analytics.weekendSpending,
+			largestTransactions: analytics.largestTransactions,
+			earliestTransaction: analytics.earliestTransaction,
+			latestTransaction: analytics.latestTransaction
+		}, null, 2));
 
 		// Return just the analytics
 		return new Response(JSON.stringify(analytics), {
