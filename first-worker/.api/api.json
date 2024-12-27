@@ -1,0 +1,11 @@
+{
+  "version": "1.0",
+  "apis": [
+    {
+      "identifier": "akahu",
+      "source": "@akahu/v1.0#e3g41cm0vsgjmd",
+      "integrity": "sha512-nrFrv61tV6Q1dIFlNWGfiwQM7f8va5/uJL77eH4JgqJzQGH7rIRSje0Hp4msdwgGivlwJPWaxsktSEXg3HcOjw==",
+      "installerVersion": "6.1.2"
+    }
+  ]
+}

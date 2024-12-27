@@ -2,6 +2,7 @@ interface Transaction {
   date: string;
   amount: number;
   description: string;
+  merchant?: string;
 }
 
 interface MonthlySpending {
@@ -73,9 +74,11 @@ export function analyzeTransactions(transactions: Transaction[]): TransactionAna
   }
 
   // Parse and sort transactions by date
-  const sortedByDate = [...transactions].sort((a, b) => {
+  const sortedByDate = [...transactions].filter(t => t && t.date).sort((a, b) => {
+    if (!a.date || !b.date) return 0;
     const [dayA, monthA, yearA] = a.date.split('/').map(Number);
     const [dayB, monthB, yearB] = b.date.split('/').map(Number);
+    if (!yearA || !monthA || !dayA || !yearB || !monthB || !dayB) return 0;
     const dateA = new Date(yearA, monthA - 1, dayA);
     const dateB = new Date(yearB, monthB - 1, dayB);
     return dateA.getTime() - dateB.getTime();
@@ -101,8 +104,18 @@ export function analyzeTransactions(transactions: Transaction[]): TransactionAna
       return;
     }
 
+    if (!transaction.date) {
+      console.error('Missing transaction date:', transaction);
+      return;
+    }
+
     // Parse DD/MM/YYYY format
     const [day, month, year] = transaction.date.split('/').map(Number);
+    if (!day || !month || !year) {
+      console.error('Invalid date format:', transaction);
+      return;
+    }
+    
     const date = new Date(year, month - 1, day);
     
     if (isNaN(date.getTime())) {
@@ -110,7 +123,7 @@ export function analyzeTransactions(transactions: Transaction[]): TransactionAna
       return;
     }
 
-    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    const monthKey = `${year}-${String(month).padStart(2, '0')}`;
     const amount = Math.abs(transaction.amount);
     
     // Track weekend vs weekday spending
@@ -140,17 +153,19 @@ export function analyzeTransactions(transactions: Transaction[]): TransactionAna
     monthData.transactionCount += 1;
     totalSpent += amount;
 
-    // Update merchant spending
-    const merchant = transaction.description;
-    const currentSpending = merchantSpending.get(merchant) || {
-      name: merchant,
-      total: 0,
-      transactionCount: 0
-    };
-    
-    currentSpending.total += amount;
-    currentSpending.transactionCount += 1;
-    merchantSpending.set(merchant, currentSpending);
+    // Track merchant spending
+    if (transaction.merchant) {
+      if (!merchantSpending.has(transaction.merchant)) {
+        merchantSpending.set(transaction.merchant, {
+          name: transaction.merchant,
+          total: 0,
+          transactionCount: 0
+        });
+      }
+      const merchantData = merchantSpending.get(transaction.merchant)!;
+      merchantData.total += amount;
+      merchantData.transactionCount += 1;
+    }
   });
 
   // Convert monthly spending to array and sort

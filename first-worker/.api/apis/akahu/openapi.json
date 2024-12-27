@@ -1,0 +1,3072 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Genie transaction enrichment API",
+    "version": "1.0.0",
+    "description": "Applications that use Akahu for bank account connectivity can use our transactions API to get high quality enriched transactions that include merchant and category information. We've built the Genie API to expose Akahu's transaction enrichment engine for applications that instead source raw transaction data themselves.\n\nGenie is entirely separate from the core Akahu API and does not require an Akahu App ID Token or App Secret to access. If you're keen to get your hands on an API key to try it out, get in touch with us at hello@akahu.nz.\n"
+  },
+  "x-samples-languages": [
+    "shell",
+    "csharp",
+    "java",
+    "node",
+    "python",
+    "go",
+    "php",
+    "ruby"
+  ],
+  "servers": [
+    {
+      "url": "https://api.genie.akahu.io/v1"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Token based API authentication"
+      }
+    },
+    "schemas": {
+      "GenieCategory": {
+        "type": "object",
+        "description": "A category classification result from Genie. This classification provides the base [NZFCC](https://nzfcc.org) category code for the transaction. Additionally, the `groups` attribute includes a mapping of the NZFCC category into broader (less-specific) category groups. Category grouping is based on mappings which are able to be customised per-client. The `personal_finance` mapping is included by default.",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "The [NZFCC](https://nzfcc.org) category code for the transaction"
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the NZFCC category for this transaction"
+          },
+          "groups": {
+            "type": "object",
+            "description": "A dictionary of category groups, keyed by category mapping name, for the NZFCC base category.",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string",
+                  "description": "The category group ID for this mapping."
+                },
+                "name": {
+                  "type": "string",
+                  "description": "The category group name for this mapping."
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "_id",
+          "name",
+          "groups"
+        ],
+        "example": {
+          "_id": "nzfcc_ckouvvy84001608ml5p6z4d8j",
+          "name": "Supermarkets and grocery stores",
+          "groups": {
+            "personal_finance": {
+              "_id": "group_clasr0ysw000xhk4mf7mg2j1z",
+              "name": "Food"
+            }
+          }
+        }
+      },
+      "GenieTag": {
+        "type": "string",
+        "description": "A tag applied to an outlet or merchant, indicating a specific attribute that applies to that entity.",
+        "enum": [
+          "subscription",
+          "closed"
+        ]
+      },
+      "GenieCoordinates": {
+        "type": "object",
+        "description": "Latitude/longitude location coordinates.",
+        "required": [
+          "lat",
+          "lon"
+        ],
+        "properties": {
+          "lat": {
+            "type": "number"
+          },
+          "lon": {
+            "type": "number"
+          }
+        },
+        "example": {
+          "lat": -36.848461,
+          "lon": 174.763336
+        }
+      },
+      "GenieAddress": {
+        "type": "object",
+        "required": [
+          "street",
+          "city",
+          "region",
+          "country",
+          "postal_code"
+        ],
+        "properties": {
+          "street": {
+            "type": "string"
+          },
+          "suburb": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "postal_code": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "street": "125 Queen Street",
+          "suburb": "Auckland CBD",
+          "city": "Auckland",
+          "region": "Auckland",
+          "country": "New Zealand",
+          "postal_code": "0620"
+        }
+      },
+      "GenieAreaLocation": {
+        "type": "object",
+        "description": "A reference to a geographic area rather than a specific address.\nFor example:\n  - \"New Zealand\" (country)\n  - \"Waikato, New Zealand\" (region)\n  - \"Auckland, New Zealand\" (locality)\n  - \"Grey Lynn, Auckland, New Zealand\" (sublocality)",
+        "required": [
+          "accuracy",
+          "formatted",
+          "coordinates"
+        ],
+        "properties": {
+          "accuracy": {
+            "type": "string",
+            "enum": [
+              "country",
+              "region",
+              "locality",
+              "sublocality"
+            ]
+          },
+          "formatted": {
+            "type": "string"
+          },
+          "coordinates": {
+            "type": "object",
+            "description": "Latitude/longitude location coordinates.",
+            "required": [
+              "lat",
+              "lon"
+            ],
+            "properties": {
+              "lat": {
+                "type": "number"
+              },
+              "lon": {
+                "type": "number"
+              }
+            },
+            "example": {
+              "lat": -36.848461,
+              "lon": 174.763336
+            }
+          }
+        },
+        "example": {
+          "accuracy": "locality",
+          "formatted": "Auckland, New Zealand",
+          "coordinates": {
+            "lat": -36.848461,
+            "lon": 174.763336
+          }
+        }
+      },
+      "GenieEstablishmentLocation": {
+        "type": "object",
+        "description": "A reference to a specific physical establishment location.",
+        "required": [
+          "accuracy",
+          "formatted",
+          "coordinates"
+        ],
+        "properties": {
+          "accuracy": {
+            "type": "string",
+            "enum": [
+              "establishment"
+            ]
+          },
+          "formatted": {
+            "type": "string"
+          },
+          "coordinates": {
+            "type": "object",
+            "description": "Latitude/longitude location coordinates.",
+            "required": [
+              "lat",
+              "lon"
+            ],
+            "properties": {
+              "lat": {
+                "type": "number"
+              },
+              "lon": {
+                "type": "number"
+              }
+            },
+            "example": {
+              "lat": -36.848461,
+              "lon": 174.763336
+            }
+          },
+          "address": {
+            "description": "The address fields in a structured format. This is available on almost all establishment-level locations, however it may occasionally be missing,",
+            "allOf": [
+              {
+                "type": "object",
+                "required": [
+                  "street",
+                  "city",
+                  "region",
+                  "country",
+                  "postal_code"
+                ],
+                "properties": {
+                  "street": {
+                    "type": "string"
+                  },
+                  "suburb": {
+                    "type": "string"
+                  },
+                  "city": {
+                    "type": "string"
+                  },
+                  "region": {
+                    "type": "string"
+                  },
+                  "country": {
+                    "type": "string"
+                  },
+                  "postal_code": {
+                    "type": "string"
+                  }
+                },
+                "example": {
+                  "street": "125 Queen Street",
+                  "suburb": "Auckland CBD",
+                  "city": "Auckland",
+                  "region": "Auckland",
+                  "country": "New Zealand",
+                  "postal_code": "0620"
+                }
+              }
+            ]
+          }
+        },
+        "example": {
+          "accuracy": "establishment",
+          "formatted": "12 Hastwell Street, Greytown 5712, New Zealand",
+          "address": {
+            "street": "12 Hastwell Street",
+            "city": "Greytown",
+            "region": "Wellington",
+            "country": "New Zealand",
+            "postal_code": "5712"
+          },
+          "coordinates": {
+            "lat": -41.0809289,
+            "lon": 175.4589657
+          }
+        }
+      },
+      "GenieLocation": {
+        "type": "object",
+        "description": "A physical location.",
+        "oneOf": [
+          {
+            "type": "object",
+            "description": "A reference to a geographic area rather than a specific address.\nFor example:\n  - \"New Zealand\" (country)\n  - \"Waikato, New Zealand\" (region)\n  - \"Auckland, New Zealand\" (locality)\n  - \"Grey Lynn, Auckland, New Zealand\" (sublocality)",
+            "required": [
+              "accuracy",
+              "formatted",
+              "coordinates"
+            ],
+            "properties": {
+              "accuracy": {
+                "type": "string",
+                "enum": [
+                  "country",
+                  "region",
+                  "locality",
+                  "sublocality"
+                ]
+              },
+              "formatted": {
+                "type": "string"
+              },
+              "coordinates": {
+                "type": "object",
+                "description": "Latitude/longitude location coordinates.",
+                "required": [
+                  "lat",
+                  "lon"
+                ],
+                "properties": {
+                  "lat": {
+                    "type": "number"
+                  },
+                  "lon": {
+                    "type": "number"
+                  }
+                },
+                "example": {
+                  "lat": -36.848461,
+                  "lon": 174.763336
+                }
+              }
+            },
+            "example": {
+              "accuracy": "locality",
+              "formatted": "Auckland, New Zealand",
+              "coordinates": {
+                "lat": -36.848461,
+                "lon": 174.763336
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "A reference to a specific physical establishment location.",
+            "required": [
+              "accuracy",
+              "formatted",
+              "coordinates"
+            ],
+            "properties": {
+              "accuracy": {
+                "type": "string",
+                "enum": [
+                  "establishment"
+                ]
+              },
+              "formatted": {
+                "type": "string"
+              },
+              "coordinates": {
+                "type": "object",
+                "description": "Latitude/longitude location coordinates.",
+                "required": [
+                  "lat",
+                  "lon"
+                ],
+                "properties": {
+                  "lat": {
+                    "type": "number"
+                  },
+                  "lon": {
+                    "type": "number"
+                  }
+                },
+                "example": {
+                  "lat": -36.848461,
+                  "lon": 174.763336
+                }
+              },
+              "address": {
+                "description": "The address fields in a structured format. This is available on almost all establishment-level locations, however it may occasionally be missing,",
+                "allOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "street",
+                      "city",
+                      "region",
+                      "country",
+                      "postal_code"
+                    ],
+                    "properties": {
+                      "street": {
+                        "type": "string"
+                      },
+                      "suburb": {
+                        "type": "string"
+                      },
+                      "city": {
+                        "type": "string"
+                      },
+                      "region": {
+                        "type": "string"
+                      },
+                      "country": {
+                        "type": "string"
+                      },
+                      "postal_code": {
+                        "type": "string"
+                      }
+                    },
+                    "example": {
+                      "street": "125 Queen Street",
+                      "suburb": "Auckland CBD",
+                      "city": "Auckland",
+                      "region": "Auckland",
+                      "country": "New Zealand",
+                      "postal_code": "0620"
+                    }
+                  }
+                ]
+              }
+            },
+            "example": {
+              "accuracy": "establishment",
+              "formatted": "12 Hastwell Street, Greytown 5712, New Zealand",
+              "address": {
+                "street": "12 Hastwell Street",
+                "city": "Greytown",
+                "region": "Wellington",
+                "country": "New Zealand",
+                "postal_code": "5712"
+              },
+              "coordinates": {
+                "lat": -41.0809289,
+                "lon": 175.4589657
+              }
+            }
+          }
+        ],
+        "example": {
+          "accuracy": "establishment",
+          "formatted": "12 Hastwell Street, Greytown 5712, New Zealand",
+          "address": {
+            "street": "12 Hastwell Street",
+            "city": "Greytown",
+            "region": "Wellington",
+            "country": "New Zealand",
+            "postal_code": "5712"
+          },
+          "coordinates": {
+            "lat": -41.0809289,
+            "lon": 175.4589657
+          }
+        }
+      },
+      "GenieMerchant": {
+        "type": "object",
+        "description": "A merchant match result from Genie.",
+        "required": [
+          "_id",
+          "name",
+          "logo"
+        ],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "The unique merchant ID."
+          },
+          "name": {
+            "type": "string",
+            "description": "The merchant's name (trading name)."
+          },
+          "logo": {
+            "type": "string",
+            "description": "A URL referencing the merchant's logo. If no logo is available, a placeholder image is provided."
+          },
+          "website": {
+            "type": "string",
+            "description": "The URL for the merchant's website."
+          },
+          "phone": {
+            "type": "string",
+            "description": "The merchant's phone number."
+          },
+          "nzbn": {
+            "type": "string",
+            "description": "The merchant's NZBN (New Zealand Business Number)."
+          },
+          "location": {
+            "description": "The merchant's location.",
+            "allOf": [
+              {
+                "type": "object",
+                "description": "A physical location.",
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "description": "A reference to a geographic area rather than a specific address.\nFor example:\n  - \"New Zealand\" (country)\n  - \"Waikato, New Zealand\" (region)\n  - \"Auckland, New Zealand\" (locality)\n  - \"Grey Lynn, Auckland, New Zealand\" (sublocality)",
+                    "required": [
+                      "accuracy",
+                      "formatted",
+                      "coordinates"
+                    ],
+                    "properties": {
+                      "accuracy": {
+                        "type": "string",
+                        "enum": [
+                          "country",
+                          "region",
+                          "locality",
+                          "sublocality"
+                        ]
+                      },
+                      "formatted": {
+                        "type": "string"
+                      },
+                      "coordinates": {
+                        "type": "object",
+                        "description": "Latitude/longitude location coordinates.",
+                        "required": [
+                          "lat",
+                          "lon"
+                        ],
+                        "properties": {
+                          "lat": {
+                            "type": "number"
+                          },
+                          "lon": {
+                            "type": "number"
+                          }
+                        },
+                        "example": {
+                          "lat": -36.848461,
+                          "lon": 174.763336
+                        }
+                      }
+                    },
+                    "example": {
+                      "accuracy": "locality",
+                      "formatted": "Auckland, New Zealand",
+                      "coordinates": {
+                        "lat": -36.848461,
+                        "lon": 174.763336
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "description": "A reference to a specific physical establishment location.",
+                    "required": [
+                      "accuracy",
+                      "formatted",
+                      "coordinates"
+                    ],
+                    "properties": {
+                      "accuracy": {
+                        "type": "string",
+                        "enum": [
+                          "establishment"
+                        ]
+                      },
+                      "formatted": {
+                        "type": "string"
+                      },
+                      "coordinates": {
+                        "type": "object",
+                        "description": "Latitude/longitude location coordinates.",
+                        "required": [
+                          "lat",
+                          "lon"
+                        ],
+                        "properties": {
+                          "lat": {
+                            "type": "number"
+                          },
+                          "lon": {
+                            "type": "number"
+                          }
+                        },
+                        "example": {
+                          "lat": -36.848461,
+                          "lon": 174.763336
+                        }
+                      },
+                      "address": {
+                        "description": "The address fields in a structured format. This is available on almost all establishment-level locations, however it may occasionally be missing,",
+                        "allOf": [
+                          {
+                            "type": "object",
+                            "required": [
+                              "street",
+                              "city",
+                              "region",
+                              "country",
+                              "postal_code"
+                            ],
+                            "properties": {
+                              "street": {
+                                "type": "string"
+                              },
+                              "suburb": {
+                                "type": "string"
+                              },
+                              "city": {
+                                "type": "string"
+                              },
+                              "region": {
+                                "type": "string"
+                              },
+                              "country": {
+                                "type": "string"
+                              },
+                              "postal_code": {
+                                "type": "string"
+                              }
+                            },
+                            "example": {
+                              "street": "125 Queen Street",
+                              "suburb": "Auckland CBD",
+                              "city": "Auckland",
+                              "region": "Auckland",
+                              "country": "New Zealand",
+                              "postal_code": "0620"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    "example": {
+                      "accuracy": "establishment",
+                      "formatted": "12 Hastwell Street, Greytown 5712, New Zealand",
+                      "address": {
+                        "street": "12 Hastwell Street",
+                        "city": "Greytown",
+                        "region": "Wellington",
+                        "country": "New Zealand",
+                        "postal_code": "5712"
+                      },
+                      "coordinates": {
+                        "lat": -41.0809289,
+                        "lon": 175.4589657
+                      }
+                    }
+                  }
+                ],
+                "example": {
+                  "accuracy": "establishment",
+                  "formatted": "12 Hastwell Street, Greytown 5712, New Zealand",
+                  "address": {
+                    "street": "12 Hastwell Street",
+                    "city": "Greytown",
+                    "region": "Wellington",
+                    "country": "New Zealand",
+                    "postal_code": "5712"
+                  },
+                  "coordinates": {
+                    "lat": -41.0809289,
+                    "lon": 175.4589657
+                  }
+                }
+              }
+            ]
+          },
+          "tags": {
+            "type": "array",
+            "description": "Tags that apply to the merchant. For example, to indicate that the merchant provides a subscription service.",
+            "items": {
+              "type": "string",
+              "description": "A tag applied to an outlet or merchant, indicating a specific attribute that applies to that entity.",
+              "enum": [
+                "subscription",
+                "closed"
+              ]
+            }
+          }
+        },
+        "example": {
+          "_id": "merchant_cjipiuvdk000lbpzytryqtjkv",
+          "name": "FreshChoice",
+          "logo": "https://static.akahu.io/outlets/merchant_cjipiuvdk000lbpzytryqtjkv_logo.png",
+          "website": "https://www.freshchoice.co.nz",
+          "nzbn": "9429040683379",
+          "tags": []
+        }
+      },
+      "GenieOutlet": {
+        "type": "object",
+        "description": "An individual outlet (i.e. specific location). An outlet will always be returned in combination with its related \"parent\" merchant.",
+        "required": [
+          "_id",
+          "name"
+        ],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "The unique outlet ID."
+          },
+          "name": {
+            "type": "string",
+            "description": "The outlet name. This is usually more specific than the merchant name. For example, the merchant name may be \"Pak'nSAVE\", while the outlet name is \"Pak'nSAVE Sylvia Park\"."
+          },
+          "logo": {
+            "type": "string",
+            "description": "A URL referencing the outlet's logo. This field will only be included if the logo for this outlet differs from the merchant's logo."
+          },
+          "website": {
+            "type": "string",
+            "description": "The URL for the outlet's website. This field will only be included if the website for this outlet differs from the merchant's website."
+          },
+          "phone": {
+            "type": "string",
+            "description": "The outlet's phone number. This field will only be included if the phone number for this outlet differs from the merchant's phone number."
+          },
+          "nzbn": {
+            "type": "string",
+            "description": "The outlet's NZBN (New Zealand Business Number). This field will only be included if the NZBN for this outlet differs from the merchant's NZBN."
+          },
+          "location": {
+            "description": "The outlet's location.",
+            "allOf": [
+              {
+                "type": "object",
+                "description": "A physical location.",
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "description": "A reference to a geographic area rather than a specific address.\nFor example:\n  - \"New Zealand\" (country)\n  - \"Waikato, New Zealand\" (region)\n  - \"Auckland, New Zealand\" (locality)\n  - \"Grey Lynn, Auckland, New Zealand\" (sublocality)",
+                    "required": [
+                      "accuracy",
+                      "formatted",
+                      "coordinates"
+                    ],
+                    "properties": {
+                      "accuracy": {
+                        "type": "string",
+                        "enum": [
+                          "country",
+                          "region",
+                          "locality",
+                          "sublocality"
+                        ]
+                      },
+                      "formatted": {
+                        "type": "string"
+                      },
+                      "coordinates": {
+                        "type": "object",
+                        "description": "Latitude/longitude location coordinates.",
+                        "required": [
+                          "lat",
+                          "lon"
+                        ],
+                        "properties": {
+                          "lat": {
+                            "type": "number"
+                          },
+                          "lon": {
+                            "type": "number"
+                          }
+                        },
+                        "example": {
+                          "lat": -36.848461,
+                          "lon": 174.763336
+                        }
+                      }
+                    },
+                    "example": {
+                      "accuracy": "locality",
+                      "formatted": "Auckland, New Zealand",
+                      "coordinates": {
+                        "lat": -36.848461,
+                        "lon": 174.763336
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "description": "A reference to a specific physical establishment location.",
+                    "required": [
+                      "accuracy",
+                      "formatted",
+                      "coordinates"
+                    ],
+                    "properties": {
+                      "accuracy": {
+                        "type": "string",
+                        "enum": [
+                          "establishment"
+                        ]
+                      },
+                      "formatted": {
+                        "type": "string"
+                      },
+                      "coordinates": {
+                        "type": "object",
+                        "description": "Latitude/longitude location coordinates.",
+                        "required": [
+                          "lat",
+                          "lon"
+                        ],
+                        "properties": {
+                          "lat": {
+                            "type": "number"
+                          },
+                          "lon": {
+                            "type": "number"
+                          }
+                        },
+                        "example": {
+                          "lat": -36.848461,
+                          "lon": 174.763336
+                        }
+                      },
+                      "address": {
+                        "description": "The address fields in a structured format. This is available on almost all establishment-level locations, however it may occasionally be missing,",
+                        "allOf": [
+                          {
+                            "type": "object",
+                            "required": [
+                              "street",
+                              "city",
+                              "region",
+                              "country",
+                              "postal_code"
+                            ],
+                            "properties": {
+                              "street": {
+                                "type": "string"
+                              },
+                              "suburb": {
+                                "type": "string"
+                              },
+                              "city": {
+                                "type": "string"
+                              },
+                              "region": {
+                                "type": "string"
+                              },
+                              "country": {
+                                "type": "string"
+                              },
+                              "postal_code": {
+                                "type": "string"
+                              }
+                            },
+                            "example": {
+                              "street": "125 Queen Street",
+                              "suburb": "Auckland CBD",
+                              "city": "Auckland",
+                              "region": "Auckland",
+                              "country": "New Zealand",
+                              "postal_code": "0620"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    "example": {
+                      "accuracy": "establishment",
+                      "formatted": "12 Hastwell Street, Greytown 5712, New Zealand",
+                      "address": {
+                        "street": "12 Hastwell Street",
+                        "city": "Greytown",
+                        "region": "Wellington",
+                        "country": "New Zealand",
+                        "postal_code": "5712"
+                      },
+                      "coordinates": {
+                        "lat": -41.0809289,
+                        "lon": 175.4589657
+                      }
+                    }
+                  }
+                ],
+                "example": {
+                  "accuracy": "establishment",
+                  "formatted": "12 Hastwell Street, Greytown 5712, New Zealand",
+                  "address": {
+                    "street": "12 Hastwell Street",
+                    "city": "Greytown",
+                    "region": "Wellington",
+                    "country": "New Zealand",
+                    "postal_code": "5712"
+                  },
+                  "coordinates": {
+                    "lat": -41.0809289,
+                    "lon": 175.4589657
+                  }
+                }
+              }
+            ]
+          },
+          "tags": {
+            "type": "array",
+            "description": "Tags that apply to the outlet. For example, to indicate that the outlet provides a subscription service. Tags are inherited (and potentially extended) from the outlet's \"parent\" merchant.",
+            "items": {
+              "type": "string",
+              "description": "A tag applied to an outlet or merchant, indicating a specific attribute that applies to that entity.",
+              "enum": [
+                "subscription",
+                "closed"
+              ]
+            }
+          }
+        },
+        "example": {
+          "_id": "outlet_cm0qk0idc000l08kydt9gf9gz",
+          "name": "FreshChoice Greytown",
+          "website": "https://greytown.store.freshchoice.co.nz/",
+          "phone": "06 304 7237",
+          "location": {
+            "accuracy": "establishment",
+            "formatted": "12 Hastwell Street, Greytown 5712, New Zealand",
+            "address": {
+              "street": "12 Hastwell Street",
+              "city": "Greytown",
+              "region": "Wellington",
+              "country": "New Zealand",
+              "postal_code": "5712"
+            },
+            "coordinates": {
+              "lat": -41.0809289,
+              "lon": 175.4589657
+            }
+          },
+          "tags": []
+        }
+      },
+      "GenieSearchQueryItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "A unique correlation id for the query to help you to find the corresponding result in the response data."
+          },
+          "description": {
+            "type": "string",
+            "description": "The transaction description. This should be the full description as provided by the bank / transaction source."
+          },
+          "_connection": {
+            "type": "string",
+            "description": "The Akahu connection ID corresponding to the bank from which the transaction description was sourced. It is strongly recommended to include this parameter to ensure best results.\n\nThe following connection IDs are available:\n  - ANZ: `conn_cjgaawozb000001nyd111xixr`\n  - ASB: `conn_cjgaaqcna000001ldwof8tvj0`\n  - BNZ: `conn_cjgaatd57000001pe1t1z0iy9`\n  - Heartland: `conn_ck5rhsdbv0000ftx1bmdu9zas`\n  - Kiwibank: `conn_cjgaac5at000001qi2yw8ftil`\n  - Rabobank: `conn_ckydkmy3r000009mde2sx2i4d`\n  - The Cooperative Bank: `conn_cjgab1c8e000001pmyxrkhova`\n  - TSB: `conn_cjgab6fis000001qsytf1semy`\n  - Westpac: `conn_cjgaaozdo000001mrnqmkl1m0`\n",
+            "enum": [
+              "conn_cjgaawozb000001nyd111xixr",
+              "conn_cjgaaqcna000001ldwof8tvj0",
+              "conn_cjgaatd57000001pe1t1z0iy9",
+              "conn_ck5rhsdbv0000ftx1bmdu9zas",
+              "conn_cjgaac5at000001qi2yw8ftil",
+              "conn_ckydkmy3r000009mde2sx2i4d",
+              "conn_cjgab1c8e000001pmyxrkhova",
+              "conn_cjgab6fis000001qsytf1semy",
+              "conn_cjgaaozdo000001mrnqmkl1m0"
+            ]
+          },
+          "amount": {
+            "type": "number",
+            "description": "Transaction amount (+ for credit, - for debit)."
+          },
+          "direction": {
+            "type": "string",
+            "description": "Whether the transaction is a debit or credit",
+            "enum": [
+              "DEBIT",
+              "CREDIT"
+            ]
+          }
+        },
+        "required": [
+          "description"
+        ]
+      },
+      "GenieSearchQueryResult": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The correlation ID for the query (if you provided one)."
+          },
+          "query": {
+            "type": "string",
+            "description": "The original query description as provided."
+          },
+          "results": {
+            "type": "array",
+            "description": "The enrichment result for this query. Will contain 1 item if enrichment is successful, otherwise the array will be empty.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "confidence": {
+                  "type": "number",
+                  "description": "A value between 0 and 0.99 (inclusive) indicating the strength of the matched result (currently the lowest returned confidence score is 0.5)."
+                },
+                "category": {
+                  "description": "The category assigned to this query by Genie enrichment.",
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "description": "The [NZFCC](https://nzfcc.org) category code for the transaction"
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "The name of the NZFCC category for this transaction"
+                    },
+                    "groups": {
+                      "type": "object",
+                      "description": "A dictionary of category groups, keyed by category mapping name, for the NZFCC base category.",
+                      "additionalProperties": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "description": "The category group ID for this mapping."
+                          },
+                          "name": {
+                            "type": "string",
+                            "description": "The category group name for this mapping."
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "_id",
+                    "name",
+                    "groups"
+                  ],
+                  "example": {
+                    "_id": "nzfcc_ckouvvy84001608ml5p6z4d8j",
+                    "name": "Supermarkets and grocery stores",
+                    "groups": {
+                      "personal_finance": {
+                        "_id": "group_clasr0ysw000xhk4mf7mg2j1z",
+                        "name": "Food"
+                      }
+                    }
+                  }
+                },
+                "merchant": {
+                  "description": "The merchant assigned to this query by Genie enrichment.",
+                  "type": "object",
+                  "required": [
+                    "_id",
+                    "name",
+                    "logo"
+                  ],
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "description": "The unique merchant ID."
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "The merchant's name (trading name)."
+                    },
+                    "logo": {
+                      "type": "string",
+                      "description": "A URL referencing the merchant's logo. If no logo is available, a placeholder image is provided."
+                    },
+                    "website": {
+                      "type": "string",
+                      "description": "The URL for the merchant's website."
+                    },
+                    "phone": {
+                      "type": "string",
+                      "description": "The merchant's phone number."
+                    },
+                    "nzbn": {
+                      "type": "string",
+                      "description": "The merchant's NZBN (New Zealand Business Number)."
+                    },
+                    "location": {
+                      "description": "The merchant's location.",
+                      "allOf": [
+                        {
+                          "type": "object",
+                          "description": "A physical location.",
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "description": "A reference to a geographic area rather than a specific address.\nFor example:\n  - \"New Zealand\" (country)\n  - \"Waikato, New Zealand\" (region)\n  - \"Auckland, New Zealand\" (locality)\n  - \"Grey Lynn, Auckland, New Zealand\" (sublocality)",
+                              "required": [
+                                "accuracy",
+                                "formatted",
+                                "coordinates"
+                              ],
+                              "properties": {
+                                "accuracy": {
+                                  "type": "string",
+                                  "enum": [
+                                    "country",
+                                    "region",
+                                    "locality",
+                                    "sublocality"
+                                  ]
+                                },
+                                "formatted": {
+                                  "type": "string"
+                                },
+                                "coordinates": {
+                                  "type": "object",
+                                  "description": "Latitude/longitude location coordinates.",
+                                  "required": [
+                                    "lat",
+                                    "lon"
+                                  ],
+                                  "properties": {
+                                    "lat": {
+                                      "type": "number"
+                                    },
+                                    "lon": {
+                                      "type": "number"
+                                    }
+                                  },
+                                  "example": {
+                                    "lat": -36.848461,
+                                    "lon": 174.763336
+                                  }
+                                }
+                              },
+                              "example": {
+                                "accuracy": "locality",
+                                "formatted": "Auckland, New Zealand",
+                                "coordinates": {
+                                  "lat": -36.848461,
+                                  "lon": 174.763336
+                                }
+                              }
+                            },
+                            {
+                              "type": "object",
+                              "description": "A reference to a specific physical establishment location.",
+                              "required": [
+                                "accuracy",
+                                "formatted",
+                                "coordinates"
+                              ],
+                              "properties": {
+                                "accuracy": {
+                                  "type": "string",
+                                  "enum": [
+                                    "establishment"
+                                  ]
+                                },
+                                "formatted": {
+                                  "type": "string"
+                                },
+                                "coordinates": {
+                                  "type": "object",
+                                  "description": "Latitude/longitude location coordinates.",
+                                  "required": [
+                                    "lat",
+                                    "lon"
+                                  ],
+                                  "properties": {
+                                    "lat": {
+                                      "type": "number"
+                                    },
+                                    "lon": {
+                                      "type": "number"
+                                    }
+                                  },
+                                  "example": {
+                                    "lat": -36.848461,
+                                    "lon": 174.763336
+                                  }
+                                },
+                                "address": {
+                                  "description": "The address fields in a structured format. This is available on almost all establishment-level locations, however it may occasionally be missing,",
+                                  "allOf": [
+                                    {
+                                      "type": "object",
+                                      "required": [
+                                        "street",
+                                        "city",
+                                        "region",
+                                        "country",
+                                        "postal_code"
+                                      ],
+                                      "properties": {
+                                        "street": {
+                                          "type": "string"
+                                        },
+                                        "suburb": {
+                                          "type": "string"
+                                        },
+                                        "city": {
+                                          "type": "string"
+                                        },
+                                        "region": {
+                                          "type": "string"
+                                        },
+                                        "country": {
+                                          "type": "string"
+                                        },
+                                        "postal_code": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "example": {
+                                        "street": "125 Queen Street",
+                                        "suburb": "Auckland CBD",
+                                        "city": "Auckland",
+                                        "region": "Auckland",
+                                        "country": "New Zealand",
+                                        "postal_code": "0620"
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              "example": {
+                                "accuracy": "establishment",
+                                "formatted": "12 Hastwell Street, Greytown 5712, New Zealand",
+                                "address": {
+                                  "street": "12 Hastwell Street",
+                                  "city": "Greytown",
+                                  "region": "Wellington",
+                                  "country": "New Zealand",
+                                  "postal_code": "5712"
+                                },
+                                "coordinates": {
+                                  "lat": -41.0809289,
+                                  "lon": 175.4589657
+                                }
+                              }
+                            }
+                          ],
+                          "example": {
+                            "accuracy": "establishment",
+                            "formatted": "12 Hastwell Street, Greytown 5712, New Zealand",
+                            "address": {
+                              "street": "12 Hastwell Street",
+                              "city": "Greytown",
+                              "region": "Wellington",
+                              "country": "New Zealand",
+                              "postal_code": "5712"
+                            },
+                            "coordinates": {
+                              "lat": -41.0809289,
+                              "lon": 175.4589657
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "tags": {
+                      "type": "array",
+                      "description": "Tags that apply to the merchant. For example, to indicate that the merchant provides a subscription service.",
+                      "items": {
+                        "type": "string",
+                        "description": "A tag applied to an outlet or merchant, indicating a specific attribute that applies to that entity.",
+                        "enum": [
+                          "subscription",
+                          "closed"
+                        ]
+                      }
+                    }
+                  },
+                  "example": {
+                    "_id": "merchant_cjipiuvdk000lbpzytryqtjkv",
+                    "name": "FreshChoice",
+                    "logo": "https://static.akahu.io/outlets/merchant_cjipiuvdk000lbpzytryqtjkv_logo.png",
+                    "website": "https://www.freshchoice.co.nz",
+                    "nzbn": "9429040683379",
+                    "tags": []
+                  }
+                },
+                "outlet": {
+                  "description": "The specific outlet assigned to this query by Genie enrichment.\nThis field is only included in the result when a distinct outlet has been identified. For example, \"Pak'nSAVE Mount Albert\".\nAn outlet result will not be included for single-location merchants (e.g. your local dairy).\nAn outlet result will always be accompanied with a \"parent\" merchant.",
+                  "type": "object",
+                  "required": [
+                    "_id",
+                    "name"
+                  ],
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "description": "The unique outlet ID."
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "The outlet name. This is usually more specific than the merchant name. For example, the merchant name may be \"Pak'nSAVE\", while the outlet name is \"Pak'nSAVE Sylvia Park\"."
+                    },
+                    "logo": {
+                      "type": "string",
+                      "description": "A URL referencing the outlet's logo. This field will only be included if the logo for this outlet differs from the merchant's logo."
+                    },
+                    "website": {
+                      "type": "string",
+                      "description": "The URL for the outlet's website. This field will only be included if the website for this outlet differs from the merchant's website."
+                    },
+                    "phone": {
+                      "type": "string",
+                      "description": "The outlet's phone number. This field will only be included if the phone number for this outlet differs from the merchant's phone number."
+                    },
+                    "nzbn": {
+                      "type": "string",
+                      "description": "The outlet's NZBN (New Zealand Business Number). This field will only be included if the NZBN for this outlet differs from the merchant's NZBN."
+                    },
+                    "location": {
+                      "description": "The outlet's location.",
+                      "allOf": [
+                        {
+                          "type": "object",
+                          "description": "A physical location.",
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "description": "A reference to a geographic area rather than a specific address.\nFor example:\n  - \"New Zealand\" (country)\n  - \"Waikato, New Zealand\" (region)\n  - \"Auckland, New Zealand\" (locality)\n  - \"Grey Lynn, Auckland, New Zealand\" (sublocality)",
+                              "required": [
+                                "accuracy",
+                                "formatted",
+                                "coordinates"
+                              ],
+                              "properties": {
+                                "accuracy": {
+                                  "type": "string",
+                                  "enum": [
+                                    "country",
+                                    "region",
+                                    "locality",
+                                    "sublocality"
+                                  ]
+                                },
+                                "formatted": {
+                                  "type": "string"
+                                },
+                                "coordinates": {
+                                  "type": "object",
+                                  "description": "Latitude/longitude location coordinates.",
+                                  "required": [
+                                    "lat",
+                                    "lon"
+                                  ],
+                                  "properties": {
+                                    "lat": {
+                                      "type": "number"
+                                    },
+                                    "lon": {
+                                      "type": "number"
+                                    }
+                                  },
+                                  "example": {
+                                    "lat": -36.848461,
+                                    "lon": 174.763336
+                                  }
+                                }
+                              },
+                              "example": {
+                                "accuracy": "locality",
+                                "formatted": "Auckland, New Zealand",
+                                "coordinates": {
+                                  "lat": -36.848461,
+                                  "lon": 174.763336
+                                }
+                              }
+                            },
+                            {
+                              "type": "object",
+                              "description": "A reference to a specific physical establishment location.",
+                              "required": [
+                                "accuracy",
+                                "formatted",
+                                "coordinates"
+                              ],
+                              "properties": {
+                                "accuracy": {
+                                  "type": "string",
+                                  "enum": [
+                                    "establishment"
+                                  ]
+                                },
+                                "formatted": {
+                                  "type": "string"
+                                },
+                                "coordinates": {
+                                  "type": "object",
+                                  "description": "Latitude/longitude location coordinates.",
+                                  "required": [
+                                    "lat",
+                                    "lon"
+                                  ],
+                                  "properties": {
+                                    "lat": {
+                                      "type": "number"
+                                    },
+                                    "lon": {
+                                      "type": "number"
+                                    }
+                                  },
+                                  "example": {
+                                    "lat": -36.848461,
+                                    "lon": 174.763336
+                                  }
+                                },
+                                "address": {
+                                  "description": "The address fields in a structured format. This is available on almost all establishment-level locations, however it may occasionally be missing,",
+                                  "allOf": [
+                                    {
+                                      "type": "object",
+                                      "required": [
+                                        "street",
+                                        "city",
+                                        "region",
+                                        "country",
+                                        "postal_code"
+                                      ],
+                                      "properties": {
+                                        "street": {
+                                          "type": "string"
+                                        },
+                                        "suburb": {
+                                          "type": "string"
+                                        },
+                                        "city": {
+                                          "type": "string"
+                                        },
+                                        "region": {
+                                          "type": "string"
+                                        },
+                                        "country": {
+                                          "type": "string"
+                                        },
+                                        "postal_code": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "example": {
+                                        "street": "125 Queen Street",
+                                        "suburb": "Auckland CBD",
+                                        "city": "Auckland",
+                                        "region": "Auckland",
+                                        "country": "New Zealand",
+                                        "postal_code": "0620"
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              "example": {
+                                "accuracy": "establishment",
+                                "formatted": "12 Hastwell Street, Greytown 5712, New Zealand",
+                                "address": {
+                                  "street": "12 Hastwell Street",
+                                  "city": "Greytown",
+                                  "region": "Wellington",
+                                  "country": "New Zealand",
+                                  "postal_code": "5712"
+                                },
+                                "coordinates": {
+                                  "lat": -41.0809289,
+                                  "lon": 175.4589657
+                                }
+                              }
+                            }
+                          ],
+                          "example": {
+                            "accuracy": "establishment",
+                            "formatted": "12 Hastwell Street, Greytown 5712, New Zealand",
+                            "address": {
+                              "street": "12 Hastwell Street",
+                              "city": "Greytown",
+                              "region": "Wellington",
+                              "country": "New Zealand",
+                              "postal_code": "5712"
+                            },
+                            "coordinates": {
+                              "lat": -41.0809289,
+                              "lon": 175.4589657
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "tags": {
+                      "type": "array",
+                      "description": "Tags that apply to the outlet. For example, to indicate that the outlet provides a subscription service. Tags are inherited (and potentially extended) from the outlet's \"parent\" merchant.",
+                      "items": {
+                        "type": "string",
+                        "description": "A tag applied to an outlet or merchant, indicating a specific attribute that applies to that entity.",
+                        "enum": [
+                          "subscription",
+                          "closed"
+                        ]
+                      }
+                    }
+                  },
+                  "example": {
+                    "_id": "outlet_cm0qk0idc000l08kydt9gf9gz",
+                    "name": "FreshChoice Greytown",
+                    "website": "https://greytown.store.freshchoice.co.nz/",
+                    "phone": "06 304 7237",
+                    "location": {
+                      "accuracy": "establishment",
+                      "formatted": "12 Hastwell Street, Greytown 5712, New Zealand",
+                      "address": {
+                        "street": "12 Hastwell Street",
+                        "city": "Greytown",
+                        "region": "Wellington",
+                        "country": "New Zealand",
+                        "postal_code": "5712"
+                      },
+                      "coordinates": {
+                        "lat": -41.0809289,
+                        "lon": 175.4589657
+                      }
+                    },
+                    "tags": []
+                  }
+                }
+              },
+              "required": [
+                "confidence",
+                "category"
+              ]
+            }
+          }
+        },
+        "required": [
+          "query",
+          "results"
+        ]
+      },
+      "GenieSearchRequest": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "A unique correlation id for the query to help you to find the corresponding result in the response data."
+            },
+            "description": {
+              "type": "string",
+              "description": "The transaction description. This should be the full description as provided by the bank / transaction source."
+            },
+            "_connection": {
+              "type": "string",
+              "description": "The Akahu connection ID corresponding to the bank from which the transaction description was sourced. It is strongly recommended to include this parameter to ensure best results.\n\nThe following connection IDs are available:\n  - ANZ: `conn_cjgaawozb000001nyd111xixr`\n  - ASB: `conn_cjgaaqcna000001ldwof8tvj0`\n  - BNZ: `conn_cjgaatd57000001pe1t1z0iy9`\n  - Heartland: `conn_ck5rhsdbv0000ftx1bmdu9zas`\n  - Kiwibank: `conn_cjgaac5at000001qi2yw8ftil`\n  - Rabobank: `conn_ckydkmy3r000009mde2sx2i4d`\n  - The Cooperative Bank: `conn_cjgab1c8e000001pmyxrkhova`\n  - TSB: `conn_cjgab6fis000001qsytf1semy`\n  - Westpac: `conn_cjgaaozdo000001mrnqmkl1m0`\n",
+              "enum": [
+                "conn_cjgaawozb000001nyd111xixr",
+                "conn_cjgaaqcna000001ldwof8tvj0",
+                "conn_cjgaatd57000001pe1t1z0iy9",
+                "conn_ck5rhsdbv0000ftx1bmdu9zas",
+                "conn_cjgaac5at000001qi2yw8ftil",
+                "conn_ckydkmy3r000009mde2sx2i4d",
+                "conn_cjgab1c8e000001pmyxrkhova",
+                "conn_cjgab6fis000001qsytf1semy",
+                "conn_cjgaaozdo000001mrnqmkl1m0"
+              ]
+            },
+            "amount": {
+              "type": "number",
+              "description": "Transaction amount (+ for credit, - for debit)."
+            },
+            "direction": {
+              "type": "string",
+              "description": "Whether the transaction is a debit or credit",
+              "enum": [
+                "DEBIT",
+                "CREDIT"
+              ]
+            }
+          },
+          "required": [
+            "description"
+          ]
+        },
+        "maxLength": 1000
+      },
+      "GenieSearchResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "The correlation ID for the query (if you provided one)."
+                },
+                "query": {
+                  "type": "string",
+                  "description": "The original query description as provided."
+                },
+                "results": {
+                  "type": "array",
+                  "description": "The enrichment result for this query. Will contain 1 item if enrichment is successful, otherwise the array will be empty.",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "confidence": {
+                        "type": "number",
+                        "description": "A value between 0 and 0.99 (inclusive) indicating the strength of the matched result (currently the lowest returned confidence score is 0.5)."
+                      },
+                      "category": {
+                        "description": "The category assigned to this query by Genie enrichment.",
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "description": "The [NZFCC](https://nzfcc.org) category code for the transaction"
+                          },
+                          "name": {
+                            "type": "string",
+                            "description": "The name of the NZFCC category for this transaction"
+                          },
+                          "groups": {
+                            "type": "object",
+                            "description": "A dictionary of category groups, keyed by category mapping name, for the NZFCC base category.",
+                            "additionalProperties": {
+                              "type": "object",
+                              "properties": {
+                                "_id": {
+                                  "type": "string",
+                                  "description": "The category group ID for this mapping."
+                                },
+                                "name": {
+                                  "type": "string",
+                                  "description": "The category group name for this mapping."
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "required": [
+                          "_id",
+                          "name",
+                          "groups"
+                        ],
+                        "example": {
+                          "_id": "nzfcc_ckouvvy84001608ml5p6z4d8j",
+                          "name": "Supermarkets and grocery stores",
+                          "groups": {
+                            "personal_finance": {
+                              "_id": "group_clasr0ysw000xhk4mf7mg2j1z",
+                              "name": "Food"
+                            }
+                          }
+                        }
+                      },
+                      "merchant": {
+                        "description": "The merchant assigned to this query by Genie enrichment.",
+                        "type": "object",
+                        "required": [
+                          "_id",
+                          "name",
+                          "logo"
+                        ],
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "description": "The unique merchant ID."
+                          },
+                          "name": {
+                            "type": "string",
+                            "description": "The merchant's name (trading name)."
+                          },
+                          "logo": {
+                            "type": "string",
+                            "description": "A URL referencing the merchant's logo. If no logo is available, a placeholder image is provided."
+                          },
+                          "website": {
+                            "type": "string",
+                            "description": "The URL for the merchant's website."
+                          },
+                          "phone": {
+                            "type": "string",
+                            "description": "The merchant's phone number."
+                          },
+                          "nzbn": {
+                            "type": "string",
+                            "description": "The merchant's NZBN (New Zealand Business Number)."
+                          },
+                          "location": {
+                            "description": "The merchant's location.",
+                            "allOf": [
+                              {
+                                "type": "object",
+                                "description": "A physical location.",
+                                "oneOf": [
+                                  {
+                                    "type": "object",
+                                    "description": "A reference to a geographic area rather than a specific address.\nFor example:\n  - \"New Zealand\" (country)\n  - \"Waikato, New Zealand\" (region)\n  - \"Auckland, New Zealand\" (locality)\n  - \"Grey Lynn, Auckland, New Zealand\" (sublocality)",
+                                    "required": [
+                                      "accuracy",
+                                      "formatted",
+                                      "coordinates"
+                                    ],
+                                    "properties": {
+                                      "accuracy": {
+                                        "type": "string",
+                                        "enum": [
+                                          "country",
+                                          "region",
+                                          "locality",
+                                          "sublocality"
+                                        ]
+                                      },
+                                      "formatted": {
+                                        "type": "string"
+                                      },
+                                      "coordinates": {
+                                        "type": "object",
+                                        "description": "Latitude/longitude location coordinates.",
+                                        "required": [
+                                          "lat",
+                                          "lon"
+                                        ],
+                                        "properties": {
+                                          "lat": {
+                                            "type": "number"
+                                          },
+                                          "lon": {
+                                            "type": "number"
+                                          }
+                                        },
+                                        "example": {
+                                          "lat": -36.848461,
+                                          "lon": 174.763336
+                                        }
+                                      }
+                                    },
+                                    "example": {
+                                      "accuracy": "locality",
+                                      "formatted": "Auckland, New Zealand",
+                                      "coordinates": {
+                                        "lat": -36.848461,
+                                        "lon": 174.763336
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "type": "object",
+                                    "description": "A reference to a specific physical establishment location.",
+                                    "required": [
+                                      "accuracy",
+                                      "formatted",
+                                      "coordinates"
+                                    ],
+                                    "properties": {
+                                      "accuracy": {
+                                        "type": "string",
+                                        "enum": [
+                                          "establishment"
+                                        ]
+                                      },
+                                      "formatted": {
+                                        "type": "string"
+                                      },
+                                      "coordinates": {
+                                        "type": "object",
+                                        "description": "Latitude/longitude location coordinates.",
+                                        "required": [
+                                          "lat",
+                                          "lon"
+                                        ],
+                                        "properties": {
+                                          "lat": {
+                                            "type": "number"
+                                          },
+                                          "lon": {
+                                            "type": "number"
+                                          }
+                                        },
+                                        "example": {
+                                          "lat": -36.848461,
+                                          "lon": 174.763336
+                                        }
+                                      },
+                                      "address": {
+                                        "description": "The address fields in a structured format. This is available on almost all establishment-level locations, however it may occasionally be missing,",
+                                        "allOf": [
+                                          {
+                                            "type": "object",
+                                            "required": [
+                                              "street",
+                                              "city",
+                                              "region",
+                                              "country",
+                                              "postal_code"
+                                            ],
+                                            "properties": {
+                                              "street": {
+                                                "type": "string"
+                                              },
+                                              "suburb": {
+                                                "type": "string"
+                                              },
+                                              "city": {
+                                                "type": "string"
+                                              },
+                                              "region": {
+                                                "type": "string"
+                                              },
+                                              "country": {
+                                                "type": "string"
+                                              },
+                                              "postal_code": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "example": {
+                                              "street": "125 Queen Street",
+                                              "suburb": "Auckland CBD",
+                                              "city": "Auckland",
+                                              "region": "Auckland",
+                                              "country": "New Zealand",
+                                              "postal_code": "0620"
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "example": {
+                                      "accuracy": "establishment",
+                                      "formatted": "12 Hastwell Street, Greytown 5712, New Zealand",
+                                      "address": {
+                                        "street": "12 Hastwell Street",
+                                        "city": "Greytown",
+                                        "region": "Wellington",
+                                        "country": "New Zealand",
+                                        "postal_code": "5712"
+                                      },
+                                      "coordinates": {
+                                        "lat": -41.0809289,
+                                        "lon": 175.4589657
+                                      }
+                                    }
+                                  }
+                                ],
+                                "example": {
+                                  "accuracy": "establishment",
+                                  "formatted": "12 Hastwell Street, Greytown 5712, New Zealand",
+                                  "address": {
+                                    "street": "12 Hastwell Street",
+                                    "city": "Greytown",
+                                    "region": "Wellington",
+                                    "country": "New Zealand",
+                                    "postal_code": "5712"
+                                  },
+                                  "coordinates": {
+                                    "lat": -41.0809289,
+                                    "lon": 175.4589657
+                                  }
+                                }
+                              }
+                            ]
+                          },
+                          "tags": {
+                            "type": "array",
+                            "description": "Tags that apply to the merchant. For example, to indicate that the merchant provides a subscription service.",
+                            "items": {
+                              "type": "string",
+                              "description": "A tag applied to an outlet or merchant, indicating a specific attribute that applies to that entity.",
+                              "enum": [
+                                "subscription",
+                                "closed"
+                              ]
+                            }
+                          }
+                        },
+                        "example": {
+                          "_id": "merchant_cjipiuvdk000lbpzytryqtjkv",
+                          "name": "FreshChoice",
+                          "logo": "https://static.akahu.io/outlets/merchant_cjipiuvdk000lbpzytryqtjkv_logo.png",
+                          "website": "https://www.freshchoice.co.nz",
+                          "nzbn": "9429040683379",
+                          "tags": []
+                        }
+                      },
+                      "outlet": {
+                        "description": "The specific outlet assigned to this query by Genie enrichment.\nThis field is only included in the result when a distinct outlet has been identified. For example, \"Pak'nSAVE Mount Albert\".\nAn outlet result will not be included for single-location merchants (e.g. your local dairy).\nAn outlet result will always be accompanied with a \"parent\" merchant.",
+                        "type": "object",
+                        "required": [
+                          "_id",
+                          "name"
+                        ],
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "description": "The unique outlet ID."
+                          },
+                          "name": {
+                            "type": "string",
+                            "description": "The outlet name. This is usually more specific than the merchant name. For example, the merchant name may be \"Pak'nSAVE\", while the outlet name is \"Pak'nSAVE Sylvia Park\"."
+                          },
+                          "logo": {
+                            "type": "string",
+                            "description": "A URL referencing the outlet's logo. This field will only be included if the logo for this outlet differs from the merchant's logo."
+                          },
+                          "website": {
+                            "type": "string",
+                            "description": "The URL for the outlet's website. This field will only be included if the website for this outlet differs from the merchant's website."
+                          },
+                          "phone": {
+                            "type": "string",
+                            "description": "The outlet's phone number. This field will only be included if the phone number for this outlet differs from the merchant's phone number."
+                          },
+                          "nzbn": {
+                            "type": "string",
+                            "description": "The outlet's NZBN (New Zealand Business Number). This field will only be included if the NZBN for this outlet differs from the merchant's NZBN."
+                          },
+                          "location": {
+                            "description": "The outlet's location.",
+                            "allOf": [
+                              {
+                                "type": "object",
+                                "description": "A physical location.",
+                                "oneOf": [
+                                  {
+                                    "type": "object",
+                                    "description": "A reference to a geographic area rather than a specific address.\nFor example:\n  - \"New Zealand\" (country)\n  - \"Waikato, New Zealand\" (region)\n  - \"Auckland, New Zealand\" (locality)\n  - \"Grey Lynn, Auckland, New Zealand\" (sublocality)",
+                                    "required": [
+                                      "accuracy",
+                                      "formatted",
+                                      "coordinates"
+                                    ],
+                                    "properties": {
+                                      "accuracy": {
+                                        "type": "string",
+                                        "enum": [
+                                          "country",
+                                          "region",
+                                          "locality",
+                                          "sublocality"
+                                        ]
+                                      },
+                                      "formatted": {
+                                        "type": "string"
+                                      },
+                                      "coordinates": {
+                                        "type": "object",
+                                        "description": "Latitude/longitude location coordinates.",
+                                        "required": [
+                                          "lat",
+                                          "lon"
+                                        ],
+                                        "properties": {
+                                          "lat": {
+                                            "type": "number"
+                                          },
+                                          "lon": {
+                                            "type": "number"
+                                          }
+                                        },
+                                        "example": {
+                                          "lat": -36.848461,
+                                          "lon": 174.763336
+                                        }
+                                      }
+                                    },
+                                    "example": {
+                                      "accuracy": "locality",
+                                      "formatted": "Auckland, New Zealand",
+                                      "coordinates": {
+                                        "lat": -36.848461,
+                                        "lon": 174.763336
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "type": "object",
+                                    "description": "A reference to a specific physical establishment location.",
+                                    "required": [
+                                      "accuracy",
+                                      "formatted",
+                                      "coordinates"
+                                    ],
+                                    "properties": {
+                                      "accuracy": {
+                                        "type": "string",
+                                        "enum": [
+                                          "establishment"
+                                        ]
+                                      },
+                                      "formatted": {
+                                        "type": "string"
+                                      },
+                                      "coordinates": {
+                                        "type": "object",
+                                        "description": "Latitude/longitude location coordinates.",
+                                        "required": [
+                                          "lat",
+                                          "lon"
+                                        ],
+                                        "properties": {
+                                          "lat": {
+                                            "type": "number"
+                                          },
+                                          "lon": {
+                                            "type": "number"
+                                          }
+                                        },
+                                        "example": {
+                                          "lat": -36.848461,
+                                          "lon": 174.763336
+                                        }
+                                      },
+                                      "address": {
+                                        "description": "The address fields in a structured format. This is available on almost all establishment-level locations, however it may occasionally be missing,",
+                                        "allOf": [
+                                          {
+                                            "type": "object",
+                                            "required": [
+                                              "street",
+                                              "city",
+                                              "region",
+                                              "country",
+                                              "postal_code"
+                                            ],
+                                            "properties": {
+                                              "street": {
+                                                "type": "string"
+                                              },
+                                              "suburb": {
+                                                "type": "string"
+                                              },
+                                              "city": {
+                                                "type": "string"
+                                              },
+                                              "region": {
+                                                "type": "string"
+                                              },
+                                              "country": {
+                                                "type": "string"
+                                              },
+                                              "postal_code": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "example": {
+                                              "street": "125 Queen Street",
+                                              "suburb": "Auckland CBD",
+                                              "city": "Auckland",
+                                              "region": "Auckland",
+                                              "country": "New Zealand",
+                                              "postal_code": "0620"
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "example": {
+                                      "accuracy": "establishment",
+                                      "formatted": "12 Hastwell Street, Greytown 5712, New Zealand",
+                                      "address": {
+                                        "street": "12 Hastwell Street",
+                                        "city": "Greytown",
+                                        "region": "Wellington",
+                                        "country": "New Zealand",
+                                        "postal_code": "5712"
+                                      },
+                                      "coordinates": {
+                                        "lat": -41.0809289,
+                                        "lon": 175.4589657
+                                      }
+                                    }
+                                  }
+                                ],
+                                "example": {
+                                  "accuracy": "establishment",
+                                  "formatted": "12 Hastwell Street, Greytown 5712, New Zealand",
+                                  "address": {
+                                    "street": "12 Hastwell Street",
+                                    "city": "Greytown",
+                                    "region": "Wellington",
+                                    "country": "New Zealand",
+                                    "postal_code": "5712"
+                                  },
+                                  "coordinates": {
+                                    "lat": -41.0809289,
+                                    "lon": 175.4589657
+                                  }
+                                }
+                              }
+                            ]
+                          },
+                          "tags": {
+                            "type": "array",
+                            "description": "Tags that apply to the outlet. For example, to indicate that the outlet provides a subscription service. Tags are inherited (and potentially extended) from the outlet's \"parent\" merchant.",
+                            "items": {
+                              "type": "string",
+                              "description": "A tag applied to an outlet or merchant, indicating a specific attribute that applies to that entity.",
+                              "enum": [
+                                "subscription",
+                                "closed"
+                              ]
+                            }
+                          }
+                        },
+                        "example": {
+                          "_id": "outlet_cm0qk0idc000l08kydt9gf9gz",
+                          "name": "FreshChoice Greytown",
+                          "website": "https://greytown.store.freshchoice.co.nz/",
+                          "phone": "06 304 7237",
+                          "location": {
+                            "accuracy": "establishment",
+                            "formatted": "12 Hastwell Street, Greytown 5712, New Zealand",
+                            "address": {
+                              "street": "12 Hastwell Street",
+                              "city": "Greytown",
+                              "region": "Wellington",
+                              "country": "New Zealand",
+                              "postal_code": "5712"
+                            },
+                            "coordinates": {
+                              "lat": -41.0809289,
+                              "lon": 175.4589657
+                            }
+                          },
+                          "tags": []
+                        }
+                      }
+                    },
+                    "required": [
+                      "confidence",
+                      "category"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "query",
+                "results"
+              ]
+            }
+          }
+        },
+        "required": [
+          "success",
+          "items"
+        ]
+      },
+      "GenieErrorResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "message": {
+            "type": "string",
+            "description": "A description of the error that has occurred"
+          }
+        },
+        "required": [
+          "success",
+          "message"
+        ]
+      }
+    },
+    "parameters": {}
+  },
+  "paths": {
+    "/search": {
+      "post": {
+        "summary": "Enrich a batch of transactions",
+        "operationId": "GenieSearch",
+        "description": "Enrich a batch of transactions using Genie.",
+        "tags": [
+          "Transaction Enrichment"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "A unique correlation id for the query to help you to find the corresponding result in the response data."
+                    },
+                    "description": {
+                      "type": "string",
+                      "description": "The transaction description. This should be the full description as provided by the bank / transaction source."
+                    },
+                    "_connection": {
+                      "type": "string",
+                      "description": "The Akahu connection ID corresponding to the bank from which the transaction description was sourced. It is strongly recommended to include this parameter to ensure best results.\n\nThe following connection IDs are available:\n  - ANZ: `conn_cjgaawozb000001nyd111xixr`\n  - ASB: `conn_cjgaaqcna000001ldwof8tvj0`\n  - BNZ: `conn_cjgaatd57000001pe1t1z0iy9`\n  - Heartland: `conn_ck5rhsdbv0000ftx1bmdu9zas`\n  - Kiwibank: `conn_cjgaac5at000001qi2yw8ftil`\n  - Rabobank: `conn_ckydkmy3r000009mde2sx2i4d`\n  - The Cooperative Bank: `conn_cjgab1c8e000001pmyxrkhova`\n  - TSB: `conn_cjgab6fis000001qsytf1semy`\n  - Westpac: `conn_cjgaaozdo000001mrnqmkl1m0`\n",
+                      "enum": [
+                        "conn_cjgaawozb000001nyd111xixr",
+                        "conn_cjgaaqcna000001ldwof8tvj0",
+                        "conn_cjgaatd57000001pe1t1z0iy9",
+                        "conn_ck5rhsdbv0000ftx1bmdu9zas",
+                        "conn_cjgaac5at000001qi2yw8ftil",
+                        "conn_ckydkmy3r000009mde2sx2i4d",
+                        "conn_cjgab1c8e000001pmyxrkhova",
+                        "conn_cjgab6fis000001qsytf1semy",
+                        "conn_cjgaaozdo000001mrnqmkl1m0"
+                      ]
+                    },
+                    "amount": {
+                      "type": "number",
+                      "description": "Transaction amount (+ for credit, - for debit)."
+                    },
+                    "direction": {
+                      "type": "string",
+                      "description": "Whether the transaction is a debit or credit",
+                      "enum": [
+                        "DEBIT",
+                        "CREDIT"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "description"
+                  ]
+                },
+                "maxLength": 1000
+              },
+              "examples": {
+                "Example 1": {
+                  "description": "A basic example request",
+                  "value": [
+                    {
+                      "id": "1",
+                      "description": "CJ PALMERSTON NTH - 203PALM NTH",
+                      "_connection": "conn_cjgaaqcna000001ldwof8tvj0",
+                      "amount": -4.9
+                    },
+                    {
+                      "id": "2",
+                      "description": "CARD 2293 WHOLEMEAL TRAD CO LTDTAKAKA",
+                      "_connection": "conn_cjgaaqcna000001ldwof8tvj0",
+                      "amount": -25.1
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "description": "The correlation ID for the query (if you provided one)."
+                          },
+                          "query": {
+                            "type": "string",
+                            "description": "The original query description as provided."
+                          },
+                          "results": {
+                            "type": "array",
+                            "description": "The enrichment result for this query. Will contain 1 item if enrichment is successful, otherwise the array will be empty.",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "confidence": {
+                                  "type": "number",
+                                  "description": "A value between 0 and 0.99 (inclusive) indicating the strength of the matched result (currently the lowest returned confidence score is 0.5)."
+                                },
+                                "category": {
+                                  "description": "The category assigned to this query by Genie enrichment.",
+                                  "type": "object",
+                                  "properties": {
+                                    "_id": {
+                                      "type": "string",
+                                      "description": "The [NZFCC](https://nzfcc.org) category code for the transaction"
+                                    },
+                                    "name": {
+                                      "type": "string",
+                                      "description": "The name of the NZFCC category for this transaction"
+                                    },
+                                    "groups": {
+                                      "type": "object",
+                                      "description": "A dictionary of category groups, keyed by category mapping name, for the NZFCC base category.",
+                                      "additionalProperties": {
+                                        "type": "object",
+                                        "properties": {
+                                          "_id": {
+                                            "type": "string",
+                                            "description": "The category group ID for this mapping."
+                                          },
+                                          "name": {
+                                            "type": "string",
+                                            "description": "The category group name for this mapping."
+                                          }
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "required": [
+                                    "_id",
+                                    "name",
+                                    "groups"
+                                  ],
+                                  "example": {
+                                    "_id": "nzfcc_ckouvvy84001608ml5p6z4d8j",
+                                    "name": "Supermarkets and grocery stores",
+                                    "groups": {
+                                      "personal_finance": {
+                                        "_id": "group_clasr0ysw000xhk4mf7mg2j1z",
+                                        "name": "Food"
+                                      }
+                                    }
+                                  }
+                                },
+                                "merchant": {
+                                  "description": "The merchant assigned to this query by Genie enrichment.",
+                                  "type": "object",
+                                  "required": [
+                                    "_id",
+                                    "name",
+                                    "logo"
+                                  ],
+                                  "properties": {
+                                    "_id": {
+                                      "type": "string",
+                                      "description": "The unique merchant ID."
+                                    },
+                                    "name": {
+                                      "type": "string",
+                                      "description": "The merchant's name (trading name)."
+                                    },
+                                    "logo": {
+                                      "type": "string",
+                                      "description": "A URL referencing the merchant's logo. If no logo is available, a placeholder image is provided."
+                                    },
+                                    "website": {
+                                      "type": "string",
+                                      "description": "The URL for the merchant's website."
+                                    },
+                                    "phone": {
+                                      "type": "string",
+                                      "description": "The merchant's phone number."
+                                    },
+                                    "nzbn": {
+                                      "type": "string",
+                                      "description": "The merchant's NZBN (New Zealand Business Number)."
+                                    },
+                                    "location": {
+                                      "description": "The merchant's location.",
+                                      "allOf": [
+                                        {
+                                          "type": "object",
+                                          "description": "A physical location.",
+                                          "oneOf": [
+                                            {
+                                              "type": "object",
+                                              "description": "A reference to a geographic area rather than a specific address.\nFor example:\n  - \"New Zealand\" (country)\n  - \"Waikato, New Zealand\" (region)\n  - \"Auckland, New Zealand\" (locality)\n  - \"Grey Lynn, Auckland, New Zealand\" (sublocality)",
+                                              "required": [
+                                                "accuracy",
+                                                "formatted",
+                                                "coordinates"
+                                              ],
+                                              "properties": {
+                                                "accuracy": {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "country",
+                                                    "region",
+                                                    "locality",
+                                                    "sublocality"
+                                                  ]
+                                                },
+                                                "formatted": {
+                                                  "type": "string"
+                                                },
+                                                "coordinates": {
+                                                  "type": "object",
+                                                  "description": "Latitude/longitude location coordinates.",
+                                                  "required": [
+                                                    "lat",
+                                                    "lon"
+                                                  ],
+                                                  "properties": {
+                                                    "lat": {
+                                                      "type": "number"
+                                                    },
+                                                    "lon": {
+                                                      "type": "number"
+                                                    }
+                                                  },
+                                                  "example": {
+                                                    "lat": -36.848461,
+                                                    "lon": 174.763336
+                                                  }
+                                                }
+                                              },
+                                              "example": {
+                                                "accuracy": "locality",
+                                                "formatted": "Auckland, New Zealand",
+                                                "coordinates": {
+                                                  "lat": -36.848461,
+                                                  "lon": 174.763336
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "type": "object",
+                                              "description": "A reference to a specific physical establishment location.",
+                                              "required": [
+                                                "accuracy",
+                                                "formatted",
+                                                "coordinates"
+                                              ],
+                                              "properties": {
+                                                "accuracy": {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "establishment"
+                                                  ]
+                                                },
+                                                "formatted": {
+                                                  "type": "string"
+                                                },
+                                                "coordinates": {
+                                                  "type": "object",
+                                                  "description": "Latitude/longitude location coordinates.",
+                                                  "required": [
+                                                    "lat",
+                                                    "lon"
+                                                  ],
+                                                  "properties": {
+                                                    "lat": {
+                                                      "type": "number"
+                                                    },
+                                                    "lon": {
+                                                      "type": "number"
+                                                    }
+                                                  },
+                                                  "example": {
+                                                    "lat": -36.848461,
+                                                    "lon": 174.763336
+                                                  }
+                                                },
+                                                "address": {
+                                                  "description": "The address fields in a structured format. This is available on almost all establishment-level locations, however it may occasionally be missing,",
+                                                  "allOf": [
+                                                    {
+                                                      "type": "object",
+                                                      "required": [
+                                                        "street",
+                                                        "city",
+                                                        "region",
+                                                        "country",
+                                                        "postal_code"
+                                                      ],
+                                                      "properties": {
+                                                        "street": {
+                                                          "type": "string"
+                                                        },
+                                                        "suburb": {
+                                                          "type": "string"
+                                                        },
+                                                        "city": {
+                                                          "type": "string"
+                                                        },
+                                                        "region": {
+                                                          "type": "string"
+                                                        },
+                                                        "country": {
+                                                          "type": "string"
+                                                        },
+                                                        "postal_code": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "example": {
+                                                        "street": "125 Queen Street",
+                                                        "suburb": "Auckland CBD",
+                                                        "city": "Auckland",
+                                                        "region": "Auckland",
+                                                        "country": "New Zealand",
+                                                        "postal_code": "0620"
+                                                      }
+                                                    }
+                                                  ]
+                                                }
+                                              },
+                                              "example": {
+                                                "accuracy": "establishment",
+                                                "formatted": "12 Hastwell Street, Greytown 5712, New Zealand",
+                                                "address": {
+                                                  "street": "12 Hastwell Street",
+                                                  "city": "Greytown",
+                                                  "region": "Wellington",
+                                                  "country": "New Zealand",
+                                                  "postal_code": "5712"
+                                                },
+                                                "coordinates": {
+                                                  "lat": -41.0809289,
+                                                  "lon": 175.4589657
+                                                }
+                                              }
+                                            }
+                                          ],
+                                          "example": {
+                                            "accuracy": "establishment",
+                                            "formatted": "12 Hastwell Street, Greytown 5712, New Zealand",
+                                            "address": {
+                                              "street": "12 Hastwell Street",
+                                              "city": "Greytown",
+                                              "region": "Wellington",
+                                              "country": "New Zealand",
+                                              "postal_code": "5712"
+                                            },
+                                            "coordinates": {
+                                              "lat": -41.0809289,
+                                              "lon": 175.4589657
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    "tags": {
+                                      "type": "array",
+                                      "description": "Tags that apply to the merchant. For example, to indicate that the merchant provides a subscription service.",
+                                      "items": {
+                                        "type": "string",
+                                        "description": "A tag applied to an outlet or merchant, indicating a specific attribute that applies to that entity.",
+                                        "enum": [
+                                          "subscription",
+                                          "closed"
+                                        ]
+                                      }
+                                    }
+                                  },
+                                  "example": {
+                                    "_id": "merchant_cjipiuvdk000lbpzytryqtjkv",
+                                    "name": "FreshChoice",
+                                    "logo": "https://static.akahu.io/outlets/merchant_cjipiuvdk000lbpzytryqtjkv_logo.png",
+                                    "website": "https://www.freshchoice.co.nz",
+                                    "nzbn": "9429040683379",
+                                    "tags": []
+                                  }
+                                },
+                                "outlet": {
+                                  "description": "The specific outlet assigned to this query by Genie enrichment.\nThis field is only included in the result when a distinct outlet has been identified. For example, \"Pak'nSAVE Mount Albert\".\nAn outlet result will not be included for single-location merchants (e.g. your local dairy).\nAn outlet result will always be accompanied with a \"parent\" merchant.",
+                                  "type": "object",
+                                  "required": [
+                                    "_id",
+                                    "name"
+                                  ],
+                                  "properties": {
+                                    "_id": {
+                                      "type": "string",
+                                      "description": "The unique outlet ID."
+                                    },
+                                    "name": {
+                                      "type": "string",
+                                      "description": "The outlet name. This is usually more specific than the merchant name. For example, the merchant name may be \"Pak'nSAVE\", while the outlet name is \"Pak'nSAVE Sylvia Park\"."
+                                    },
+                                    "logo": {
+                                      "type": "string",
+                                      "description": "A URL referencing the outlet's logo. This field will only be included if the logo for this outlet differs from the merchant's logo."
+                                    },
+                                    "website": {
+                                      "type": "string",
+                                      "description": "The URL for the outlet's website. This field will only be included if the website for this outlet differs from the merchant's website."
+                                    },
+                                    "phone": {
+                                      "type": "string",
+                                      "description": "The outlet's phone number. This field will only be included if the phone number for this outlet differs from the merchant's phone number."
+                                    },
+                                    "nzbn": {
+                                      "type": "string",
+                                      "description": "The outlet's NZBN (New Zealand Business Number). This field will only be included if the NZBN for this outlet differs from the merchant's NZBN."
+                                    },
+                                    "location": {
+                                      "description": "The outlet's location.",
+                                      "allOf": [
+                                        {
+                                          "type": "object",
+                                          "description": "A physical location.",
+                                          "oneOf": [
+                                            {
+                                              "type": "object",
+                                              "description": "A reference to a geographic area rather than a specific address.\nFor example:\n  - \"New Zealand\" (country)\n  - \"Waikato, New Zealand\" (region)\n  - \"Auckland, New Zealand\" (locality)\n  - \"Grey Lynn, Auckland, New Zealand\" (sublocality)",
+                                              "required": [
+                                                "accuracy",
+                                                "formatted",
+                                                "coordinates"
+                                              ],
+                                              "properties": {
+                                                "accuracy": {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "country",
+                                                    "region",
+                                                    "locality",
+                                                    "sublocality"
+                                                  ]
+                                                },
+                                                "formatted": {
+                                                  "type": "string"
+                                                },
+                                                "coordinates": {
+                                                  "type": "object",
+                                                  "description": "Latitude/longitude location coordinates.",
+                                                  "required": [
+                                                    "lat",
+                                                    "lon"
+                                                  ],
+                                                  "properties": {
+                                                    "lat": {
+                                                      "type": "number"
+                                                    },
+                                                    "lon": {
+                                                      "type": "number"
+                                                    }
+                                                  },
+                                                  "example": {
+                                                    "lat": -36.848461,
+                                                    "lon": 174.763336
+                                                  }
+                                                }
+                                              },
+                                              "example": {
+                                                "accuracy": "locality",
+                                                "formatted": "Auckland, New Zealand",
+                                                "coordinates": {
+                                                  "lat": -36.848461,
+                                                  "lon": 174.763336
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "type": "object",
+                                              "description": "A reference to a specific physical establishment location.",
+                                              "required": [
+                                                "accuracy",
+                                                "formatted",
+                                                "coordinates"
+                                              ],
+                                              "properties": {
+                                                "accuracy": {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "establishment"
+                                                  ]
+                                                },
+                                                "formatted": {
+                                                  "type": "string"
+                                                },
+                                                "coordinates": {
+                                                  "type": "object",
+                                                  "description": "Latitude/longitude location coordinates.",
+                                                  "required": [
+                                                    "lat",
+                                                    "lon"
+                                                  ],
+                                                  "properties": {
+                                                    "lat": {
+                                                      "type": "number"
+                                                    },
+                                                    "lon": {
+                                                      "type": "number"
+                                                    }
+                                                  },
+                                                  "example": {
+                                                    "lat": -36.848461,
+                                                    "lon": 174.763336
+                                                  }
+                                                },
+                                                "address": {
+                                                  "description": "The address fields in a structured format. This is available on almost all establishment-level locations, however it may occasionally be missing,",
+                                                  "allOf": [
+                                                    {
+                                                      "type": "object",
+                                                      "required": [
+                                                        "street",
+                                                        "city",
+                                                        "region",
+                                                        "country",
+                                                        "postal_code"
+                                                      ],
+                                                      "properties": {
+                                                        "street": {
+                                                          "type": "string"
+                                                        },
+                                                        "suburb": {
+                                                          "type": "string"
+                                                        },
+                                                        "city": {
+                                                          "type": "string"
+                                                        },
+                                                        "region": {
+                                                          "type": "string"
+                                                        },
+                                                        "country": {
+                                                          "type": "string"
+                                                        },
+                                                        "postal_code": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "example": {
+                                                        "street": "125 Queen Street",
+                                                        "suburb": "Auckland CBD",
+                                                        "city": "Auckland",
+                                                        "region": "Auckland",
+                                                        "country": "New Zealand",
+                                                        "postal_code": "0620"
+                                                      }
+                                                    }
+                                                  ]
+                                                }
+                                              },
+                                              "example": {
+                                                "accuracy": "establishment",
+                                                "formatted": "12 Hastwell Street, Greytown 5712, New Zealand",
+                                                "address": {
+                                                  "street": "12 Hastwell Street",
+                                                  "city": "Greytown",
+                                                  "region": "Wellington",
+                                                  "country": "New Zealand",
+                                                  "postal_code": "5712"
+                                                },
+                                                "coordinates": {
+                                                  "lat": -41.0809289,
+                                                  "lon": 175.4589657
+                                                }
+                                              }
+                                            }
+                                          ],
+                                          "example": {
+                                            "accuracy": "establishment",
+                                            "formatted": "12 Hastwell Street, Greytown 5712, New Zealand",
+                                            "address": {
+                                              "street": "12 Hastwell Street",
+                                              "city": "Greytown",
+                                              "region": "Wellington",
+                                              "country": "New Zealand",
+                                              "postal_code": "5712"
+                                            },
+                                            "coordinates": {
+                                              "lat": -41.0809289,
+                                              "lon": 175.4589657
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    "tags": {
+                                      "type": "array",
+                                      "description": "Tags that apply to the outlet. For example, to indicate that the outlet provides a subscription service. Tags are inherited (and potentially extended) from the outlet's \"parent\" merchant.",
+                                      "items": {
+                                        "type": "string",
+                                        "description": "A tag applied to an outlet or merchant, indicating a specific attribute that applies to that entity.",
+                                        "enum": [
+                                          "subscription",
+                                          "closed"
+                                        ]
+                                      }
+                                    }
+                                  },
+                                  "example": {
+                                    "_id": "outlet_cm0qk0idc000l08kydt9gf9gz",
+                                    "name": "FreshChoice Greytown",
+                                    "website": "https://greytown.store.freshchoice.co.nz/",
+                                    "phone": "06 304 7237",
+                                    "location": {
+                                      "accuracy": "establishment",
+                                      "formatted": "12 Hastwell Street, Greytown 5712, New Zealand",
+                                      "address": {
+                                        "street": "12 Hastwell Street",
+                                        "city": "Greytown",
+                                        "region": "Wellington",
+                                        "country": "New Zealand",
+                                        "postal_code": "5712"
+                                      },
+                                      "coordinates": {
+                                        "lat": -41.0809289,
+                                        "lon": 175.4589657
+                                      }
+                                    },
+                                    "tags": []
+                                  }
+                                }
+                              },
+                              "required": [
+                                "confidence",
+                                "category"
+                              ]
+                            }
+                          }
+                        },
+                        "required": [
+                          "query",
+                          "results"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "items"
+                  ]
+                },
+                "examples": {
+                  "Example 1": {
+                    "description": "A basic example response",
+                    "value": {
+                      "success": true,
+                      "items": [
+                        {
+                          "id": "1",
+                          "query": "CJ PALMERSTON NTH - 203PALM NTH",
+                          "results": [
+                            {
+                              "confidence": 0.99,
+                              "category": {
+                                "_id": "nzfcc_ckouvvywi004508mlacrd41wf",
+                                "name": "Fast food stores",
+                                "groups": {
+                                  "personal_finance": {
+                                    "_id": "group_clasr0ysw0011hk4m6hlk9fq0",
+                                    "name": "Lifestyle"
+                                  }
+                                }
+                              },
+                              "merchant": {
+                                "_id": "merchant_cjjwm2gy5004bguzydvu4dttf",
+                                "name": "Carl's Jr.",
+                                "logo": "https://static.akahu.io/outlets/merchant_cjjwm2gy5004bguzydvu4dttf_logo.png",
+                                "website": "https://www.carlsjr.co.nz",
+                                "tags": []
+                              },
+                              "outlet": {
+                                "_id": "outlet_cm0lyuatv000008jy9kwr2t8f",
+                                "name": "Carl's Jr. Palmerston North",
+                                "phone": "06 358 5075",
+                                "location": {
+                                  "accuracy": "establishment",
+                                  "formatted": "415 Ferguson Street, Palmerston North Central, Palmerston North 4410, New Zealand",
+                                  "address": {
+                                    "street": "415 Ferguson Street",
+                                    "suburb": "Palmerston North Central",
+                                    "city": "Palmerston North",
+                                    "region": "Manawatū-Whanganui",
+                                    "country": "New Zealand",
+                                    "postal_code": "4410"
+                                  },
+                                  "coordinates": {
+                                    "lat": -40.3575,
+                                    "lon": 175.6175
+                                  }
+                                },
+                                "tags": []
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "id": "2",
+                          "query": "CARD 2293 WHOLEMEAL TRAD CO LTDTAKAKA",
+                          "results": [
+                            {
+                              "confidence": 0.99,
+                              "category": {
+                                "_id": "nzfcc_ckouvvyw1004408mlhy158i7j",
+                                "name": "Cafes and restaurants",
+                                "groups": {
+                                  "personal_finance": {
+                                    "_id": "group_clasr0ysw0011hk4m6hlk9fq0",
+                                    "name": "Lifestyle"
+                                  }
+                                }
+                              },
+                              "merchant": {
+                                "_id": "merchant_cksxp1au3001g09mp3ilt01tz",
+                                "name": "The Wholemeal Cafe",
+                                "logo": "https://static.akahu.io/images/merchant_cksxp1au3001g09mp3ilt01tz_logo.png",
+                                "website": "http://www.wholemealcafe.co.nz/",
+                                "phone": "03 525 9426",
+                                "location": {
+                                  "accuracy": "establishment",
+                                  "formatted": "7110/60 Commercial Street, Tākaka 7110, New Zealand",
+                                  "address": {
+                                    "street": "7110/60 Commercial Street",
+                                    "city": "Tākaka",
+                                    "region": "Tasman",
+                                    "country": "New Zealand",
+                                    "postal_code": "7110"
+                                  },
+                                  "coordinates": {
+                                    "lat": -40.8586533,
+                                    "lon": 172.8063369
+                                  }
+                                },
+                                "tags": []
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of the error that has occurred"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of the error that has occurred"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of the error that has occurred"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate Limiting",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of the error that has occurred"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of the error that has occurred"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

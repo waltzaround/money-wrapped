@@ -18,6 +18,27 @@ import {
 import { Header } from "~/components/header";
 import { cn } from "~/lib/utils";
 import { useNavigate } from "react-router";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+
+const BANK_CONNECTIONS = {
+  ANZ: 'conn_cjgaawozb000001nyd111xixr',
+  ASB: 'conn_cjgaaqcna000001ldwof8tvj0',
+  BNZ: 'conn_cjgaatd57000001pe1t1z0iy9',
+  Heartland: 'conn_ck5rhsdbv0000ftx1bmdu9zas',
+  Kiwibank: 'conn_cjgaac5at000001qi2yw8ftil',
+  Rabobank: 'conn_ckydkmy3r000009mde2sx2i4d',
+  'The Cooperative Bank': 'conn_cjgab1c8e000001pmyxrkhova',
+  TSB: 'conn_cjgab6fis000001qsytf1semy',
+  Westpac: 'conn_cjgaaozdo000001mrnqmkl1m0',
+} as const;
+
+type BankName = keyof typeof BANK_CONNECTIONS;
 
 export default function PreparePage() {
   const navigate = useNavigate();
@@ -28,6 +49,7 @@ export default function PreparePage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedBank, setSelectedBank] = useState<BankName | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = async (file: File) => {
@@ -103,7 +125,7 @@ export default function PreparePage() {
     if (!currentFiles.length) {
       toast({
         title: "No files selected",
-        description: "Please upload some CSV files first",
+        description: "Please select at least one CSV file to upload.",
         variant: "destructive",
       });
       return;
@@ -116,10 +138,14 @@ export default function PreparePage() {
       const formData = new FormData();
       console.log(`Sending ${currentFiles.length} files to server`);
       
-      currentFiles.forEach((file, index) => {
-        console.log(`Adding file ${index + 1}: ${file.name}, size: ${file.size} bytes`);
+      currentFiles.forEach((file) => {
+        console.log(`Adding file: ${file.name}, size: ${file.size} bytes`);
         formData.append("files", file);
       });
+
+      if (selectedBank) {
+        formData.append("connection", BANK_CONNECTIONS[selectedBank]);
+      }
 
       const response = await fetch("http://localhost:8787/upload-csv", {
         method: "POST",
@@ -276,6 +302,25 @@ export default function PreparePage() {
                 ))}
               </div>
             )}
+
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-2">Select Your Bank</label>
+              <Select
+                onValueChange={(value) => setSelectedBank(value as BankName)}
+                value={selectedBank ?? undefined}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select your bank" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.keys(BANK_CONNECTIONS).map((bank) => (
+                    <SelectItem key={bank} value={bank}>
+                      {bank}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
             <div className="flex justify-end px-6 pb-6">
               <Button
