@@ -47,6 +47,11 @@ interface TransactionAnalytics {
     description: string;
     amount: number;
   };
+  uniqueMerchants: number;
+  biggestSpendingDay: {
+    date: string;
+    total: number;
+  };
 }
 
 export function analyzeTransactions(transactions: Transaction[]): TransactionAnalytics {
@@ -69,7 +74,9 @@ export function analyzeTransactions(transactions: Transaction[]): TransactionAna
         percentageHigher: 0
       },
       earliestTransaction: { date: '', description: '', amount: 0 },
-      latestTransaction: { date: '', description: '', amount: 0 }
+      latestTransaction: { date: '', description: '', amount: 0 },
+      uniqueMerchants: 0,
+      biggestSpendingDay: { date: '', total: 0 }
     };
   }
 
@@ -90,13 +97,16 @@ export function analyzeTransactions(transactions: Transaction[]): TransactionAna
   // Track spending by merchant and monthly
   const merchantSpending = new Map<string, MerchantSpending>();
   const monthlySpending = new Map<string, MonthlySpending>();
-  
+
+  // Track daily spending
+  const dailySpending = new Map<string, number>();
+
   let totalSpent = 0;
   let weekendTotal = 0;
   let weekendCount = 0;
   let weekdayTotal = 0;
   let weekdayCount = 0;
-  
+
   // Process each transaction
   transactions.forEach(transaction => {
     if (typeof transaction.amount !== 'number' || isNaN(transaction.amount)) {
@@ -115,21 +125,21 @@ export function analyzeTransactions(transactions: Transaction[]): TransactionAna
       console.error('Invalid date format:', transaction);
       return;
     }
-    
+
     const date = new Date(year, month - 1, day);
-    
+
     if (isNaN(date.getTime())) {
       console.error('Invalid transaction date:', transaction);
       return;
     }
 
-    const monthKey = `${year}-${String(month).padStart(2, '0')}`;
+    const dateKey = transaction.date; // Using DD/MM/YYYY format
     const amount = Math.abs(transaction.amount);
-    
+
     // Track weekend vs weekday spending
     const dayOfWeek = date.getDay();
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6; // 0 is Sunday, 6 is Saturday
-    
+
     if (isWeekend) {
       weekendTotal += amount;
       weekendCount += 1;
@@ -138,7 +148,11 @@ export function analyzeTransactions(transactions: Transaction[]): TransactionAna
       weekdayCount += 1;
     }
 
+    // Track daily spending
+    dailySpending.set(dateKey, (dailySpending.get(dateKey) || 0) + amount);
+
     // Update monthly spending
+    const monthKey = `${year}-${String(month).padStart(2, '0')}`;
     if (!monthlySpending.has(monthKey)) {
       monthlySpending.set(monthKey, {
         month: monthKey,
@@ -147,7 +161,7 @@ export function analyzeTransactions(transactions: Transaction[]): TransactionAna
         transactionCount: 0
       });
     }
-    
+
     const monthData = monthlySpending.get(monthKey)!;
     monthData.total += amount;
     monthData.transactionCount += 1;
@@ -194,21 +208,30 @@ export function analyzeTransactions(transactions: Transaction[]): TransactionAna
   const sortedTransactions = [...transactions]
     .filter(t => !isNaN(t.amount))
     .sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount));
-  
+
   const weekendAveragePerDay = weekendTotal / (weekendCount || 1);
   const weekdayAveragePerDay = weekdayTotal / (weekdayCount || 1);
   const percentageHigher = ((weekendAveragePerDay - weekdayAveragePerDay) / weekdayAveragePerDay) * 100;
+
+  // Find the biggest spending day
+  let biggestSpendingDay = { date: '', total: 0 };
+  dailySpending.forEach((total, date) => {
+    if (total > biggestSpendingDay.total) {
+      biggestSpendingDay = { date, total };
+    }
+  });
+
+  const uniqueMerchants = merchantSpending.size;
 
   return {
     highestSpendingMonth,
     lowestSpendingMonth,
     largestTransactions: sortedTransactions.slice(0, 10),
     allTransactions: sortedTransactions,
-    totalSpent: Number(totalSpent),
-    averageTransactionAmount: Number(totalSpent / transactions.length),
+    totalSpent,
+    averageTransactionAmount: totalSpent / transactions.length,
     transactionCount: transactions.length,
     topMerchants,
-    monthlySpendingArray,
     weekendSpending: {
       total: weekendTotal,
       transactionCount: weekendCount,
@@ -216,7 +239,10 @@ export function analyzeTransactions(transactions: Transaction[]): TransactionAna
       weekdayAverage: weekdayAveragePerDay,
       percentageHigher: percentageHigher
     },
+    monthlySpendingArray,
     earliestTransaction,
-    latestTransaction
+    latestTransaction,
+    uniqueMerchants,
+    biggestSpendingDay
   };
 }

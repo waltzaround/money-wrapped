@@ -24,6 +24,7 @@ export interface WeekendSpending {
 }
 
 export interface TransactionAnalytics {
+  biggestSpendingDay: any;
   allTransactions: any;
   cafeVisits: number;
   biggestDay: any;

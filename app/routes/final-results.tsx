@@ -207,7 +207,9 @@ export default function FinalResultsPage() {
             <CardContent className="grid grid-cols-2 gap-4 max-md:grid-cols-1">
               <div className="p-4 bg-emerald-50 rounded-lg">
                 <p className="text-gray-700">Total Spent</p>
-                <p className="text-2xl font-bold text-emerald-600">${totalSpent.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-emerald-600">
+                  ${totalSpent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </p>
               </div>
               <div className="p-4 bg-blue-50 rounded-lg">
                 <p className="text-gray-700">Transactions</p>
@@ -218,8 +220,20 @@ export default function FinalResultsPage() {
                 <p className="text-2xl font-bold text-purple-600">{analytics?.uniqueMerchants || 0}</p>
               </div>
               <div className="p-4 bg-pink-50 rounded-lg">
-                <p className="text-gray-700">Biggest Day</p>
-                <p className="text-2xl font-bold text-pink-600">${analytics?.biggestDay?.toLocaleString() || 0}</p>
+                <p className="text-gray-700">Biggest Day -             {analytics?.biggestSpendingDay?.date || 'No data'}</p>
+                <p className="text-2xl font-bold text-pink-600">
+                  {analytics?.biggestSpendingDay ? 
+                    new Intl.NumberFormat('en-US', {
+                      style: 'currency',
+                      currency: 'USD',
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }).format(analytics.biggestSpendingDay.total)
+                    : '$0'}
+                </p>
+                <p className="text-sm text-gray-600">
+      
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -269,19 +283,20 @@ export default function FinalResultsPage() {
                     fontSize={12}
                     tickLine={false}
                     axisLine={false}
-                    tickFormatter={(value) => `$${value}`}
+                    tickFormatter={(value) => `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                   />
                   <Tooltip
                     content={({ active, payload }) => {
-                      if (active && payload && payload.length) {
+                      if (active && payload?.[0]?.payload && payload.length > 0) {
+                        const data = payload[0];
                         return (
                           <div className="rounded-lg border bg-white p-2 shadow-sm">
                             <div className="grid grid-cols-2 gap-2">
                               <div className="font-medium">
-                                {payload[0].payload.period}
+                                {data.payload.period}
                               </div>
                               <div className="text-right font-medium">
-                                ${payload[0].value}
+                                ${data.value?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                               </div>
                             </div>
                           </div>
@@ -306,7 +321,7 @@ export default function FinalResultsPage() {
                 This year you spent
               </p>
               <p className="text-5xl font-bold mb-2 text-emerald-800">
-                ${totalSpent.toLocaleString()}
+                ${totalSpent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
               <p className="text-lg text-emerald-700">on purchases</p>
             </div>
@@ -322,7 +337,7 @@ export default function FinalResultsPage() {
                       <span className="text-emerald-600">#{index + 1}</span>
                       <span className="font-medium text-gray-800">{merchant.name}</span>
                     </div>
-                    <span className="text-gray-700">${merchant.total.toLocaleString()}</span>
+                    <span className="text-gray-700">${merchant.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
                 ))}
               </div>
@@ -333,8 +348,8 @@ export default function FinalResultsPage() {
               <p className="text-lg text-orange-700 mb-2">
                 You spend on average about
               </p>
-              <p className="text-5xl font-bold mb-2">${averageTransaction.toLocaleString()}</p>
-              <p className="text-lg text-orange-700">every weekend</p>
+              <p className="text-5xl font-bold mb-2">${averageTransaction.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+              <p className="text-lg text-orange-700">per transaction</p>
             </div>
             <div className="flex-1 aspect-[9/16] rounded-xl border  p-8 bg-gradient-to-b from-lime-200 to-lime-100 text-white flex flex-col items-center justify-center">
               <p className="text-lg text-lime-700 mb-2">You visited a cafe</p>
@@ -362,7 +377,7 @@ export default function FinalResultsPage() {
                       <span className="text-blue-600">#{index + 1}</span>
                       <span className="font-medium text-gray-800">{merchant.name}</span>
                     </div>
-                    <span className="text-gray-700">${merchant.total.toLocaleString()}</span>
+                    <span className="text-gray-700">${merchant.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
                 ))}
               </div>
@@ -379,7 +394,7 @@ export default function FinalResultsPage() {
                 This year you spent
               </p>
               <p className="text-5xl font-bold mb-2 text-emerald-800">
-                ${totalSpent.toLocaleString()}
+                ${totalSpent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
               <p className="text-lg text-emerald-700">on purchases</p>
             </div>
@@ -409,7 +424,7 @@ export default function FinalResultsPage() {
                         </span>
                       </div>
                       <span className="text-gray-700">
-                        ${Math.abs(transaction.amount).toLocaleString()}
+                        ${Math.abs(transaction.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                     </div>
                   );
@@ -446,7 +461,7 @@ export default function FinalResultsPage() {
                           />
                           <span className="text-sm text-gray-600">
                             {category.category}
-                            <br />${category.amount.toLocaleString()} (
+                            <br />${category.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (
                             {percentage}%)
                           </span>
                         </div>
@@ -485,7 +500,7 @@ export default function FinalResultsPage() {
                               {category.category}
                             </div>
                             <div className="text-gray-600">
-                              ${category.amount.toLocaleString()}
+                              ${category.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </div>
                             <div className="text-gray-500">
                               {percentage.toFixed(1)}% of total
@@ -502,6 +517,7 @@ export default function FinalResultsPage() {
               </ResponsiveContainer>
             </div>
           </div>
+          <div className="grid grid-cols-2 gap-4">
           <Card>
             <CardHeader>
               <CardTitle>Powered by Akahu</CardTitle>
@@ -529,7 +545,7 @@ export default function FinalResultsPage() {
             <CardContent>
               <p className="text-gray-600">
                 Love building useful tools? The company I work for is looking
-                for passionate developers to join our team at Watchful.
+                for developers who like building useful tools.
               </p>
 
               <Button className="mt-4 gap-2" asChild variant="default">
@@ -539,9 +555,10 @@ export default function FinalResultsPage() {
               </Button>
             </CardContent>
           </Card>
+          </div>
         </div>
 
-        <div className="mt-12 text-center text-sm text-gray-400">
+        <div className="mt-12 text-center text-sm text-gray-600">
           <p>
             Money Wrapped 2024 is built by{" "}
             <a href="https://walt.online">Walter Lim</a>.

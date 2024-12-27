@@ -226,6 +226,25 @@ export default function PreparePage() {
                 Export your bank transactions as a CSV file and upload it here
               </CardDescription>
             </CardHeader>
+            <div className="m-6">
+              <label className="block text-sm font-medium mb-2">Select Your Bank</label>
+              <Select
+                onValueChange={(value) => setSelectedBank(value as BankName)}
+                value={selectedBank ?? undefined}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select your bank" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.keys(BANK_CONNECTIONS).map((bank) => (
+                    <SelectItem key={bank} value={bank}>
+                      {bank}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div
               className={cn(
                 "p-8 border-2 border-dashed rounded-lg m-6 transition-colors duration-200 ease-in-out",
@@ -260,7 +279,7 @@ export default function PreparePage() {
                   <p className="font-medium">
                     {isUploading
                       ? "Processing your file..."
-                      : "Drag & drop your CSV file here"}
+                      : "Drag & drop your CSV files here"}
                   </p>
                   <p className="text-sm text-muted-foreground">
                     or click to browse your files
@@ -268,6 +287,7 @@ export default function PreparePage() {
                 </div>
               </div>
             </div>
+            
 
             {uploadError && (
               <div className="mx-6 mb-6 p-4 bg-destructive/10 text-destructive rounded-lg flex items-start gap-2">
@@ -303,25 +323,7 @@ export default function PreparePage() {
               </div>
             )}
 
-            <div className="mb-6">
-              <label className="block text-sm font-medium mb-2">Select Your Bank</label>
-              <Select
-                onValueChange={(value) => setSelectedBank(value as BankName)}
-                value={selectedBank ?? undefined}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select your bank" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.keys(BANK_CONNECTIONS).map((bank) => (
-                    <SelectItem key={bank} value={bank}>
-                      {bank}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
+       
             <div className="flex justify-end px-6 pb-6">
               <Button
                 onClick={handleSubmit}
