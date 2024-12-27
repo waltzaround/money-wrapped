@@ -221,6 +221,14 @@ export default function ResultsPage() {
     }
   }, [analytics, navigate]);
 
+  // Helper function to format currency consistently
+  const formatCurrency = (amount: number): string => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(amount);
+  };
+
   const slides: Slide[] = useMemo(() => {
     const placeholderSlides: Slide[] = [
       {
@@ -348,27 +356,31 @@ export default function ResultsPage() {
     // Create a new array for the updated slides
     const updatedSlides = [...placeholderSlides];
 
-    // Format the total amount
-    const formattedTotal = new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(analytics.totalSpent);
-
     // Update total spent slide
     updatedSlides[0] = {
       type: "standard",
       gradient: placeholderSlides[0].gradient,
       title: placeholderSlides[0].title,
-      value: formattedTotal,
+      value: formatCurrency(analytics.totalSpent),
       subtitle: 'standard' in placeholderSlides[0] ? (placeholderSlides[0] as StandardSlide).subtitle : '',
       textColor: placeholderSlides[0].textColor,
+    } as StandardSlide;
+
+    // Update unique businesses slide
+    updatedSlides[1] = {
+      type: "standard",
+      gradient: placeholderSlides[1].gradient,
+      title: placeholderSlides[1].title,
+      value: analytics.uniqueMerchants.toString(),
+      subtitle: "different businesses",
+      textColor: placeholderSlides[1].textColor,
     } as StandardSlide;
 
     // Update transaction count slide
     updatedSlides[2] = {
       ...placeholderSlides[2],
       type: "standard",
-      value: analytics.transactionCount.toString(),
+      value: analytics.transactionCount.toLocaleString('en-US'),
       subtitle: "transactions"
     };
 
@@ -378,11 +390,8 @@ export default function ResultsPage() {
         type: "standard",
         gradient: "from-pink-500 to-pink-700",
         title: "Your highest spending month was",
-        value: new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: 'USD'
-        }).format(analytics.highestSpendingMonth.total),
-        subtitle: analytics.highestSpendingMonth.month,
+        value: new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" }).format(new Date(analytics.highestSpendingMonth.month + "-01")),
+        subtitle: "You spent " + formatCurrency(analytics.highestSpendingMonth.total),
         description: "That's your biggest spending month!",
         textColor: "pink",
       };
@@ -396,10 +405,7 @@ export default function ResultsPage() {
         gradient: "from-orange-500 to-orange-700",
         title: "Your favorite merchant was",
         value: topMerchant.name,
-        subtitle: `${new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: 'USD'
-        }).format(topMerchant.total)} spent on ${topMerchant.transactionCount} visits`,
+        subtitle: `${formatCurrency(Number(topMerchant.total))} spent on ${topMerchant.transactionCount} visits`,
         description: "That's where you spent the most money this year",
         textColor: "orange",
       };
@@ -414,10 +420,7 @@ export default function ResultsPage() {
           items: analytics.topMerchants.map((merchant: { name: any; total: number | bigint; }, index: number) => ({
             rank: index + 1,
             name: merchant.name,
-            detail: new Intl.NumberFormat('en-US', {
-              style: 'currency',
-              currency: 'USD'
-            }).format(merchant.total) + " spent"
+            detail: `${formatCurrency(Number(merchant.total))} spent`
           })),
         };
       }
@@ -432,10 +435,7 @@ export default function ResultsPage() {
         type: "standard",
         gradient: "from-lime-500 to-lime-700",
         title: "Your biggest purchase",
-        value: new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: 'USD'
-        }).format(Math.abs(biggestPurchase.amount)),
+        value: formatCurrency(Math.abs(biggestPurchase.amount)),
         subtitle: biggestPurchase.description,
         description: `That's ${Math.round(percentageOfAverage)}% more than your average purchase`,
         textColor: "lime",
@@ -448,10 +448,7 @@ export default function ResultsPage() {
         type: "standard",
         gradient: "from-cyan-500 to-cyan-700",
         title: "Weekend warrior",
-        value: new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: 'USD'
-        }).format(analytics.weekendSpending.averagePerDay),
+        value: formatCurrency(analytics.weekendSpending.averagePerDay),
         subtitle: "average weekend spending",
         description: analytics.weekendSpending.percentageHigher > 0 
           ? `You tend to spend ${Math.round(analytics.weekendSpending.percentageHigher)}% more on weekends`
@@ -470,10 +467,7 @@ export default function ResultsPage() {
         items: analytics.monthlySpendingArray.slice(0, 5).map((month: { monthName: any; total: number | bigint; }, index: number) => ({
           rank: index + 1,
           name: month.monthName,
-          detail: new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD'
-          }).format(month.total) + " spent"
+          detail: `${formatCurrency(Number(month.total))} spent`
         })),
       };
     }
