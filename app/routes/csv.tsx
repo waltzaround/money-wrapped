@@ -72,7 +72,7 @@ export default function PreparePage() {
       // Get unique transactions (removing duplicates)
       const uniqueTransactions = new Set(transactions);
 
-      if (uniqueTransactions.size < 200) {
+      if (uniqueTransactions.size < 120) {
         throw new Error(
           `Not enough transactions in ${file.name}. Found ${uniqueTransactions.size}, need at least 200 transactions from 2024.`
         );
