@@ -48,7 +48,52 @@ function parseCsvToTransactions(csvText: string, connection?: string) {
 			}
 			
 			// Parse the date to check year
-			const [day, month, year] = date.split('/').map(Number);
+			let day: number, month: number, year: number;
+			
+			// Try different date formats
+			const dateFormats = [
+				// DD/MM/YYYY (NZ format)
+				() => {
+					const [d, m, y] = date.split(/[/-]/).map(Number);
+					if (d && m && y && d <= 31 && m <= 12) {
+						day = d;
+						month = m;
+						year = y;
+						return true;
+					}
+					return false;
+				},
+				// MM/DD/YYYY (US format)
+				() => {
+					const [m, d, y] = date.split(/[/-]/).map(Number);
+					if (d && m && y && d <= 31 && m <= 12) {
+						day = d;
+						month = m;
+						year = y;
+						return true;
+					}
+					return false;
+				},
+				// YYYY/MM/DD (ISO format)
+				() => {
+					const [y, m, d] = date.split(/[/-]/).map(Number);
+					if (d && m && y && d <= 31 && m <= 12) {
+						day = d;
+						month = m;
+						year = y;
+						return true;
+					}
+					return false;
+				}
+			];
+
+			// Try each format until one works
+			const validDate = dateFormats.some(format => format());
+			if (!validDate) {
+				console.error('Invalid date format:', date);
+				return null;
+			}
+
 			if (!year || year !== 2024) {
 				return null;
 			}
