@@ -19,6 +19,9 @@
 		"wrangler": "^3.60.3"
 	},
 	"dependencies": {
-		"@api/akahu": "file:.api/apis/akahu"
+		"@api/akahu": "file:.api/apis/akahu",
+		"@hono/zod-validator": "^0.4.2",
+		"hono": "^4.6.15",
+		"zod": "^3.24.1"
 	}
 }
