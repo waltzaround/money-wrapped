@@ -20,9 +20,13 @@ const handle = async (c: Context<HonoType, '/auth/callback'>) => {
 		setCookie(c, 'User-Token', code, {
 			httpOnly: true,
 			maxAge: 2_592_000,
+			// Dogey hack to make work on localhost
+			domain: 'localhost',
 		});
 
-		return c.redirect(`${c.env.APP_URL}/money.haxx.nz/loading`, 302);
+		// Doggy redirect to make it work on localhost
+		return c.redirect(`http://localhost:5173/loading`, 302);
+		return c.redirect(`${c.env.APP_URL}/loading`, 302);
 	} catch (error) {
 		console.error('Error in Akahu callback:', error);
 		return c.json(
