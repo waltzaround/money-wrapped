@@ -26,12 +26,7 @@ const handle = async (c: Context<HonoType, '/auth/callback'>) => {
 		setCookie(c, 'User-Token', code, {
 			httpOnly: true,
 			maxAge: 2_592_000,
-			// Dogey hack to make work on localhost
-			domain: 'localhost',
 		});
-
-		// Doggy redirect to make it work on localhost
-		return c.html(redirectSite('http://localhost:5173'));
 
 		return c.html(redirectSite(c.env.APP_URL));
 	} catch (error) {
