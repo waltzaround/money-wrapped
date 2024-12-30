@@ -180,7 +180,7 @@ export default function FinalResultsPage() {
 
   const spendCategories: SpendCategory[] = [
     { category: "Rent", amount: 6000, color: "bg-blue-500" },
-    { category: "Groceries", amount: 3000, color: "bg-emerald-500" },
+    { category: "Food", amount: 3000, color: "bg-emerald-500" },
     { category: "Dining Out", amount: 1600, color: "bg-rose-500" },
     { category: "Entertainment", amount: 1500, color: "bg-orange-500" },
     { category: "Utilities", amount: 1200, color: "bg-purple-500" },
@@ -345,6 +345,11 @@ export default function FinalResultsPage() {
               </div>
             </div>
           </div>
+          <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-gray-100 to-gray-200 text-gray-800 flex flex-col items-center justify-center">
+              <p className="text-lg text-gray-700 mb-2">You made</p>
+              <p className="text-5xl font-bold mb-2">{transactionCount}</p>
+              <p className="text-lg text-gray-700">transactions</p>
+            </div>
           <div className="flex gap-4 max-md:flex-col">
             <div className="flex-1 aspect-[9/16] rounded-xl border p-8 bg-gradient-to-b from-orange-100 to-orange-200 text-gray-800 flex flex-col items-center justify-center">
               <p className="text-lg text-orange-700 mb-2">
@@ -354,27 +359,28 @@ export default function FinalResultsPage() {
               <p className="text-lg text-orange-700">per transaction</p>
             </div>
             <div className="flex-1 aspect-[9/16] rounded-xl border  p-8 bg-gradient-to-b from-lime-200 to-lime-100 text-white flex flex-col items-center justify-center">
-              <p className="text-lg text-lime-700 mb-2">You visited a cafe</p>
+              <p className="text-lg text-lime-700 mb-2">You spent the most on</p>
 
               <p className="text-5xl font-bold text-lime-800  mb-2">
-                {analytics?.cafeVisits || 0} times
+           24 Jan 2024
               </p>
-              <p className="text-lg text-lime-700 text-center">This year</p>
+              <p className="text-lg text-lime-700 text-center">$XX,XXX</p>
             </div>
-            <div className="flex-1 aspect-[9/16] rounded-xl border p-8 bg-gradient-to-b from-purple-100 to-purple-200 text-gray-800 flex flex-col items-center justify-center">
-              <p className="text-lg text-purple-700 mb-2">You made</p>
-              <p className="text-5xl font-bold mb-2">{transactionCount}</p>
-              <p className="text-lg text-purple-700">transactions</p>
+          
+            <div className="flex-1 aspect-[9/16] rounded-xl border p-8 bg-gradient-to-b from-rose-100 to-rose-200 text-gray-800 flex flex-col items-center justify-center">
+              <p className="text-lg text-rose-700 mb-2">You shopped at</p>
+              <p className="text-5xl font-bold mb-2">{analytics?.uniqueMerchants || 0}</p>
+              <p className="text-lg text-rose-700">different businesses</p>
             </div>
           </div>
           <div className="grid grid-cols-3 max-md:grid-cols-1 gap-4">
             <div className="col-span-2 rounded-xl  flex flex-col p-8 bg-blue-50 text-gray-800 border">
-              <h3 className="text-2xl font-bold text-blue-700 mb-6">
+              <h3 className="text-2xl font-bold text-blue-700 mb-2">
                 Your Top 10 Restaurants &amp; Cafes
               </h3>
-              <div className="space-y-4">
+              <div className="">
                 {analytics?.topMerchants?.slice(0, 10).map((merchant, index) => (
-                  <div className="flex justify-between items-center" key={index}>
+                  <div className="flex justify-between items-center mt-4 pt-4 border-t border-blue-200" key={index}>
                     <div className="flex items-center gap-2">
                       <span className="text-blue-600">#{index + 1}</span>
                       <span className="font-medium text-gray-800">{merchant.name}</span>
@@ -385,34 +391,30 @@ export default function FinalResultsPage() {
               </div>
             </div>
             <div className="flex-1 aspect-[9/16] rounded-xl border p-8 bg-gradient-to-b from-blue-100 to-blue-200 text-gray-800 flex flex-col items-center justify-center">
-              <p className="text-lg text-blue-700 mb-2">You shopped at</p>
+              <p className="text-lg text-blue-700 mb-2">You spent</p>
               <p className="text-5xl font-bold mb-2">{analytics?.uniqueMerchants || 0}</p>
-              <p className="text-lg text-blue-700">different businesses</p>
+              <p className="text-lg text-blue-700">on Restaurants &amp; Cafes</p>
             </div>
           </div>
           <div className="grid grid-cols-3  max-md:grid-cols-1 gap-4">
          
-            <div className="col-span-3 rounded-xl  flex flex-col p-8 bg-emerald-50 text-gray-800 border">
-              <h3 className="text-2xl font-bold text-emerald-700 mb-6">
-                Largest transactions this year
+            <div className="col-span-2 rounded-xl  flex flex-col p-8 bg-purple-50 text-gray-800 border">
+              <h3 className="text-2xl font-bold text-purple-700 mb-6">
+             Your top 10 Fashion brands
               </h3>
               <div className="">
                 {analytics?.largestTransactions?.slice(0, 10).map((transaction, index) => {
-                  const dateComponents = transaction.date.split('/').map(Number);
-                  const date = new Date(dateComponents[2], dateComponents[1] - 1, dateComponents[0]);
-                  const formattedDate = date.toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric'
-                  });
+               
+              
                   
                   return (
-                    <div className="flex justify-between items-center border-b border-green-200 pb-3 mb-3" key={index}>
+                    <div className="flex justify-between items-center border-b border-purple-200 pb-3 mb-3" key={index}>
                       <div className="flex items-center gap-2">
-                        <span className="text-emerald-600">#{index + 1}</span>
+                        <span className="text-purple-600">#{index + 1}</span>
                         <span className="font-medium text-gray-800">
-                          {formattedDate}{" "}
+                        {transaction.description}{" "}&nbsp;
                           <span className="text-gray-500 text-sm">
-                            {transaction.description}
+                 
                           </span>
                         </span>
                       </div>
@@ -424,7 +426,134 @@ export default function FinalResultsPage() {
                 })}
               </div>
             </div>
+            <div className="aspect-[9/16] rounded-xl border p-8 bg-gradient-to-b from-purple-100 to-purple-200 text-gray-800 flex flex-col items-center justify-center">
+              <p className="text-lg text-purple-700 mb-2">
+                This year you spent
+              </p>
+              <p className="text-5xl font-bold mb-2 text-purple-950">
+                ${totalSpent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </p>
+              <p className="text-lg text-purple-700">on fashion</p>
+            </div>
+
           </div>
+          <div className="grid grid-cols-3  max-md:grid-cols-1 gap-4">
+         
+         <div className="col-span-2 rounded-xl  flex flex-col p-8 bg-cyan-50 text-gray-800 border">
+           <h3 className="text-2xl font-bold text-cyan-700 mb-6">
+          Your top 10 Lifestyle Purchases
+           </h3>
+           <div className="">
+             {analytics?.largestTransactions?.slice(0, 10).map((transaction, index) => {
+            
+           
+               
+               return (
+                 <div className="flex justify-between items-center border-b border-purple-200 pb-3 mb-3" key={index}>
+                   <div className="flex items-center gap-2">
+                     <span className="text-cyan-600">#{index + 1}</span>
+                     <span className="font-medium text-gray-800">
+                     {transaction.description}{" "}&nbsp;
+                       <span className="text-gray-500 text-sm">
+              
+                       </span>
+                     </span>
+                   </div>
+                   <span className="text-gray-700">
+                     ${Math.abs(transaction.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                   </span>
+                 </div>
+               );
+             })}
+           </div>
+         </div>
+         <div className="aspect-[9/16] rounded-xl border p-8 bg-gradient-to-b from-cyan-100 to-cyan-200 text-gray-800 flex flex-col items-center justify-center">
+           <p className="text-lg text-cyan-700 mb-2">
+             This year you spent
+           </p>
+           <p className="text-5xl font-bold mb-2 text-cyan-950">
+             ${totalSpent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+           </p>
+           <p className="text-lg text-cyan-700">on lifestyle purchases</p>
+         </div>
+
+       </div>
+       <div className="grid grid-cols-3  max-md:grid-cols-1 gap-4">
+         
+         <div className="col-span-2 rounded-xl  flex flex-col p-8 bg-lime-50 text-gray-800 border">
+           <h3 className="text-2xl font-bold text-lime-700 mb-6">
+          Your top 10 Household Purchases
+           </h3>
+           <div className="">
+             {analytics?.largestTransactions?.slice(0, 10).map((transaction, index) => {
+            
+           
+               
+               return (
+                 <div className="flex justify-between items-center border-b border-lime-200 pb-3 mb-3" key={index}>
+                   <div className="flex items-center gap-2">
+                     <span className="text-lime-600">#{index + 1}</span>
+                     <span className="font-medium text-gray-800">
+                     {transaction.description}{" "}&nbsp;
+                       <span className="text-gray-500 text-sm">
+              
+                       </span>
+                     </span>
+                   </div>
+                   <span className="text-gray-700">
+                     ${Math.abs(transaction.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                   </span>
+                 </div>
+               );
+             })}
+           </div>
+         </div>
+         <div className="aspect-[9/16] rounded-xl border p-8 bg-gradient-to-b from-lime-100 to-lime-200 text-gray-800 flex flex-col items-center justify-center">
+           <p className="text-lg text-lime-700 mb-2">
+             This year you spent
+           </p>
+           <p className="text-5xl font-bold mb-2 text-lime-950">
+             ${totalSpent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+           </p>
+           <p className="text-lg text-lime-700">on household purchases</p>
+         </div>
+
+       </div>
+          <div className="grid grid-cols-  max-md:grid-cols-1 gap-4">
+         
+         <div className=" rounded-xl  flex flex-col p-8 bg-slate-50 text-gray-800 border">
+           <h3 className="text-2xl font-bold text-slate-700 mb-6">
+             Largest transactions this year
+           </h3>
+           <div className="">
+             {analytics?.largestTransactions?.slice(0, 10).map((transaction, index) => {
+               const dateComponents = transaction.date.split('/').map(Number);
+               const date = new Date(dateComponents[2], dateComponents[1] - 1, dateComponents[0]);
+               const formattedDate = date.toLocaleDateString('en-US', {
+                 month: 'short',
+                 day: 'numeric'
+               });
+               
+               return (
+                 <div className="flex justify-between items-center border-b border-slate-200 pb-3 mb-3" key={index}>
+                   <div className="flex items-center gap-2">
+                     <span className="text-slate-600">#{index + 1}</span>
+                     <span className="font-medium text-gray-800">
+                     {transaction.description}{" "}&nbsp;
+                       <span className="text-gray-500 text-sm">
+                       {formattedDate}
+                       </span>
+                     </span>
+                   </div>
+                   <span className="text-gray-700">
+                     ${Math.abs(transaction.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                   </span>
+                 </div>
+               );
+             })}
+           </div>
+         </div>
+       </div>
           <div className="w-full rounded-md border min-h-4  0 mt- bg-white">
             <h2 className="text-xl font-semibold p-4 border-b">
               Spend Breakdown
@@ -433,34 +562,7 @@ export default function FinalResultsPage() {
             <div className="mt-4 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <div className="p-4 space-y-4">
-                  <div className="flex flex-wrap items-center gap-10">
-                    {spendCategories.map((category) => {
-                      const total = spendCategories.reduce(
-                        (sum, cat) => sum + cat.amount,
-                        0
-                      );
-                      const percentage = (
-                        (category.amount / total) *
-                        100
-                      ).toFixed(1);
-
-                      return (
-                        <div
-                          key={category.category}
-                          className="flex items-center gap-2"
-                        >
-                          <div
-                            className={cn("w-5 h-5 rounded", category.color)}
-                          />
-                          <span className="text-sm text-gray-600">
-                            {category.category}
-                            <br />${category.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (
-                            {percentage}%)
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
+               
 
                   <div className="relative h-12 w-full flex rounded-lg overflow-hidden">
                     {spendCategories.map((category, index) => {
@@ -502,6 +604,34 @@ export default function FinalResultsPage() {
 
                           {/* Hover effect overlay */}
                           <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity" />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="flex flex-wrap items-center gap-10">
+                    {spendCategories.map((category) => {
+                      const total = spendCategories.reduce(
+                        (sum, cat) => sum + cat.amount,
+                        0
+                      );
+                      const percentage = (
+                        (category.amount / total) *
+                        100
+                      ).toFixed(1);
+
+                      return (
+                        <div
+                          key={category.category}
+                          className="flex items-center gap-2"
+                        >
+                          <div
+                            className={cn("w-5 h-5 rounded", category.color)}
+                          />
+                          <span className="text-sm text-gray-600">
+                            {category.category}
+                            <br />${category.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (
+                            {percentage}%)
+                          </span>
                         </div>
                       );
                     })}
@@ -554,7 +684,7 @@ export default function FinalResultsPage() {
         <div className="mt-12 text-center text-sm text-gray-600">
           <p>
             Money Wrapped 2024 is built by{" "}
-            <a href="https://walt.online">Walter Lim</a> &amp; <a href="https://laspruca.nz">Connor Hare</a>.
+            <a className="underline text-blue-700" href="https://walt.online">Walter Lim</a> &amp; <a className="underline text-blue-700" href="https://laspruca.nz">Connor Hare</a>.
           </p>
           <p className="mt-2">
             All your financial data stays private and secure.
