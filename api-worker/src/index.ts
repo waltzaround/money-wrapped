@@ -17,6 +17,8 @@ app.use(
 
 app.get('/auth/callback', authCallbackHandler);
 
+app.get('/app-url', (c) => c.json({ url: c.env.APP_URL }));
+
 app.post(
 	'/upload-csv',
 	validator('form', (value, c) => {
