@@ -10,7 +10,7 @@ import {
 import { Wallet, ClipboardList, LineChart, Info } from "lucide-react";
 import { Header } from "~/components/header";
 
-const REDIRECT_URI = 'https://money.haxx.nz/akahu-auth';
+const REDIRECT_URI = 'https://funny.money.haxx.nz/akahu-auth';
 const CLIENT_ID = 'app_token_cm53ibogp000308mh1ojb39u8';
 
 export default function PreparePage() {
