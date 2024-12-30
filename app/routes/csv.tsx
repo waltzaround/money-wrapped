@@ -147,7 +147,11 @@ export default function PreparePage() {
         formData.append("connection", BANK_CONNECTIONS[selectedBank]);
       }
 
-      const response = await fetch("http://localhost:8787/upload-csv", {
+      const API_URL = import.meta.env.DEV 
+        ? "http://localhost:8787" 
+        : "https://funny.money.haxx.nz";
+
+      const response = await fetch(`${API_URL}/upload-csv`, {
         method: "POST",
         body: formData,
       });
