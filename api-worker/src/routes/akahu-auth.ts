@@ -1,5 +1,5 @@
 import { Context } from 'hono';
-import { HonoType } from '../../types';
+import { HonoType } from '../types';
 import { setCookie } from 'hono/cookie';
 
 const handle = async (c: Context<HonoType, '/auth/callback'>) => {
