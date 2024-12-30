@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { validator } from 'hono/validator';
 import uploadCsvHandler, { bodyValidator as uploadCsvBody } from './routes/upload-csv';
-import authCallbackHandler from './routes/auth/callback';
+import authCallbackHandler from './routes/akahu-auth';
 import { HonoType } from './types';
 
 const app = new Hono<HonoType>();
@@ -15,7 +15,7 @@ app.use(
 	}),
 );
 
-app.get('/auth/callback', authCallbackHandler);
+app.get('/akahu-auth', authCallbackHandler);
 
 app.get('/app-url', (c) => c.json({ url: c.env.APP_URL }));
 
