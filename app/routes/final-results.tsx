@@ -262,7 +262,7 @@ export default function FinalResultsPage() {
               </Select>
             </div>
 
-            <div className="mt-4 h-[400px] w-full">
+            <div className="mt-4 h-[400px] w-full pl-4">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   width={500}
@@ -284,6 +284,8 @@ export default function FinalResultsPage() {
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={(value) => `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+
+                   
                   />
                   <Tooltip
                     content={({ active, payload }) => {
@@ -327,12 +329,12 @@ export default function FinalResultsPage() {
             </div>
 
             <div className="col-span-2 rounded-xl  flex flex-col p-8 bg-emerald-50 text-gray-800 border">
-              <h3 className="text-2xl font-bold text-emerald-700 mb-6">
+              <h3 className="text-2xl font-bold text-emerald-700 mb-4">
                 Your Top 10 Merchants
               </h3>
-              <div className="space-y-4">
+              <div className="">
                 {analytics?.topMerchants?.slice(0, 10).map((merchant, index) => (
-                  <div className="flex justify-between items-center" key={index}>
+                  <div className="flex justify-between items-center border-t border-green-200 pt-3 mt-3" key={index}>
                     <div className="flex items-center gap-2">
                       <span className="text-emerald-600">#{index + 1}</span>
                       <span className="font-medium text-gray-800">{merchant.name}</span>
@@ -389,21 +391,12 @@ export default function FinalResultsPage() {
             </div>
           </div>
           <div className="grid grid-cols-3  max-md:grid-cols-1 gap-4">
-            <div className="aspect-[9/16] rounded-xl border p-8 bg-gradient-to-b from-emerald-100 to-emerald-200 text-gray-800 flex flex-col items-center justify-center">
-              <p className="text-lg text-emerald-700 mb-2">
-                This year you spent
-              </p>
-              <p className="text-5xl font-bold mb-2 text-emerald-800">
-                ${totalSpent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </p>
-              <p className="text-lg text-emerald-700">on purchases</p>
-            </div>
-
-            <div className="col-span-2 rounded-xl  flex flex-col p-8 bg-emerald-50 text-gray-800 border">
+         
+            <div className="col-span-3 rounded-xl  flex flex-col p-8 bg-emerald-50 text-gray-800 border">
               <h3 className="text-2xl font-bold text-emerald-700 mb-6">
                 Largest transactions this year
               </h3>
-              <div className="space-y-4">
+              <div className="">
                 {analytics?.largestTransactions?.slice(0, 10).map((transaction, index) => {
                   const dateComponents = transaction.date.split('/').map(Number);
                   const date = new Date(dateComponents[2], dateComponents[1] - 1, dateComponents[0]);
@@ -413,7 +406,7 @@ export default function FinalResultsPage() {
                   });
                   
                   return (
-                    <div className="flex justify-between items-center" key={index}>
+                    <div className="flex justify-between items-center border-b border-green-200 pb-3 mb-3" key={index}>
                       <div className="flex items-center gap-2">
                         <span className="text-emerald-600">#{index + 1}</span>
                         <span className="font-medium text-gray-800">
@@ -517,7 +510,7 @@ export default function FinalResultsPage() {
               </ResponsiveContainer>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4 max-lg:grid-cols-1">
           <Card>
             <CardHeader>
               <CardTitle>Powered by Akahu</CardTitle>
@@ -561,7 +554,7 @@ export default function FinalResultsPage() {
         <div className="mt-12 text-center text-sm text-gray-600">
           <p>
             Money Wrapped 2024 is built by{" "}
-            <a href="https://walt.online">Walter Lim</a>.
+            <a href="https://walt.online">Walter Lim</a> &amp; <a href="https://laspruca.nz">Connor Hare</a>.
           </p>
           <p className="mt-2">
             All your financial data stays private and secure.
