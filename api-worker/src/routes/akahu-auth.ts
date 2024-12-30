@@ -2,6 +2,12 @@ import { Context } from 'hono';
 import { HonoType } from '../types';
 import { setCookie } from 'hono/cookie';
 
+const redirectSite = (url: string) => `<!DOCTYPE html>
+<html>
+<head><meta http-equiv="refresh" content="0; url='${url}/loading'"></head>
+<body></body>
+</html>`;
+
 const handle = async (c: Context<HonoType, '/auth/callback'>) => {
 	try {
 		const url = new URL(c.req.url);
@@ -25,8 +31,9 @@ const handle = async (c: Context<HonoType, '/auth/callback'>) => {
 		});
 
 		// Doggy redirect to make it work on localhost
-		return c.redirect(`http://localhost:5173/loading`, 302);
-		return c.redirect(`${c.env.APP_URL}/loading`, 302);
+		return c.html(redirectSite('http://localhost:5173'));
+
+		return c.html(redirectSite(c.env.APP_URL));
 	} catch (error) {
 		console.error('Error in Akahu callback:', error);
 		return c.json(
