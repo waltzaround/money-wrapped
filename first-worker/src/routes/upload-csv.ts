@@ -48,7 +48,9 @@ function parseCsvToTransactions(csvText: string, connection?: string) {
 			}
 			
 			// Parse the date to check year
-			let day: number, month: number, year: number;
+			let day: number;
+			let month: number;
+			let year: number = 0;  // Initialize with a default value
 			
 			// Try different date formats
 			const dateFormats = [
