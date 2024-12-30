@@ -2,7 +2,6 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { validator } from 'hono/validator';
 import uploadCsvHandler, { bodyValidator as uploadCsvBody } from './routes/upload-csv';
-import authInitHandler from './routes/auth/init';
 import authCallbackHandler from './routes/auth/callback';
 import { HonoType } from './types';
 
@@ -15,8 +14,6 @@ app.use(
 		allowMethods: ['GET', 'POST', 'OPTIONS'],
 	}),
 );
-
-app.get('/auth/init', authInitHandler);
 
 app.get('/auth/callback', authCallbackHandler);
 
