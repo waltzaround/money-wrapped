@@ -6,4 +6,4 @@
 /build/
 .env
 wrangler.toml
-wrangler.toml
+!api-worker/wrangler.toml
