@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router";
 import { Progress } from "~/components/ui/progress";
 import { API_URL } from "~/lib/api";
 import { progressListen } from "~/lib/progressUpdates";
@@ -13,6 +14,7 @@ export default function LoadingPage() {
   let [message, setMessage] = useState("Connecting...");
 
   let [error, setError] = useState<string | undefined>(undefined);
+  let [showDone, setShowDone] = useState<boolean>(false);
 
   useEffect(() => {
     const sse = new EventSource(`${API_URL}/akahu/transactions`, {
@@ -33,6 +35,7 @@ export default function LoadingPage() {
         if (event.data) {
           localStorage.setItem("results", event.data);
         }
+        setShowDone(true);
         setMessage("Done!");
         sse.close();
       } else if (event.event === "error") {
@@ -62,6 +65,7 @@ export default function LoadingPage() {
               </span>
             </div>
           </div>
+          {showDone ? <Link to="/results">View My Results</Link> : undefined}
         </div>
       </div>
     </div>
