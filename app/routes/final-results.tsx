@@ -44,11 +44,11 @@ export default function FinalResultsPage() {
   const analytics = location.state?.analytics as TransactionAnalytics;
 
   // Redirect to upload if no analytics
-  React.useEffect(() => {
-    if (!analytics) {
-      navigate("/csv");
-    }
-  }, [analytics, navigate]);
+  // React.useEffect(() => {
+  //   if (!analytics) {
+  //     navigate("/csv");
+  //   }
+  // }, [analytics, navigate]);
 
   // Transform monthly spending data for the chart
   const monthlySpendingData = React.useMemo(() => {

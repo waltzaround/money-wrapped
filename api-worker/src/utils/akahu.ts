@@ -1,16 +1,13 @@
 import akahu, { GenieSearchBodyParam, GenieSearchResponse200 } from '@api/akahu';
 import { randomUUID } from 'node:crypto';
 
+import { Env, HonoType } from '../types';
+import { join } from 'path';
+import { Context } from 'hono';
 type ArrayExtract<T> = T extends (infer U)[] ? U : T;
 type PromiseExtract<T> = T extends Promise<infer U> ? U : T;
 
-type Transaction = {
-	id: string;
-	desicruytion: string;
-	_connection: string;
-	amount: string;
-	direction: 'DEBIT' | 'CREDIT';
-};
+export const year = "2024";
 
 type AkahuEnrichedTransaction = {
 	type: string;
@@ -139,4 +136,50 @@ export function enrichTransactions(transactions: GenieSearchBodyParam, env: Env)
 	};
 
 	return rateLimit('genie', env, fn);
+}
+
+export interface Transaction {
+	_id: string;
+	_account: string;
+	_connection: string;
+	date: string;
+	description: string;
+	type: "CARD" | "PAYMENT" | "TRANSFER" | "INTEREST" | "FEE" | "TAX" | "DIRECT CREDIT" | "DIRECT DEBIT" | "STANDING ORDER" | "ATM" | "FX" | "LOAN" | "KIWISAVER" | "CREDIT" | "DEBIT" | "UNKNOWN";
+	amount: number;
+	balance?: number;
+}
+
+export async function listTransactions(c: Context<HonoType>, userToken: string): Promise<Transaction[]> {
+	let cursor;
+
+	// Join the App ID Token and App Secret with a ":" then base64 encode the result
+	const credentials = btoa(`${c.env.AKAHU_APP_TOKEN}:${c.env.AKAHU_APP_SECRET}`);
+	// Set the Authorization header for your requests using the base64 encoded credentials
+	const authorisationHeader = `Basic ${credentials}`;
+
+
+	let transactions: Transaction[] = [];
+
+	do {
+		const page = await fetch(`https://api.oneoff.akahu.io/v1/transactions/${userToken}${cursor ? `?cursor=${cursor}`: ""}`, {
+			headers: {
+				"Authorization": authorisationHeader,
+				"Content-Type": "application/json",
+				"Cursor": cursor
+			}
+		});
+
+		if (!page.ok) {
+			console.log("Failed to load transactions", page.status, page.statusText);
+			throw new Error(`Failed to fetch transactions: ${page.status} ${page.statusText}`);
+		}
+
+
+		const data: any = (await page.json());
+		console.log(data);
+		cursor = data.cursor?.next;
+		transactions.push(...data.items);
+	} while (cursor);
+
+	return transactions;
 }
