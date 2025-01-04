@@ -21,15 +21,15 @@ export default function FAQPage() {
               It analyzes your transaction history to create beautiful, insightful visualizations of 
               your spending patterns throughout the year. Upload or connect your banking data securely, and 
               discover fascinating insights about your financial habits - from your most frequent 
-              merchants to your biggest spending categories. All processing is done locally in your 
-              browser for maximum privacy and security.
+              merchants to your biggest spending categories. 
             </AccordionContent>
           </AccordionItem>
+          
 
           <AccordionItem value="security">
             <AccordionTrigger>How secure is my account data?</AccordionTrigger>
             <AccordionContent>
-              Your financial data is protected using standard encryption practices and secure protocols. All backend processing happens on Cloudflare Workers. The analysis is entirely algorithmic, which means your financial 
+              Your financial data is protected using standard encryption practices and secure protocols. All backend processing happens on Cloudflare Workers. The analysis is entirely human-free, which means your financial 
               information is processed purely by code, without any human involvement at any stage. <br/><br/>
               
               We believe in transparency, which is why our entire codebase is open source. You can review exactly how we handle 
@@ -44,7 +44,29 @@ export default function FAQPage() {
               You can review all of the code on  <a href="https://github.com/waltzaround/money-wrapped" className="underline text-blue-700">GitHub.</a>
             </AccordionContent>
           </AccordionItem>
+          <AccordionItem value="bug">
+            <AccordionTrigger>I found a bug, how do I report it?</AccordionTrigger>
+            <AccordionContent>
+              If you've found a bug, you can either join our Discord server to chat about it or file an issue on our GitHub repository. <br/>
+              Visit our <a href="https://discord.gg/hjC3mZ4hsz" className="underline text-blue-700">Discord server</a> to chat about it, 
+              or create an issue on our <a href="https://github.com/waltzaround/money-wrapped/issues" className="underline text-blue-700">GitHub repository</a>.
+            </AccordionContent>
+          </AccordionItem>
 
+          <AccordionItem value="help">
+            <AccordionTrigger>I can't get it to work, please help</AccordionTrigger>
+            <AccordionContent>
+              If you're using the CSV upload flow, first check that your CSV file matches the required format. <br/>
+              Still having trouble? Join our <a href="https://discord.gg/hjC3mZ4hsz" className="underline text-blue-700">Discord server</a> and we'll help you out!
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="authors">
+            <AccordionTrigger>Who is this built by?</AccordionTrigger>
+            <AccordionContent>
+              Money Wrapped is built by <a href="https://walt.online" className="underline text-blue-700">Walter Lim</a>, <a href="https://laspruca.nz" className="underline text-blue-700">Connor Hare</a>, and <a href="https://jmw.nz" className="underline text-blue-700">Jasper Miller-Waugh</a>, 
+            </AccordionContent>
+          </AccordionItem>
+       
        
       
         </Accordion>
