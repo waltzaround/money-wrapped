@@ -210,8 +210,116 @@ export default function ResultsPage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [audioRef, isMuted, toggleMute] = useBackgroundAudio();
   const navigate = useNavigate();
-  const location = useLocation();
-  const analytics = location.state?.analytics;
+  const rawData = localStorage.getItem('results');
+  const rawTransactions = rawData ? JSON.parse(rawData).raw_transactions.filter(t => t.direction !== 'CREDIT') : null;
+  
+  const analytics = useMemo(() => {
+    if (!rawTransactions) return null;
+
+    // Process transactions
+    const totalSpent = rawTransactions
+      .filter(t => t.direction === 'DEBIT')
+      .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+
+    const uniqueMerchants = new Set(
+      rawTransactions
+        .filter(t => t.merchant?.name)
+        .map(t => t.merchant.name)
+    ).size;
+
+    const transactionCount = rawTransactions.length;
+
+    // Find biggest purchase
+    const biggestPurchase = rawTransactions.reduce((max, t) => {
+      const amount = Math.abs(t.amount);
+      return amount > Math.abs(max?.amount || 0) ? t : max;
+    }, null);
+
+    const averagePurchase = totalSpent / transactionCount;
+    const percentAboveAverage = biggestPurchase 
+      ? Math.round(((Math.abs(biggestPurchase.amount) - averagePurchase) / averagePurchase) * 100)
+      : 0;
+
+    // Group by month
+    const monthlySpending = rawTransactions.reduce((acc, t) => {
+      // Use current date since this is recent data
+      const date = new Date();
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      acc[monthKey] = (acc[monthKey] || 0) + Math.abs(t.amount);
+      return acc;
+    }, {});
+
+    const highestSpendingMonth = Object.entries(monthlySpending)
+      .reduce((max, [month, total]) => 
+        (!max || total > max.total) ? { month, total } : max
+      , null);
+
+    // Group by merchant
+    const merchantSpending = rawTransactions
+      .filter(t => t.merchant?.name)
+      .reduce((acc, t) => {
+        const name = t.merchant.name;
+        if (!acc[name]) {
+          acc[name] = { amount: 0, visits: 0 };
+        }
+        acc[name].amount += Math.abs(t.amount);
+        acc[name].visits += 1;
+        return acc;
+      }, {});
+
+    const topMerchants = Object.entries(merchantSpending)
+      .sort(([,a], [,b]) => b.amount - a.amount)
+      .slice(0, 5)
+      .map(([name, stats]) => ({ 
+        name, 
+        amount: stats.amount,
+        visits: stats.visits 
+      }));
+
+    // Calculate cafe statistics
+    const cafeTransactions = rawTransactions.filter(t => 
+      t.category?.name === "Cafes and restaurants"
+    );
+    
+    const cafeVisits = cafeTransactions.length;
+    const cafeSpending = cafeTransactions.reduce((sum, t) => sum + Math.abs(t.amount), 0);
+    const weeklyAverage = Math.round((cafeVisits / 52) * 10) / 10; // Round to 1 decimal place
+
+    // Calculate spending by category
+    const categorySpending = rawTransactions
+      .filter(t => t.category?.name)
+      .reduce((acc, t) => {
+        const categoryName = t.category.name;
+        if (!acc[categoryName]) {
+          acc[categoryName] = 0;
+        }
+        acc[categoryName] += Math.abs(t.amount);
+        return acc;
+      }, {});
+
+    const topCategories = Object.entries(categorySpending)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 5)
+      .map(([name, amount]) => ({
+        name,
+        amount
+      }));
+
+    return {
+      totalSpent,
+      uniqueMerchants,
+      transactionCount,
+      highestSpendingMonth,
+      topMerchants,
+      biggestPurchase,
+      averagePurchase,
+      cafeVisits,
+      cafeSpending,
+      weeklyAverage,
+      topCategories
+    };
+  }, [rawTransactions]);
+
   const timerRef = useRef<any>(null);
 
   // If no analytics data, redirect to upload page
@@ -294,7 +402,7 @@ export default function ResultsPage() {
       {
         type: "standard",
         gradient: "from-violet-500 to-violet-700",
-        title: "You visitied a cafe",
+        title: "You visited cafes & restaurants",
         value: "110 times",
         subtitle: "this year",
         description: "That's about 2 cafe visits per week",
@@ -329,7 +437,7 @@ export default function ResultsPage() {
       {
         type: "list",
         gradient: "from-teal-500 to-teal-700",
-        title: "Top Shopping Categories",
+        title: "Top Spending Categories",
         textColor: "teal",
         items: [
           { rank: 1, name: "Groceries", detail: "$3,230 spent" },
@@ -371,7 +479,7 @@ export default function ResultsPage() {
       type: "standard",
       gradient: placeholderSlides[1].gradient,
       title: placeholderSlides[1].title,
-      value: analytics.uniqueMerchants.toString(),
+      value: analytics.uniqueMerchants?.toString() || '0',
       subtitle: "different businesses",
       textColor: placeholderSlides[1].textColor,
     } as StandardSlide;
@@ -380,7 +488,7 @@ export default function ResultsPage() {
     updatedSlides[2] = {
       ...placeholderSlides[2],
       type: "standard",
-      value: analytics.transactionCount.toLocaleString('en-US'),
+      value: (analytics.transactionCount || 0).toLocaleString('en-US'),
       subtitle: "transactions"
     };
 
@@ -405,8 +513,8 @@ export default function ResultsPage() {
         gradient: "from-orange-500 to-orange-700",
         title: "Your favorite merchant was",
         value: topMerchant.name,
-        subtitle: `${formatCurrency(Number(topMerchant.total))} spent on ${topMerchant.transactionCount} visits`,
-        description: "That's where you spent the most money this year",
+        subtitle: `${formatCurrency(topMerchant.amount)} spent on ${topMerchant.visits} transactions`,
+        description: `That's where you spent the most money this year `,
         textColor: "orange",
       };
 
@@ -417,27 +525,25 @@ export default function ResultsPage() {
           gradient: "from-rose-500 to-rose-700",
           title: "Your Top 5 Merchants",
           textColor: "rose",
-          items: analytics.topMerchants.map((merchant: { name: any; total: number | bigint; }, index: number) => ({
+          items: analytics.topMerchants.map((merchant: { name: any; amount: number | bigint; }, index: number) => ({
             rank: index + 1,
             name: merchant.name,
-            detail: `${formatCurrency(Number(merchant.total))} spent`
+            detail: `${formatCurrency(Number(merchant.amount))} spent`
           })),
         };
       }
     }
 
-    // If we have largest transactions data
-    if (analytics.largestTransactions?.length > 0) {
-      const biggestPurchase = analytics.largestTransactions[0];
-      const percentageOfAverage = (Math.abs(biggestPurchase.amount) / analytics.averageTransactionAmount) * 100;
-      
+    // Update biggest purchase slide if we have the data
+    if (analytics.biggestPurchase) {
+      const purchase = analytics.biggestPurchase;
       updatedSlides[5] = {
         type: "standard",
         gradient: "from-lime-500 to-lime-700",
         title: "Your biggest purchase",
-        value: formatCurrency(Math.abs(biggestPurchase.amount)),
-        subtitle: biggestPurchase.description,
-        description: `That's ${Math.round(percentageOfAverage)}% more than your average purchase`,
+        value: formatCurrency(Math.abs(purchase.amount)),
+        subtitle: purchase.merchant?.name || purchase.description,
+        description: `That's ${Math.round(((Math.abs(purchase.amount) - analytics.averagePurchase) / analytics.averagePurchase) * 100)}% more than your average purchase`,
         textColor: "lime",
       };
     }
@@ -457,6 +563,19 @@ export default function ResultsPage() {
       };
     }
 
+    // If we have cafe visits data
+    if (analytics.cafeVisits) {
+      updatedSlides[7] = {
+        type: "standard",
+        gradient: "from-violet-500 to-violet-700",
+        title: "You visited cafes & restaurants",
+        value: `${analytics.cafeVisits} times`,
+        subtitle: `spending ${formatCurrency(analytics.cafeSpending)}`,
+        description: `That's about ${analytics.weeklyAverage} visits per week`,
+        textColor: "violet",
+      };
+    }
+
     // If we have monthly spending data
     if (analytics.monthlySpendingArray?.length > 0) {
       updatedSlides[9] = {
@@ -468,6 +587,21 @@ export default function ResultsPage() {
           rank: index + 1,
           name: month.monthName,
           detail: `${formatCurrency(Number(month.total))} spent`
+        })),
+      };
+    }
+
+    // If we have top categories data
+    if (analytics.topCategories?.length > 0) {
+      updatedSlides[10] = {
+        type: "list",
+        gradient: "from-teal-500 to-teal-700",
+        title: "Top Spending Categories",
+        textColor: "teal",
+        items: analytics.topCategories.map((category, index) => ({
+          rank: index + 1,
+          name: category.name,
+          detail: formatCurrency(category.amount)
         })),
       };
     }

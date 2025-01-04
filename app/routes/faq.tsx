@@ -28,9 +28,10 @@ export default function FAQPage() {
             <AccordionTrigger>What is Akahu?</AccordionTrigger>
             <AccordionContent>
     
-Akahu maintains deeply functional data integrations with NZ banks and other financial institutions. They bundle those integrations into a simple API for developers.
+Akahu maintains deeply functional data integrations with NZ banks and other financial institutions. They bundle those integrations into a simple API for developers. 
+<br/><br/>Money wrapped is sponsored with the use of their oneoff account and enrichment endpoints. If you'd like to use these endpoints for something else, contact them at the link below for commercials.
 <br/><br/>
-Akahu supports the development of <a  className="underline text-blue-700" href="https://www.mbie.govt.nz/business-and-employment/business/competition-regulation-and-policy/consumer-data-right" target="_blank">Consumer Data Rights</a> in New Zealand, and they intend to evolve our integrations into that purpose-built regulatory regime when it rolls out and matures.
+Akahu also supports the development of <a  className="underline text-blue-700" href="https://www.mbie.govt.nz/business-and-employment/business/competition-regulation-and-policy/consumer-data-right" target="_blank">Consumer Data Rights</a> in New Zealand, and they intend to evolve our integrations into that purpose-built regulatory regime when it rolls out and matures.
 <br/><br/>You can learn more about the Akahu platform <a href="https://akahu.nz/" target="_blank" className="underline text-blue-700">here</a>.
             </AccordionContent>
           </AccordionItem>

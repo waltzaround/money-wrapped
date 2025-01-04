@@ -14,6 +14,7 @@ import {
   FileText,
   Info,
   FileDown,
+  Download,
 } from "lucide-react";
 import { Header } from "~/components/header";
 import { cn } from "~/lib/utils";
@@ -353,19 +354,21 @@ export default function PreparePage() {
             </div>
           </Card>
 
-          <Card className="bg-secondary/50">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
+          <Card className="">
+            <CardHeader className="p-0">
+              <CardTitle className="text-lg flex items-center gap-2 border-b p-4">
                 <Info className="h-5 w-5" />
-                How to export your bank statement
+                How to export your transaction data
               </CardTitle>
-              <CardDescription className="space-y-2">
-                <p>1. Log into your online banking</p>
-                <p>2. Navigate to your transactions or account activity</p>
+              <CardDescription className="space-y-2 p-4 pt-3">
+                <p>1. Log into your online banking portal</p>
+                <p>2. Navigate to your transactions or account activity for each bank account you want to review</p>
                 <p>3. Look for an "Export" or "Download" option</p>
                 <p>4. Select CSV format and download your transactions</p>
-                <p>5. Make sure to include at least the last 12 months of transactions</p>
+                <p>5. For best results, include at least the last 12 months of transactions</p>
+                <p>6. Make sure the CSV files are formatted in the same way as the demo CSV file - download link below</p>
               </CardDescription>
+              <a className="text-blue-600 hover:underline p-4  border-t text-center flex items-center justify-center gap-2" href="/test.csv" download><Download className="h-4 w-4" />Download demo CSV file</a>
             </CardHeader>
           </Card>
         </div>
