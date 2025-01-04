@@ -20,4 +20,6 @@ If you don't have `pnpm` install that first
 - open another terminal and run `pnpm dev` in the `/api-worker` directory to run the backend locally
 - visit `http://localhost:5173` to see changes - they should live reload
 
+
+## Product Development & Support
 Want to chat? Join `#money-wrapped` on our discord server here https://discord.gg/hjC3mZ4hsz
