@@ -70,8 +70,6 @@ const handle = async (
 		);
 	}
 
-	console.log(transactions);
-
 	return c.json({ success: true });
 };
 
