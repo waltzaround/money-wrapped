@@ -153,7 +153,7 @@ export function Welcome() {
                   Upload CSV Files
                 </h3>
                 <p className="text-gray-600 mb-6 min-h-[6rem]">
-                  Don't trust the system with your bank credentials? No worries! Upload your bank statement CSV files instead for the same experience. You will need to do some manual work though.
+                  Don't trust the system with your bank credentials? No worries! Upload your bank statement CSV files instead for the same experience. You will need to do some manual work to format the CSV files for this to work.
                 </p>
                 <Link to="/csv">
                   <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white shadow-lg hover:shadow-xl transition-all">
