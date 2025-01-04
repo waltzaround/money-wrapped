@@ -37,10 +37,22 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <SEO />
         <Meta />
-
-
-        
         <Links />
+        <script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-9Y2Q5Q4Z9C"
+      
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-9Y2Q5Q4Z9C');
+            `,
+          }}
+        />
       </head>
 
       <body>
