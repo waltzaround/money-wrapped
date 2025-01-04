@@ -25,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { SEO } from "~/components/seo";
 
 const BANK_CONNECTIONS = {
   ANZ: 'conn_cjgaawozb000001nyd111xixr',
@@ -210,6 +211,10 @@ export default function PreparePage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title="Upload CSV Transaction Data"
+        description="Upload your bank transaction data to generate your personalized Money Wrapped insights and financial year in review."
+      />
       <Header />
       <main className="container max-w-3xl mx-auto px-4 py-8">
         <div className="space-y-8">
