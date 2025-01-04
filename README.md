@@ -1,106 +1,24 @@
+
+![wrapped](https://github.com/user-attachments/assets/03f6931d-8b3a-42ac-9215-547536c3480a)
+
+
 # Money Wrapped
 
-2024 Year in Review
+Money Wrapped is your personal financial year-in-review, inspired by Spotify Wrapped. It analyzes your transaction history to create beautiful, insightful visualizations of your spending patterns throughout the year. Upload or connect your banking data securely, and discover fascinating insights about your financial habits - from your most frequent merchants to your biggest spending categories. 
 
-Design plan here: [Read-Only Figjam](https://www.figma.com/board/I8YjX2pepHcef3eDUXMXcL/Untitled?node-id=0-1&t=YXcitpvH01exS69Z-1)
 
-Chat & Support: [Discord](https://discord.gg/59ajaQ92)
+## Local build instructions
 
-# Welcome to React Router!
+If you don't have `pnpm` install that first
 
-A modern, production-ready template for building full-stack React applications using React Router.
+- run `pnpm dev` in the `/` root of the project
+- open another terminal and run `pnpm dev` in the `/api-worker` directory to run the backend locally
+- visit `http://localhost:5173` to see changes - they should live reload
 
-## Features
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+## Product Development & Support
 
-## Getting Started
+Want to chat? Join `#money-wrapped` on our discord server here https://discord.gg/hjC3mZ4hsz
 
-### Installation
 
-Install the dependencies:
-
-```bash
-npm install
-```
-
-### Development
-
-Start the development server with HMR:
-
-```bash
-npm run dev
-```
-
-Your application will be available at `http://localhost:5173`.
-
-## Building for Production
-
-Create a production build:
-
-```bash
-npm run build
-```
-
-## Deployment
-
-### Docker Deployment
-
-This template includes three Dockerfiles optimized for different package managers:
-
-- `Dockerfile` - for npm
-- `Dockerfile.pnpm` - for pnpm
-- `Dockerfile.bun` - for bun
-
-To build and run using Docker:
-
-```bash
-# For npm
-docker build -t my-app .
-
-# For pnpm
-docker build -f Dockerfile.pnpm -t my-app .
-
-# For bun
-docker build -f Dockerfile.bun -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
-```
-
-The containerized application can be deployed to any platform that supports Docker, including:
-
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
-```
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
-
----
-
-Built with ❤️ using React Router.
+Some design documentation here: [Read-Only Figjam](https://www.figma.com/board/I8YjX2pepHcef3eDUXMXcL/Untitled?node-id=0-1&t=YXcitpvH01exS69Z-1)
