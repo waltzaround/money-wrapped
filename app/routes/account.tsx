@@ -69,9 +69,9 @@ export default function PreparePage() {
         </div>
 
 
-        <div className="flex justify-center">
+        <div className="block  w-full">
           <a href={`https://oauth.akahu.nz?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=ONEOFF`}>
-            <Button size="lg">Get Started</Button>
+            <Button size="lg" className="bg-blue-700 w-full block ">Get Started</Button>
           </a>
 
 
