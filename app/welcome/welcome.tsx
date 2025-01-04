@@ -17,8 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { motion } from "framer-motion";
-import { Banknote, Wallet } from "lucide-react";
+import {  Wallet } from "lucide-react";
 
 export function Welcome() {
   const [selectedPeriod, setSelectedPeriod] = useState("monthly");
@@ -99,27 +98,21 @@ export function Welcome() {
         <meta name="twitter:title" content="Welcome to Money Wrapped - Your Financial Year in Review" />
         <meta name="twitter:description" content="Get started with Money Wrapped and discover insights about your spending habits and financial patterns with our personalized year-end financial review." />
       </Helmet>
-      <motion.main 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+      <main 
         className="min-h-screen bg-gradient-to-b from-gray-50 to-white"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           {/* Hero Section */}
-          <motion.section 
-            initial={{ y: 20 }}
-            animate={{ y: 0 }}
+          <section 
             className="text-start mb-16"
           >
-            <motion.div 
+            <div 
               className="inline-block mb-6"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
             >
               <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl w-20 h-20 shadow-lg flex items-center justify-center">
                 <Wallet className="w-10 h-10 text-white" />
               </div>
-            </motion.div>
+            </div>
             <h1 className="text-5xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-400 bg-clip-text text-transparent mb-6">
               Money Wrapped 2024
             </h1>
@@ -127,13 +120,13 @@ export function Welcome() {
               Discover your 2024 financial story. Learn about your spending habits in minutes.<br/>Only works for New Zealand bank accounts and transactions.
               
             </p>
-          </motion.section>
+          </section>
 
           {/* Get Started Section */}
           <section className="mb-20">
             <div className="grid md:grid-cols-2 gap-6">
-              <motion.div
-                whileHover={{ y: -5 }}
+              <div
+          
                 className="relative overflow-hidden rounded-2xl border border-emerald-100 bg-white p-6 shadow-lg transition-all hover:shadow-xl"
               >
                 <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-emerald-500/20 to-emerald-500/0 rounded-bl-3xl"></div>
@@ -149,10 +142,9 @@ export function Welcome() {
                     Connect Accounts →
                   </Button>
                 </Link>
-              </motion.div>
+              </div>
 
-              <motion.div
-                whileHover={{ y: -5 }}
+              <div
                 className="relative overflow-hidden rounded-2xl border border-blue-100 bg-white p-6 shadow-lg transition-all hover:shadow-xl"
               >
                 <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-500/20 to-blue-500/0 rounded-bl-3xl"></div>
@@ -168,7 +160,7 @@ export function Welcome() {
                     Upload CSV →
                   </Button>
                 </Link>
-              </motion.div>
+              </div>
             </div>
           </section>
 
@@ -184,8 +176,7 @@ export function Welcome() {
             </div>
 
             <div className="grid md:grid-cols-3 gap-6 mb-12">
-              <motion.div
-
+              <div
                 className="rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 p-8 text-white shadow-lg"
               >
                 <div className="flex flex-col items-center justify-center h-full space-y-4">
@@ -193,10 +184,9 @@ export function Welcome() {
                   <p className="text-5xl font-bold">$12,300</p>
                   <p className="text-emerald-100">in 2024</p>
                 </div>
-              </motion.div>
+              </div>
 
-              <motion.div
-
+              <div
                 className="rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 p-8 text-white shadow-lg"
               >
                 <div className="flex flex-col items-center justify-center h-full space-y-4">
@@ -204,10 +194,9 @@ export function Welcome() {
                   <p className="text-5xl font-bold">301</p>
                   <p className="text-blue-100">different businesses</p>
                 </div>
-              </motion.div>
+              </div>
 
-              <motion.div
-           
+              <div
                 className="rounded-2xl bg-gradient-to-br from-purple-500 to-purple-700 p-8 text-white shadow-lg"
               >
                 <div className="flex flex-col items-center justify-center h-full space-y-4">
@@ -215,7 +204,7 @@ export function Welcome() {
                   <p className="text-5xl font-bold">1,230</p>
                   <p className="text-purple-100">transactions</p>
                 </div>
-              </motion.div>
+              </div>
             </div>
 
             <div className="rounded-2xl border border-gray-200 bg-white  shadow-lg">
@@ -286,7 +275,7 @@ export function Welcome() {
             </div>
 
             <div className="grid md:grid-cols-3 gap-6 mt-12">
-              <motion.div
+              <div
            
                 className="rounded-2xl bg-gradient-to-br from-pink-500 to-pink-700 p-8 text-white shadow-lg flex items-center justify-center"
               >
@@ -296,9 +285,9 @@ export function Welcome() {
                   <p className="text-6xl font-bold">$3,432</p>
                
                 </div>
-              </motion.div>
+              </div>
 
-              <motion.div
+              <div
      
                 className="rounded-2xl bg-gradient-to-br from-orange-500 to-orange-700 p-8 text-white shadow-lg "
               >
@@ -320,9 +309,9 @@ export function Welcome() {
                     </div>
                   ))}
                 </div>
-              </motion.div>
+              </div>
 
-              <motion.div
+              <div
      
                 className="rounded-2xl bg-gradient-to-br from-lime-500 to-lime-700 p-8 text-white shadow-lg flex items-center justify-center"
               >
@@ -332,7 +321,7 @@ export function Welcome() {
                   <p className="text-6xl font-bold">$1,432</p>
                 
                 </div>
-              </motion.div>
+              </div>
             </div>
           </section>
           <footer className="mt-16 pb-8 text-center text-sm text-gray-500 flex flex-col gap-2">
@@ -348,7 +337,7 @@ export function Welcome() {
             </div>
           </footer>
         </div>
-      </motion.main>
+      </main>
     </>
   );
 }
