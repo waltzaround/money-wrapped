@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /$
+Allow: /faq
+Allow: /account
+Allow: /csv
+Disallow: /loading
+Disallow: /results
+Disallow: /final-results
+
