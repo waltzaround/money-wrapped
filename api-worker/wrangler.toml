@@ -112,3 +112,7 @@ APP_URL="https://money.haxx.nz"
 # [[vectorize]]
 # binding = "MY_INDEX"
 # index_name = "my-index"
+
+[[kv_namespaces]]
+binding = "RATELIMIT"
+id = "36ec546906a04a118b471388f544397f"
