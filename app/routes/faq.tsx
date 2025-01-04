@@ -13,7 +13,7 @@ export default function FAQPage() {
       <div className="container mx-auto py-12 px-4 max-w-5xl">
         <h1 className="text-4xl font-bold mb-8">Frequently Asked Questions</h1>
 
-        <Accordion type="single" collapsible className="w-full max-w-5xl mx-auto">
+        <Accordion type="single" collapsible className="w-full max-w-5xl mx-auto ">
           <AccordionItem value="about">
             <AccordionTrigger>What is Money Wrapped?</AccordionTrigger>
             <AccordionContent>
