@@ -335,6 +335,18 @@ export function Welcome() {
               </motion.div>
             </div>
           </section>
+          <footer className="mt-16 pb-8 text-center text-sm text-gray-500 flex flex-col gap-2">
+            <div>
+            Built with care by{" "}
+            <a href="https://walt.online" className="underline hover:text-gray-700">Walter Lim</a>,{" "}
+            <a href="https://laspruca.nz" className="underline hover:text-gray-700">Connor Hare</a>, and{" "}
+            <a href="https://jmw.nz" className="underline hover:text-gray-700">Jasper Miller-Waugh</a>
+            </div>
+            <div>
+            Made possible with support from{" "}
+            <a href="https://akahu.nz" className="underline hover:text-gray-700">Akahu</a>
+            </div>
+          </footer>
         </div>
       </motion.main>
     </>
