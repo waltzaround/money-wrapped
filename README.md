@@ -8,7 +8,6 @@ Money Wrapped is your personal financial year-in-review, inspired by Spotify Wra
 
 
 ## Local build instructions
-=====
 
 If you don't have `pnpm` install that first
 
