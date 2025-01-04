@@ -13,7 +13,7 @@ export default function FAQPage() {
       <div className="container mx-auto py-12 px-4 max-w-5xl">
         <h1 className="text-4xl font-bold mb-8">Frequently Asked Questions</h1>
 
-        <Accordion type="single" collapsible className="w-full max-w-5xl mx-auto">
+        <Accordion type="single" collapsible className="w-full max-w-5xl mx-auto ">
           <AccordionItem value="about">
             <AccordionTrigger>What is Money Wrapped?</AccordionTrigger>
             <AccordionContent>
@@ -24,6 +24,17 @@ export default function FAQPage() {
               merchants to your biggest spending categories. 
             </AccordionContent>
           </AccordionItem>
+          <AccordionItem value="akahu">
+            <AccordionTrigger>What is Akahu?</AccordionTrigger>
+            <AccordionContent>
+    
+Akahu maintains deeply functional data integrations with NZ banks and other financial institutions. They bundle those integrations into a simple API for developers.
+<br/><br/>
+Akahu supports the development of <a  className="underline text-blue-700" href="https://www.mbie.govt.nz/business-and-employment/business/competition-regulation-and-policy/consumer-data-right" target="_blank">Consumer Data Rights</a> in New Zealand, and they intend to evolve our integrations into that purpose-built regulatory regime when it rolls out and matures.
+<br/><br/>You can learn more about the Akahu platform <a href="https://akahu.nz/" target="_blank" className="underline text-blue-700">here</a>.
+            </AccordionContent>
+          </AccordionItem>
+          
           
 
           <AccordionItem value="security">

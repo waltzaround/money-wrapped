@@ -216,16 +216,16 @@ export default function PreparePage() {
       <Header />
       <main className="container mx-auto py-12 px-4 max-w-3xl">
         <div className="space-y-8">
-          <div className="text-center space-y-2">
-            <h1 className="text-4xl font-bold mb-8">Upload Your Bank Statement</h1>
+          <div className="text-start space-y-2">
+            <h1 className="text-4xl font-bold mb-2">Upload Your Bank Statement</h1>
             <p className="text-muted-foreground text-lg">
               We'll analyze your transactions to create your personalized Money Wrapped
             </p>
           </div>
 
           <Card className="relative">
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl flex items-center gap-2">
+            <CardHeader className=" border-b">
+              <CardTitle className="text-2xl flex items-center gap-2 ">
                 <FileText className="h-6 w-6" />
                 CSV File Upload
               </CardTitle>
@@ -234,12 +234,13 @@ export default function PreparePage() {
               </CardDescription>
             </CardHeader>
             <div className="m-6">
-              <label className="block text-sm font-medium mb-2">Select Your Bank</label>
+              <label className="block text-sm font-medium text-blue-600 hover:cursor-pointer" htmlFor="bank">Select Your Bank (Optional)<br/><p className="text-sm text-muted-foreground mb-2">This helps the system get you more accurate results</p></label>
+              
               <Select
                 onValueChange={(value) => setSelectedBank(value as BankName)}
                 value={selectedBank ?? undefined}
               >
-                <SelectTrigger className="w-full">
+                <SelectTrigger id="bank" className="w-full">
                   <SelectValue placeholder="Select your bank" />
                 </SelectTrigger>
                 <SelectContent>
@@ -283,7 +284,7 @@ export default function PreparePage() {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <p className="font-medium">
+                  <p className="font-medium text-blue-600">
                     {isUploading
                       ? "Processing your file..."
                       : "Drag & drop your CSV files here"}
@@ -335,7 +336,7 @@ export default function PreparePage() {
               <Button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="w-full"
+                className="w-full bg-blue-700"
               >
                 {isSubmitting ? (
                   <>

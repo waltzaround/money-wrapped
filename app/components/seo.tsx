@@ -10,7 +10,7 @@ interface SEOProps {
 export function SEO({
   title = "Money Wrapped - Your Financial Year in Review",
   description = "Discover insights about your spending habits and financial patterns with Money Wrapped. Get a personalized year-end financial review.",
-  image = "/og-image.jpg", // You'll need to add this image to your public folder
+  image = "/social.png", 
   url = "https://money.haxx.nz", 
 }: SEOProps) {
   const pageTitle = title 
