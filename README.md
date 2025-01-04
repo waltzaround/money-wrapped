@@ -4,7 +4,7 @@
 
 # Money Wrapped
 
-Money Wrapped is your personal financial year-in-review, inspired by Spotify Wrapped. It analyzes your transaction history to create beautiful, insightful visualizations of your spending patterns throughout the year. Upload or connect your banking data securely, and discover fascinating insights about your financial habits - from your most frequent merchants to your biggest spending categories. All processing is done locally in your browser for maximum privacy and security.
+Money Wrapped is your personal financial year-in-review, inspired by Spotify Wrapped. It analyzes your transaction history to create beautiful, insightful visualizations of your spending patterns throughout the year. Upload or connect your banking data securely, and discover fascinating insights about your financial habits - from your most frequent merchants to your biggest spending categories. 
 
 
 ## Local build instructions
