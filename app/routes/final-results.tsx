@@ -41,7 +41,9 @@ export default function FinalResultsPage() {
   const navigate = useNavigate();
 
   const rawData = localStorage.getItem('results');
-  const rawTransactions = rawData ? JSON.parse(rawData).raw_transactions.filter(t => t.direction !== 'CREDIT') : null;
+  const rawTransactions = rawData ? JSON.parse(rawData).raw_transactions
+    .filter(t => t.direction !== 'CREDIT')
+    .filter(t => t.description !== "Online       Payment -  Thank You") : null;
 
   const analytics = useMemo(() => {
     if (!rawTransactions) return null;
