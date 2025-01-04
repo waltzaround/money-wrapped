@@ -4,11 +4,7 @@
 
 # Money Wrapped
 
-2024 Year in Review
-
-Design plan here: [Read-Only Figjam](https://www.figma.com/board/I8YjX2pepHcef3eDUXMXcL/Untitled?node-id=0-1&t=YXcitpvH01exS69Z-1)
-
-Chat & Support: [Discord](https://discord.gg/59ajaQ92)
+Money Wrapped is your personal financial year-in-review, inspired by Spotify Wrapped. It analyzes your transaction history to create beautiful, insightful visualizations of your spending patterns throughout the year. Upload or connect your banking data securely, and discover fascinating insights about your financial habits - from your most frequent merchants to your biggest spending categories. All processing is done locally in your browser for maximum privacy and security.
 
 
 ## Local build instructions
@@ -22,4 +18,8 @@ If you don't have `pnpm` install that first
 
 
 ## Product Development & Support
+
 Want to chat? Join `#money-wrapped` on our discord server here https://discord.gg/hjC3mZ4hsz
+
+
+Some design documentation here: [Read-Only Figjam](https://www.figma.com/board/I8YjX2pepHcef3eDUXMXcL/Untitled?node-id=0-1&t=YXcitpvH01exS69Z-1)
