@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { SEO } from "~/components/seo";
+import { API_URL } from "~/lib/api";
 
 const BANK_CONNECTIONS = {
   ANZ: 'conn_cjgaawozb000001nyd111xixr',
@@ -148,9 +149,6 @@ export default function PreparePage() {
         formData.append("connection", BANK_CONNECTIONS[selectedBank]);
       }
 
-      const API_URL = import.meta.env.DEV 
-        ? "http://localhost:8787" 
-        : "https://funny.money.haxx.nz";
 
       const response = await fetch(`${API_URL}/upload-csv`, {
         method: "POST",

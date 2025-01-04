@@ -4,6 +4,7 @@ import { validator } from 'hono/validator';
 import uploadCsvHandler, { bodyValidator as uploadCsvBody } from './routes/upload-csv';
 import authCallbackHandler from './routes/akahu-auth';
 import { HonoType } from './types';
+import akahuEnrich from './routes/akahu-enrich';
 
 const app = new Hono<HonoType>();
 
@@ -12,10 +13,12 @@ app.use(
 		origin: ['http://localhost:5173', 'https://money.haxx.nz'],
 		allowHeaders: ['Content-Type'],
 		allowMethods: ['GET', 'POST', 'OPTIONS'],
+		credentials: true
 	}),
 );
 
 app.get('/akahu-auth', authCallbackHandler);
+app.get('/akahu/transactions', akahuEnrich);
 
 app.get('/app-url', (c) => c.json({ url: c.env.APP_URL }));
 
