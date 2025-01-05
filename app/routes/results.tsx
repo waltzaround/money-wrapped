@@ -50,7 +50,7 @@ interface BaseSlide {
   gradient: string;
   textColor: string;
   animation?: SlideAnimation;
-  backgroundElm?: ()=>React.ReactNode;
+  backgroundElm?: () => React.ReactNode;
 }
 
 // Update the StandardSlide interface
@@ -253,13 +253,15 @@ export default function ResultsPage() {
         .map((t) => t.merchant.name)
     ).size;
 
-    const merchantLogos = Array.from(new Set<string>(
-      rawTransactions
-        .filter((t) => t.merchant?.logo)
-        .map((t) => t.merchant.logo)
-    ));
+    const merchantLogos = Array.from(
+      new Set<string>(
+        rawTransactions
+          .filter((t) => t.merchant?.logo)
+          .map((t) => t.merchant.logo)
+      )
+    );
 
-    console.log(rawTransactions)
+    console.log(rawTransactions);
 
     const transactionCount = rawTransactions.length;
 
@@ -321,7 +323,7 @@ export default function ResultsPage() {
         name,
         amount: stats.amount,
         visits: stats.visits,
-        logo: stats.logo
+        logo: stats.logo,
       }));
 
     // Calculate cafe statistics
@@ -402,7 +404,7 @@ export default function ResultsPage() {
         averagePerDay: averageWeekendSpending,
         percentageHigher,
       },
-      merchantLogos
+      merchantLogos,
     };
   }, [rawTransactions]);
 
@@ -571,7 +573,7 @@ export default function ResultsPage() {
       value: analytics.uniqueMerchants?.toString() || "0",
       subtitle: "different businesses",
       textColor: placeholderSlides[1].textColor,
-      backgroundElm: ()=> <FloatingLogos logos={analytics.merchantLogos}/>
+      backgroundElm: () => <FloatingLogos logos={analytics.merchantLogos} />,
     } as StandardSlide;
 
     // Update transaction count slide
@@ -620,13 +622,13 @@ export default function ResultsPage() {
           textColor: "rose",
           items: analytics.topMerchants.map(
             (
-              merchant: { name: any; amount: number | bigint, logo: string },
+              merchant: { name: any; amount: number | bigint; logo: string },
               index: number
             ) => ({
               rank: index + 1,
               name: merchant.name,
               detail: `${formatCurrency(Number(merchant.amount))} spent`,
-              logo: merchant.logo
+              logo: merchant.logo,
             })
           ),
         };
@@ -819,6 +821,9 @@ export default function ResultsPage() {
                 >
                   {item.rank}
                 </span>
+                {item.logo && (
+                  <img src={item.logo} className="h-16 rounded shadow-lg" />
+                )}
                 <div className="flex-1">
                   <p className={`text-${4 - item.rank + 1}xl font-semibold`}>
                     {item.name}
@@ -827,9 +832,6 @@ export default function ResultsPage() {
                     {item.detail}
                   </p>
                 </div>
-                { item.logo && (
-                  <img src={item.logo} className="h-16 rounded shadow-lg"/>
-                )}
               </div>
             ))}
           </div>
