@@ -40,22 +40,28 @@ export default function FinalResultsPage() {
   const [selectedPeriod, setSelectedPeriod] = useState("monthly");
   const navigate = useNavigate();
 
-  const rawData = localStorage.getItem('results');
-  const rawTransactions = rawData ? JSON.parse(rawData).raw_transactions
-    .filter(t => t.direction !== 'CREDIT')
-    .filter(t => t.description !== "Online       Payment -  Thank You") : null;
+  const rawData = localStorage.getItem("results");
+  const rawTransactions = rawData
+    ? JSON.parse(rawData)
+        .raw_transactions.filter((t) => t.direction !== "CREDIT")
+        .filter((t) => {
+          const date = new Date(t.date);
+          return date.getFullYear() === 2024;
+        })
+        .filter((t) => t.description !== "Online       Payment -  Thank You")
+    : null;
 
   const analytics = useMemo(() => {
     if (!rawTransactions) return null;
 
     // Process transactions
     const totalSpent = rawTransactions
-      .filter(t => t.direction === 'DEBIT')
+      .filter((t) => t.direction === "DEBIT")
       .reduce((sum, t) => sum + Math.abs(t.amount), 0);
 
     // Calculate spending by category for the pie chart
     const categorySpending = rawTransactions
-      .filter(t => t.category?.name)
+      .filter((t) => t.category?.name)
       .reduce((acc, t) => {
         const categoryName = t.category.name;
         if (!acc[categoryName]) {
@@ -65,68 +71,157 @@ export default function FinalResultsPage() {
         return acc;
       }, {});
 
+    // Calculate spending by day to find the biggest day
+    const dailySpending = rawTransactions.reduce((acc, t) => {
+      const date = new Date(t.date);
+      const dayKey = new Intl.DateTimeFormat("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }).format(date);
+
+      if (!acc[dayKey]) {
+        acc[dayKey] = 0;
+      }
+      acc[dayKey] += Math.abs(t.amount);
+      return acc;
+    }, {} as Record<string, number>);
+
+    const biggestDay = Object.entries(dailySpending).reduce(
+      (max, [date, amount]) =>
+        !max || amount > max.amount ? { date, amount } : max,
+      null as { date: string; amount: number } | null
+    );
+
     const spendCategories = Object.entries(categorySpending)
       .map(([category, amount], index) => ({
         category,
         amount,
-        color: `bg-${['blue', 'green', 'yellow', 'red', 'purple', 'pink', 'indigo', 'gray'][index % 8]}-500`
+        color: `bg-${
+          [
+            "blue",
+            "green",
+            "yellow",
+            "red",
+            "purple",
+            "pink",
+            "indigo",
+            "gray",
+          ][index % 8]
+        }-500`,
       }))
       .sort((a, b) => b.amount - a.amount);
 
     return {
       spendCategories,
-      totalSpent
+      totalSpent,
+      biggestDay,
     };
   }, [rawTransactions]);
 
   // Transform monthly spending data for the chart
   const monthlySpendingData = useMemo(() => {
-    if (!analytics) return [];
-    
-    return analytics.spendCategories
-      .map(category => {
-        return {
-          period: category.category,
-          amount: category.amount,
-        };
+    if (!rawTransactions) return [];
+
+    const monthlyData = rawTransactions.reduce((acc, t) => {
+      const date = new Date(t.date);
+      const monthKey = new Intl.DateTimeFormat("en-US", {
+        month: "long",
+        year: "numeric",
+      }).format(date);
+
+      if (!acc[monthKey]) {
+        acc[monthKey] = 0;
+      }
+      acc[monthKey] += Math.abs(t.amount);
+      return acc;
+    }, {} as Record<string, number>);
+
+    return Object.entries(monthlyData)
+      .map(([month, amount]) => ({
+        period: month,
+        amount,
+      }))
+      .sort((a, b) => {
+        const dateA = new Date(a.period);
+        const dateB = new Date(b.period);
+        return dateA.getTime() - dateB.getTime();
       });
-  }, [analytics]);
+  }, [rawTransactions]);
 
   // Transform weekly spending data for the chart
   const weeklySpendingData = useMemo(() => {
-    if (!analytics) return [];
-    
-    return analytics.spendCategories
-      .map(category => {
-        return {
-          period: category.category,
-          amount: category.amount,
-        };
+    if (!rawTransactions) return [];
+
+    const weeklyData = rawTransactions.reduce((acc, t) => {
+      const date = new Date(t.date);
+      const startOfWeek = new Date(date);
+      startOfWeek.setDate(date.getDate() - date.getDay());
+      const weekKey = `Week of ${new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+      }).format(startOfWeek)}`;
+
+      if (!acc[weekKey]) {
+        acc[weekKey] = 0;
+      }
+      acc[weekKey] += Math.abs(t.amount);
+      return acc;
+    }, {} as Record<string, number>);
+
+    return Object.entries(weeklyData)
+      .map(([week, amount]) => ({
+        period: week,
+        amount,
+      }))
+      .sort((a, b) => {
+        const dateA = new Date(a.period.replace("Week of ", ""));
+        const dateB = new Date(b.period.replace("Week of ", ""));
+        return dateA.getTime() - dateB.getTime();
       });
-  }, [analytics]);
+  }, [rawTransactions]);
 
   // Transform daily spending data for the chart
   const dailySpendingData = useMemo(() => {
-    if (!analytics) return [];
-    
-    return analytics.spendCategories
-      .map(category => {
-        return {
-          period: category.category,
-          amount: category.amount,
-        };
+    if (!rawTransactions) return [];
+
+    const dailyData = rawTransactions.reduce((acc, t) => {
+      const date = new Date(t.date);
+      const dayKey = new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+      }).format(date);
+
+      if (!acc[dayKey]) {
+        acc[dayKey] = 0;
+      }
+      acc[dayKey] += Math.abs(t.amount);
+      return acc;
+    }, {} as Record<string, number>);
+
+    return Object.entries(dailyData)
+      .map(([day, amount]) => ({
+        period: day,
+        amount,
+      }))
+      .sort((a, b) => {
+        const dateA = new Date(a.period);
+        const dateB = new Date(b.period);
+        return dateA.getTime() - dateB.getTime();
       });
-  }, [analytics]);
+  }, [rawTransactions]);
 
   const spendingData = {
     monthly: monthlySpendingData,
     weekly: weeklySpendingData,
-    daily: dailySpendingData
+    daily: dailySpendingData,
   };
 
   const totalSpent = analytics?.totalSpent || 0;
   const transactionCount = rawTransactions?.length || 0;
-  const averageTransaction = rawTransactions?.reduce((sum, t) => sum + Math.abs(t.amount), 0) / transactionCount || 0;
+  const averageTransaction =
+    rawTransactions?.reduce((sum, t) => sum + Math.abs(t.amount), 0) /
+      transactionCount || 0;
 
   return (
     <div className="min-h-screen  p-6">
@@ -150,26 +245,39 @@ export default function FinalResultsPage() {
               <div className="p-4 bg-emerald-50 rounded-lg">
                 <p className="text-gray-700">Total Spent</p>
                 <p className="text-2xl font-bold text-emerald-600">
-                  ${totalSpent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  $
+                  {totalSpent.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </p>
               </div>
               <div className="p-4 bg-blue-50 rounded-lg">
                 <p className="text-gray-700">Transactions</p>
-                <p className="text-2xl font-bold text-blue-600">{transactionCount}</p>
+                <p className="text-2xl font-bold text-blue-600">
+                  {transactionCount}
+                </p>
               </div>
               <div className="p-4 bg-purple-50 rounded-lg">
                 <p className="text-gray-700">Businesses</p>
                 <p className="text-2xl font-bold text-purple-600">
-                  {new Set(rawTransactions?.filter(t => t.merchant?.name).map(t => t.merchant.name)).size || 0}
+                  {new Set(
+                    rawTransactions
+                      ?.filter((t) => t.merchant?.name)
+                      .map((t) => t.merchant.name)
+                  ).size || 0}
                 </p>
               </div>
               <div className="p-4 bg-pink-50 rounded-lg">
-                <p className="text-gray-700">Biggest Day -             {rawTransactions?.reduce((max, t) => t.amount > max.amount ? t : max, rawTransactions[0])?.date || 'No data'}</p>
-                <p className="text-2xl font-bold text-pink-600">
-                  ${rawTransactions?.reduce((max, t) => t.amount > max.amount ? t : max, rawTransactions[0])?.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                <p className="text-gray-700">
+                  Biggest Day - {analytics?.biggestDay?.date || "No data"}
                 </p>
-                <p className="text-sm text-gray-600">
-      
+                <p className="text-2xl font-bold text-pink-600">
+                  $
+                  {analytics?.biggestDay?.amount.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  }) || "0.00"}
                 </p>
               </div>
             </CardContent>
@@ -220,13 +328,20 @@ export default function FinalResultsPage() {
                     fontSize={12}
                     tickLine={false}
                     axisLine={false}
-                    tickFormatter={(value) => `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-
-                   
+                    tickFormatter={(value) =>
+                      `$${value.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}`
+                    }
                   />
                   <Tooltip
                     content={({ active, payload }) => {
-                      if (active && payload?.[0]?.payload && payload.length > 0) {
+                      if (
+                        active &&
+                        payload?.[0]?.payload &&
+                        payload.length > 0
+                      ) {
                         const data = payload[0];
                         return (
                           <div className="rounded-lg border bg-white p-2 shadow-sm">
@@ -235,7 +350,11 @@ export default function FinalResultsPage() {
                                 {data.payload.period}
                               </div>
                               <div className="text-right font-medium">
-                                ${data.value?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                $
+                                {data.value?.toLocaleString(undefined, {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}
                               </div>
                             </div>
                           </div>
@@ -260,7 +379,11 @@ export default function FinalResultsPage() {
                 This year you spent
               </p>
               <p className="text-5xl font-bold mb-2">
-                ${totalSpent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                $
+                {totalSpent.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
               </p>
               <p className="text-lg text-emerald-700">on purchases</p>
             </div>
@@ -272,7 +395,7 @@ export default function FinalResultsPage() {
               <div className="">
                 {Object.entries(
                   rawTransactions
-                    ?.filter(t => t.merchant?.name)
+                    ?.filter((t) => t.merchant?.name)
                     .reduce((acc, t) => {
                       const name = t.merchant.name;
                       if (!acc[name]) {
@@ -285,13 +408,22 @@ export default function FinalResultsPage() {
                   .sort(([, a], [, b]) => b - a)
                   .slice(0, 10)
                   .map(([merchantName, totalAmount], index) => (
-                    <div className="flex justify-between items-center border-t border-emerald-200 pt-3 mt-3" key={merchantName}>
+                    <div
+                      className="flex justify-between items-center border-t border-emerald-200 pt-3 mt-3"
+                      key={merchantName}
+                    >
                       <div className="flex items-center gap-2">
                         <span className="text-emerald-600">#{index + 1}</span>
-                        <span className="font-medium text-gray-800">{merchantName}</span>
+                        <span className="font-medium text-gray-800">
+                          {merchantName}
+                        </span>
                       </div>
                       <span className="text-gray-700">
-                        ${totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        $
+                        {totalAmount.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
                       </span>
                     </div>
                   ))}
@@ -299,35 +431,44 @@ export default function FinalResultsPage() {
             </div>
           </div>
           <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-gray-100 to-gray-200 text-gray-800 flex flex-col items-center justify-center">
-              <p className="text-lg text-gray-700 mb-2">You made</p>
-              <p className="text-5xl font-bold mb-2">{transactionCount}</p>
-              <p className="text-lg text-gray-700">transactions</p>
-            </div>
+            <p className="text-lg text-gray-700 mb-2">You made</p>
+            <p className="text-5xl font-bold mb-2">{transactionCount}</p>
+            <p className="text-lg text-gray-700">transactions</p>
+          </div>
           <div className="flex gap-4 max-md:flex-col">
             <div className="flex-1 aspect-[9/16] rounded-xl border p-8 bg-gradient-to-b from-orange-100 to-orange-200 text-gray-800 flex flex-col items-center justify-center">
               <p className="text-lg text-orange-700 mb-2">
                 You spend on average about
               </p>
-              <p className="text-5xl font-bold mb-2">${averageTransaction.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+              <p className="text-5xl font-bold mb-2">
+                $
+                {averageTransaction.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </p>
               <p className="text-lg text-orange-700">per transaction</p>
             </div>
             <div className="flex-1 aspect-[9/16] rounded-xl border  p-8 bg-gradient-to-b from-lime-200 to-lime-100 text-white flex flex-col items-center justify-center">
-              <p className="text-lg text-lime-700 mb-2">You spent the most on</p>
+              <p className="text-lg text-lime-700 mb-2">
+                You spent the most on
+              </p>
 
               <p className="text-5xl font-bold text-lime-800  mb-2">
-           24 Jan 2024
+                24 Jan 2024
               </p>
               <p className="text-lg text-lime-700 text-center">$XX,XXX</p>
             </div>
-          
+
             <div className="flex-1 aspect-[9/16] rounded-xl border p-8 bg-gradient-to-b from-rose-100 to-rose-200 text-gray-800 flex flex-col items-center justify-center">
               <p className="text-lg text-rose-700 mb-2">You shopped at</p>
-              <p className="text-5xl font-bold mb-2">{new Set(rawTransactions?.map(t => t.merchant)).size || 0}</p>
+              <p className="text-5xl font-bold mb-2">
+                {new Set(rawTransactions?.map((t) => t.merchant)).size || 0}
+              </p>
               <p className="text-lg text-rose-700">different businesses</p>
             </div>
           </div>
           <div className="grid grid-cols-3 max-md:grid-cols-1 gap-4">
-         
             <div className="col-span-2 rounded-xl  flex flex-col p-8 bg-blue-50 text-gray-800 border">
               <h3 className="text-2xl font-bold text-blue-700 mb-2">
                 Your Top 10 Restaurants &amp; Cafes
@@ -335,7 +476,11 @@ export default function FinalResultsPage() {
               <div className="">
                 {Object.entries(
                   rawTransactions
-                    ?.filter(t => t.merchant?.name && t.category?.name === "Cafes and restaurants")
+                    ?.filter(
+                      (t) =>
+                        t.merchant?.name &&
+                        t.category?.name === "Cafes and restaurants"
+                    )
                     .reduce((acc, t) => {
                       const name = t.merchant.name;
                       if (!acc[name]) {
@@ -348,13 +493,22 @@ export default function FinalResultsPage() {
                   .sort(([, a], [, b]) => b - a)
                   .slice(0, 10)
                   .map(([merchantName, totalAmount], index) => (
-                    <div className="flex justify-between items-center mt-4 pt-4 border-t border-blue-200" key={merchantName}>
+                    <div
+                      className="flex justify-between items-center mt-4 pt-4 border-t border-blue-200"
+                      key={merchantName}
+                    >
                       <div className="flex items-center gap-2">
                         <span className="text-blue-600">#{index + 1}</span>
-                        <span className="font-medium text-gray-800">{merchantName}</span>
+                        <span className="font-medium text-gray-800">
+                          {merchantName}
+                        </span>
                       </div>
                       <span className="text-gray-700">
-                        ${totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        $
+                        {totalAmount.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
                       </span>
                     </div>
                   ))}
@@ -363,16 +517,21 @@ export default function FinalResultsPage() {
             <div className="flex-1 aspect-[9/16] rounded-xl border p-8 bg-gradient-to-b from-blue-100 to-blue-200 text-gray-800 flex flex-col items-center justify-center">
               <p className="text-lg text-blue-700 mb-2">You spent</p>
               <p className="text-5xl font-bold mb-2">
-                ${rawTransactions
-                    ?.filter(t => t.category?.name === "Cafes and restaurants")
-                    .reduce((sum, t) => sum + Math.abs(t.amount), 0)
-                    .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                $
+                {rawTransactions
+                  ?.filter((t) => t.category?.name === "Cafes and restaurants")
+                  .reduce((sum, t) => sum + Math.abs(t.amount), 0)
+                  .toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
               </p>
-              <p className="text-lg text-blue-700">on Restaurants &amp; Cafes</p>
+              <p className="text-lg text-blue-700">
+                on Restaurants &amp; Cafes
+              </p>
             </div>
           </div>
-           <div className="grid grid-cols-3 max-md:grid-cols-1 gap-4">
-         
+          <div className="grid grid-cols-3 max-md:grid-cols-1 gap-4">
             <div className="col-span-2 rounded-xl flex flex-col p-8 bg-violet-50 text-gray-800 border">
               <h3 className="text-2xl font-bold text-violet-700 mb-2">
                 Your Top 10 Bars &amp; Nightclubs
@@ -380,7 +539,11 @@ export default function FinalResultsPage() {
               <div className="">
                 {Object.entries(
                   rawTransactions
-                    ?.filter(t => t.merchant?.name && t.category?.name === "Bars, pubs, nightclubs")
+                    ?.filter(
+                      (t) =>
+                        t.merchant?.name &&
+                        t.category?.name === "Bars, pubs, nightclubs"
+                    )
                     .reduce((acc, t) => {
                       const name = t.merchant.name;
                       if (!acc[name]) {
@@ -393,13 +556,22 @@ export default function FinalResultsPage() {
                   .sort(([, a], [, b]) => b - a)
                   .slice(0, 10)
                   .map(([merchantName, totalAmount], index) => (
-                    <div className="flex justify-between items-center mt-4 pt-4 border-t border-violet-200" key={merchantName}>
+                    <div
+                      className="flex justify-between items-center mt-4 pt-4 border-t border-violet-200"
+                      key={merchantName}
+                    >
                       <div className="flex items-center gap-2">
                         <span className="text-violet-600">#{index + 1}</span>
-                        <span className="font-medium text-gray-800">{merchantName}</span>
+                        <span className="font-medium text-gray-800">
+                          {merchantName}
+                        </span>
                       </div>
                       <span className="text-gray-700">
-                        ${totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        $
+                        {totalAmount.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
                       </span>
                     </div>
                   ))}
@@ -408,16 +580,21 @@ export default function FinalResultsPage() {
             <div className="flex-1 aspect-[9/16] rounded-xl border p-8 bg-gradient-to-b from-violet-100 to-violet-200 text-gray-800 flex flex-col items-center justify-center">
               <p className="text-lg text-violet-700 mb-2">You spent</p>
               <p className="text-5xl font-bold mb-2">
-                ${rawTransactions
-                    ?.filter(t => t.category?.name === "Bars, pubs, nightclubs")
-                    .reduce((sum, t) => sum + Math.abs(t.amount), 0)
-                    .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                $
+                {rawTransactions
+                  ?.filter((t) => t.category?.name === "Bars, pubs, nightclubs")
+                  .reduce((sum, t) => sum + Math.abs(t.amount), 0)
+                  .toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
               </p>
-              <p className="text-lg text-violet-700">on Bars &amp; Nightclubs</p>
+              <p className="text-lg text-violet-700">
+                on Bars &amp; Nightclubs
+              </p>
             </div>
           </div>
           <div className="grid grid-cols-3  max-md:grid-cols-1 gap-4">
-         
             <div className="col-span-2 rounded-xl flex flex-col p-8 bg-purple-50 text-gray-800 border">
               <h3 className="text-2xl font-bold text-purple-700 mb-6">
                 Your Top 10 Fashion Purchases
@@ -425,7 +602,12 @@ export default function FinalResultsPage() {
               <div className="">
                 {Object.entries(
                   rawTransactions
-                    ?.filter(t => t.merchant?.name && t.category?.group?.personal_finance?.name === "Appearance")
+                    ?.filter(
+                      (t) =>
+                        t.merchant?.name &&
+                        t.category?.group?.personal_finance?.name ===
+                          "Appearance"
+                    )
                     .reduce((acc, t) => {
                       const name = t.merchant.name;
                       if (!acc[name]) {
@@ -438,13 +620,22 @@ export default function FinalResultsPage() {
                   .sort(([, a], [, b]) => b - a)
                   .slice(0, 10)
                   .map(([merchantName, totalAmount], index) => (
-                    <div className="flex justify-between items-center mt-4 pt-4 border-t border-purple-200" key={merchantName}>
+                    <div
+                      className="flex justify-between items-center mt-4 pt-4 border-t border-purple-200"
+                      key={merchantName}
+                    >
                       <div className="flex items-center gap-2">
                         <span className="text-purple-600">#{index + 1}</span>
-                        <span className="font-medium text-gray-800">{merchantName}</span>
+                        <span className="font-medium text-gray-800">
+                          {merchantName}
+                        </span>
                       </div>
                       <span className="text-gray-700">
-                        ${totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        $
+                        {totalAmount.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
                       </span>
                     </div>
                   ))}
@@ -453,16 +644,22 @@ export default function FinalResultsPage() {
             <div className="flex-1 aspect-[9/16] rounded-xl border p-8 bg-gradient-to-b from-purple-100 to-purple-200 text-gray-800 flex flex-col items-center justify-center">
               <p className="text-lg text-purple-700 mb-2">You spent</p>
               <p className="text-5xl font-bold mb-2">
-                ${rawTransactions
-                    ?.filter(t => t.category?.group?.personal_finance?.name === "Appearance")
-                    .reduce((sum, t) => sum + Math.abs(t.amount), 0)
-                    .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                $
+                {rawTransactions
+                  ?.filter(
+                    (t) =>
+                      t.category?.group?.personal_finance?.name === "Appearance"
+                  )
+                  .reduce((sum, t) => sum + Math.abs(t.amount), 0)
+                  .toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
               </p>
               <p className="text-lg text-purple-700">on fashion</p>
             </div>
           </div>
           <div className="grid grid-cols-3  max-md:grid-cols-1 gap-4">
-         
             <div className="col-span-2 rounded-xl flex flex-col p-8 bg-cyan-50 text-gray-800 border">
               <h3 className="text-2xl font-bold text-cyan-700 mb-6">
                 Your Top 10 Lifestyle Purchases
@@ -470,7 +667,12 @@ export default function FinalResultsPage() {
               <div className="">
                 {Object.entries(
                   rawTransactions
-                    ?.filter(t => t.merchant?.name && t.category?.group?.personal_finance?.name === "Lifestyle")
+                    ?.filter(
+                      (t) =>
+                        t.merchant?.name &&
+                        t.category?.group?.personal_finance?.name ===
+                          "Lifestyle"
+                    )
                     .reduce((acc, t) => {
                       const name = t.merchant.name;
                       if (!acc[name]) {
@@ -483,13 +685,22 @@ export default function FinalResultsPage() {
                   .sort(([, a], [, b]) => b - a)
                   .slice(0, 10)
                   .map(([merchantName, totalAmount], index) => (
-                    <div className="flex justify-between items-center mt-4 pt-4 border-t border-cyan-200" key={merchantName}>
+                    <div
+                      className="flex justify-between items-center mt-4 pt-4 border-t border-cyan-200"
+                      key={merchantName}
+                    >
                       <div className="flex items-center gap-2">
                         <span className="text-cyan-600">#{index + 1}</span>
-                        <span className="font-medium text-gray-800">{merchantName}</span>
+                        <span className="font-medium text-gray-800">
+                          {merchantName}
+                        </span>
                       </div>
                       <span className="text-gray-700">
-                        ${totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        $
+                        {totalAmount.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
                       </span>
                     </div>
                   ))}
@@ -498,16 +709,22 @@ export default function FinalResultsPage() {
             <div className="flex-1 aspect-[9/16] rounded-xl border p-8 bg-gradient-to-b from-cyan-100 to-cyan-200 text-gray-800 flex flex-col items-center justify-center">
               <p className="text-lg text-cyan-700 mb-2">You spent</p>
               <p className="text-5xl font-bold mb-2">
-                ${rawTransactions
-                    ?.filter(t => t.category?.group?.personal_finance?.name === "Lifestyle")
-                    .reduce((sum, t) => sum + Math.abs(t.amount), 0)
-                    .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                $
+                {rawTransactions
+                  ?.filter(
+                    (t) =>
+                      t.category?.group?.personal_finance?.name === "Lifestyle"
+                  )
+                  .reduce((sum, t) => sum + Math.abs(t.amount), 0)
+                  .toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
               </p>
               <p className="text-lg text-cyan-700">on lifestyle</p>
             </div>
           </div>
           <div className="grid grid-cols-3  max-md:grid-cols-1 gap-4">
-         
             <div className="col-span-2 rounded-xl flex flex-col p-8 bg-lime-50 text-gray-800 border">
               <h3 className="text-2xl font-bold text-lime-700 mb-6">
                 Your Top 10 Household Purchases
@@ -515,7 +732,12 @@ export default function FinalResultsPage() {
               <div className="">
                 {Object.entries(
                   rawTransactions
-                    ?.filter(t => t.merchant?.name && t.category?.group?.personal_finance?.name === "Household")
+                    ?.filter(
+                      (t) =>
+                        t.merchant?.name &&
+                        t.category?.group?.personal_finance?.name ===
+                          "Household"
+                    )
                     .reduce((acc, t) => {
                       const name = t.merchant.name;
                       if (!acc[name]) {
@@ -528,13 +750,22 @@ export default function FinalResultsPage() {
                   .sort(([, a], [, b]) => b - a)
                   .slice(0, 10)
                   .map(([merchantName, totalAmount], index) => (
-                    <div className="flex justify-between items-center mt-4 pt-4 border-t border-lime-200" key={merchantName}>
+                    <div
+                      className="flex justify-between items-center mt-4 pt-4 border-t border-lime-200"
+                      key={merchantName}
+                    >
                       <div className="flex items-center gap-2">
                         <span className="text-lime-600">#{index + 1}</span>
-                        <span className="font-medium text-gray-800">{merchantName}</span>
+                        <span className="font-medium text-gray-800">
+                          {merchantName}
+                        </span>
                       </div>
                       <span className="text-gray-700">
-                        ${totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        $
+                        {totalAmount.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
                       </span>
                     </div>
                   ))}
@@ -543,44 +774,65 @@ export default function FinalResultsPage() {
             <div className="flex-1 aspect-[9/16] rounded-xl border p-8 bg-gradient-to-b from-lime-100 to-lime-200 text-gray-800 flex flex-col items-center justify-center">
               <p className="text-lg text-lime-700 mb-2">You spent</p>
               <p className="text-5xl font-bold mb-2">
-                ${rawTransactions
-                    ?.filter(t => t.category?.group?.personal_finance?.name === "Household")
-                    .reduce((sum, t) => sum + Math.abs(t.amount), 0)
-                    .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                $
+                {rawTransactions
+                  ?.filter(
+                    (t) =>
+                      t.category?.group?.personal_finance?.name === "Household"
+                  )
+                  .reduce((sum, t) => sum + Math.abs(t.amount), 0)
+                  .toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
               </p>
               <p className="text-lg text-lime-700">on household</p>
             </div>
           </div>
-          
-        
+
           <div className="grid grid-cols-  max-md:grid-cols-1 gap-4">
-         
             <div className=" rounded-xl  flex flex-col p-8 bg-slate-50 text-gray-800 border">
               <h3 className="text-2xl font-bold text-slate-700 mb-6">
-             Largest transactions this year
+                Largest transactions this year
               </h3>
               <div className="">
-                {rawTransactions?.slice(0, 10).map((transaction, index) => (
-                  <div className="flex justify-between items-center border-b border-slate-200 pb-3 mb-3" key={index}>
-                    <div className="flex items-center gap-2">
-                      <span className="text-slate-600">#{index + 1}</span>
-                      <div>
-                        <p className="font-medium text-gray-800">
-                          {transaction.merchant?.name || transaction.description}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          {transaction.category?.name || 'Uncategorized'}
-                        </p>
+                {rawTransactions
+                  ?.sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount))
+                  .slice(0, 10)
+                  .map((transaction, index) => (
+                    <div
+                      className="flex justify-between items-center border-b border-slate-200 pb-3 mb-3"
+                      key={index}
+                    >
+                      <div className="flex items-center gap-4">
+                        <span className="text-slate-600">#{index + 1}</span>
+                        <div>
+                          <p className="font-medium text-gray-800">
+                            {transaction.merchant?.name ||
+                              transaction.description}
+                          </p>
+                          <p className="text-gray-500">
+                            {new Intl.DateTimeFormat("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            }).format(new Date(transaction.date))}{" "}
+                            - {transaction.category?.name || "Uncategorized"}
+                          </p>
+                        </div>
                       </div>
+                      <span className="text-gray-700 text-right">
+                        $
+                        {Math.abs(transaction.amount).toLocaleString(
+                          undefined,
+                          {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          }
+                        )}
+                      </span>
                     </div>
-                    <span className="text-gray-700">
-                      ${Math.abs(transaction.amount).toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
-                    </span>
-                  </div>
-                ))}
+                  ))}
               </div>
             </div>
           </div>
@@ -592,40 +844,54 @@ export default function FinalResultsPage() {
             <div className="mt-4 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <div className="p-4 space-y-4">
-               
-
                   <div className="relative h-12 w-full flex rounded-lg overflow-hidden">
                     {(() => {
-                      const groupTotals = rawTransactions?.reduce((acc, t) => {
-                        const groupName = t.category?.group?.personal_finance?.name;
-                        if (groupName) {
-                          if (!acc[groupName]) {
-                            acc[groupName] = 0;
+                      const groupTotals =
+                        rawTransactions?.reduce((acc, t) => {
+                          const groupName =
+                            t.category?.group?.personal_finance?.name;
+                          if (groupName) {
+                            if (!acc[groupName]) {
+                              acc[groupName] = 0;
+                            }
+                            acc[groupName] += Math.abs(t.amount);
                           }
-                          acc[groupName] += Math.abs(t.amount);
-                        }
-                        return acc;
-                      }, {} as { [key: string]: number }) || {};
+                          return acc;
+                        }, {} as { [key: string]: number }) || {};
 
                       const groups = Object.entries(groupTotals)
                         .map(([name, amount]) => ({
                           name,
                           amount,
-                          color: name === "Appearance" ? "bg-fuchsia-500" :
-                                 name === "Education" ? "bg-emerald-500" :
-                                 name === "Food" ? "bg-amber-500" :
-                                 name === "Health" ? "bg-rose-500" :
-                                 name === "Household" ? "bg-sky-500" :
-                                 name === "Housing" ? "bg-indigo-500" :
-                                 name === "Lifestyle" ? "bg-violet-500" :
-                                 name === "Professional Services" ? "bg-teal-500" :
-                                 name === "Transport" ? "bg-orange-500" :
-                                 name === "Utilities" ? "bg-cyan-500" :
-                                 "bg-slate-500"
+                          color:
+                            name === "Appearance"
+                              ? "bg-fuchsia-500"
+                              : name === "Education"
+                              ? "bg-emerald-500"
+                              : name === "Food"
+                              ? "bg-amber-500"
+                              : name === "Health"
+                              ? "bg-rose-500"
+                              : name === "Household"
+                              ? "bg-sky-500"
+                              : name === "Housing"
+                              ? "bg-indigo-500"
+                              : name === "Lifestyle"
+                              ? "bg-violet-500"
+                              : name === "Professional Services"
+                              ? "bg-teal-500"
+                              : name === "Transport"
+                              ? "bg-orange-500"
+                              : name === "Utilities"
+                              ? "bg-cyan-500"
+                              : "bg-slate-500",
                         }))
                         .sort((a, b) => b.amount - a.amount);
 
-                      const total = groups.reduce((sum, group) => sum + group.amount, 0);
+                      const total = groups.reduce(
+                        (sum, group) => sum + group.amount,
+                        0
+                      );
 
                       return (
                         <>
@@ -653,7 +919,11 @@ export default function FinalResultsPage() {
                                     {group.name}
                                   </div>
                                   <div className="text-gray-600">
-                                    ${group.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    $
+                                    {group.amount.toLocaleString(undefined, {
+                                      minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
+                                    })}
                                   </div>
                                   <div className="text-gray-500">
                                     {percentage.toFixed(1)}% of total
@@ -671,109 +941,138 @@ export default function FinalResultsPage() {
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mt-6">
                     {(() => {
-                      const groupTotals = rawTransactions?.reduce((acc, t) => {
-                        const groupName = t.category?.group?.personal_finance?.name;
-                        if (groupName) {
-                          if (!acc[groupName]) {
-                            acc[groupName] = 0;
+                      const groupTotals =
+                        rawTransactions?.reduce((acc, t) => {
+                          const groupName =
+                            t.category?.group?.personal_finance?.name;
+                          if (groupName) {
+                            if (!acc[groupName]) {
+                              acc[groupName] = 0;
+                            }
+                            acc[groupName] += Math.abs(t.amount);
                           }
-                          acc[groupName] += Math.abs(t.amount);
-                        }
-                        return acc;
-                      }, {} as { [key: string]: number }) || {};
+                          return acc;
+                        }, {} as { [key: string]: number }) || {};
 
                       const groups = Object.entries(groupTotals)
                         .map(([name, amount]) => ({
                           name,
                           amount,
-                          color: name === "Appearance" ? "bg-fuchsia-500" :
-                                 name === "Education" ? "bg-emerald-500" :
-                                 name === "Food" ? "bg-amber-500" :
-                                 name === "Health" ? "bg-rose-500" :
-                                 name === "Household" ? "bg-sky-500" :
-                                 name === "Housing" ? "bg-indigo-500" :
-                                 name === "Lifestyle" ? "bg-violet-500" :
-                                 name === "Professional Services" ? "bg-teal-500" :
-                                 name === "Transport" ? "bg-orange-500" :
-                                 name === "Utilities" ? "bg-cyan-500" :
-                                 "bg-slate-500"
+                          color:
+                            name === "Appearance"
+                              ? "bg-fuchsia-500"
+                              : name === "Education"
+                              ? "bg-emerald-500"
+                              : name === "Food"
+                              ? "bg-amber-500"
+                              : name === "Health"
+                              ? "bg-rose-500"
+                              : name === "Household"
+                              ? "bg-sky-500"
+                              : name === "Housing"
+                              ? "bg-indigo-500"
+                              : name === "Lifestyle"
+                              ? "bg-violet-500"
+                              : name === "Professional Services"
+                              ? "bg-teal-500"
+                              : name === "Transport"
+                              ? "bg-orange-500"
+                              : name === "Utilities"
+                              ? "bg-cyan-500"
+                              : "bg-slate-500",
                         }))
                         .sort((a, b) => b.amount - a.amount);
 
-                      const total = groups.reduce((sum, group) => sum + group.amount, 0);
-
-                      return (
-                        groups.map((group) => {
-                          const percentage = ((group.amount / total) * 100).toFixed(1);
-
-                          return (
-                            <div
-                              key={group.name}
-                              className="flex items-center gap-2"
-                            >
-                              <div
-                                className={cn("w-5 h-5 rounded", group.color)}
-                              />
-                              <span className="text-sm text-gray-600">
-                                {group.name}
-                                <br />${group.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({percentage}%)
-                              </span>
-                            </div>
-                          );
-                        })
+                      const total = groups.reduce(
+                        (sum, group) => sum + group.amount,
+                        0
                       );
+
+                      return groups.map((group) => {
+                        const percentage = (
+                          (group.amount / total) *
+                          100
+                        ).toFixed(1);
+
+                        return (
+                          <div
+                            key={group.name}
+                            className="flex items-center gap-2"
+                          >
+                            <div
+                              className={cn("w-5 h-5 rounded", group.color)}
+                            />
+                            <span className="text-sm text-gray-600">
+                              {group.name}
+                              <br />$
+                              {group.amount.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}{" "}
+                              ({percentage}%)
+                            </span>
+                          </div>
+                        );
+                      });
                     })()}
                   </div>
                 </div>
               </ResponsiveContainer>
             </div>
           </div>
-         
+
           <div className="grid grid-cols-2 gap-4 max-lg:grid-cols-1">
-          <Card>
-            <CardHeader>
-              <CardTitle>Powered by Akahu</CardTitle>
-              <CardDescription>Open Banking for New Zealand</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">
-                Experience secure, reliable access to your financial data
-                through Akahu's open finance platform. Learn more about how
-                Akahu makes account connectivity better for everyone.
-              </p>
-              <Button className="mt-4 gap-2" variant="default" asChild>
-                <a href="https://akahu.nz" target="_blank">
-                  Learn More About Akahu{" "}
-                </a>
-              </Button>
-            </CardContent>
-          </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Powered by Akahu</CardTitle>
+                <CardDescription>Open Banking for New Zealand</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">
+                  Experience secure, reliable access to your financial data
+                  through Akahu's open finance platform. Learn more about how
+                  Akahu makes account connectivity better for everyone.
+                </p>
+                <Button className="mt-4 gap-2" variant="default" asChild>
+                  <a href="https://akahu.nz" target="_blank">
+                    Learn More About Akahu{" "}
+                  </a>
+                </Button>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Looking for a software job?</CardTitle>
-              <CardDescription>Watchful is hiring!</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">
-                Love building useful tools? The company I work for is looking
-                for developers who like building useful tools.
-              </p>
+            <Card>
+              <CardHeader>
+                <CardTitle>Looking for a software job?</CardTitle>
+                <CardDescription>Watchful is hiring!</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">
+                  Love building useful tools? The company I work for is looking
+                  for developers who like building useful tools.
+                </p>
 
-              <Button className="mt-4 gap-2" asChild variant="default">
-                <a href="https://watchful.co.nz/careers" target="_blank">
-                  View Open Positions
-                </a>
-              </Button>
-            </CardContent>
-          </Card>
+                <Button className="mt-4 gap-2" asChild variant="default">
+                  <a href="https://watchful.co.nz/careers" target="_blank">
+                    View Open Positions
+                  </a>
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         </div>
 
         <div className="mt-12 text-center text-sm text-gray-600">
           <p>
             Money Wrapped 2024 is built by{" "}
-            <a className="underline text-blue-700" href="https://walt.online">Walter Lim</a> &amp; <a className="underline text-blue-700" href="https://laspruca.nz">Connor Hare</a>.
+            <a className="underline text-blue-700" href="https://walt.online">
+              Walter Lim
+            </a>{" "}
+            &amp;{" "}
+            <a className="underline text-blue-700" href="https://laspruca.nz">
+              Connor Hare
+            </a>
+            .
           </p>
           <p className="mt-2">
             All your financial data stays private and secure.

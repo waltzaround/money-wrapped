@@ -85,6 +85,9 @@ export default async function akahuEnrich(c: Context<HonoType, '/akahu/transacti
 
 		let enriched;
 		try {
+			// Save transaction dates before enrichment
+			const transactionDates = new Map(all_transactions.map(x => [x._id, x.date]));
+			
 			enriched = await enrichTransactions(
 				all_transactions.map((x) => ({
 					description: x.description,
@@ -96,6 +99,12 @@ export default async function akahuEnrich(c: Context<HonoType, '/akahu/transacti
 				c.env,
 				abortController.signal,
 			);
+
+			// Reattach dates to enriched transactions
+			enriched = enriched.map(tx => ({
+				...tx,
+				date: transactionDates.get(tx.id) || '',
+			}));
 		} catch (ex) {
 			console.error(ex);
 			await stream.writeSSE(
