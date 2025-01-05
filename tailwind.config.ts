@@ -85,7 +85,12 @@ export default {
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
   			'accordion-up': 'accordion-up 0.2s ease-out'
-  		}
+  		},
+		grayscale: {
+			25: '25%',
+			50: '50%',
+			75: '75%',
+		}
   	}
   },
   plugins: [require("tailwindcss-animate")],

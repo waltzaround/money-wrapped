@@ -24,11 +24,13 @@ import {
 import { Wallet, ClipboardList, LineChart } from "lucide-react";
 import { useNavigate, useLocation, Link } from "react-router";
 import "~/styles/animations.css";
+import FloatingLogos from "~/components/slides/floatingLogos";
 
 interface ListItem {
   rank: number;
   name: string;
   detail: string;
+  logo: string;
 }
 
 // Add before the interfaces
@@ -48,6 +50,7 @@ interface BaseSlide {
   gradient: string;
   textColor: string;
   animation?: SlideAnimation;
+  backgroundElm?: ()=>React.ReactNode;
 }
 
 // Update the StandardSlide interface
@@ -250,6 +253,14 @@ export default function ResultsPage() {
         .map((t) => t.merchant.name)
     ).size;
 
+    const merchantLogos = Array.from(new Set<string>(
+      rawTransactions
+        .filter((t) => t.merchant?.logo)
+        .map((t) => t.merchant.logo)
+    ));
+
+    console.log(rawTransactions)
+
     const transactionCount = rawTransactions.length;
 
     // Find biggest purchase
@@ -296,7 +307,7 @@ export default function ResultsPage() {
       .reduce((acc, t) => {
         const name = t.merchant.name;
         if (!acc[name]) {
-          acc[name] = { amount: 0, visits: 0 };
+          acc[name] = { amount: 0, visits: 0, logo: t.merchant.logo };
         }
         acc[name].amount += Math.abs(t.amount);
         acc[name].visits += 1;
@@ -310,6 +321,7 @@ export default function ResultsPage() {
         name,
         amount: stats.amount,
         visits: stats.visits,
+        logo: stats.logo
       }));
 
     // Calculate cafe statistics
@@ -390,6 +402,7 @@ export default function ResultsPage() {
         averagePerDay: averageWeekendSpending,
         percentageHigher,
       },
+      merchantLogos
     };
   }, [rawTransactions]);
 
@@ -558,6 +571,7 @@ export default function ResultsPage() {
       value: analytics.uniqueMerchants?.toString() || "0",
       subtitle: "different businesses",
       textColor: placeholderSlides[1].textColor,
+      backgroundElm: ()=> <FloatingLogos logos={analytics.merchantLogos}/>
     } as StandardSlide;
 
     // Update transaction count slide
@@ -606,12 +620,13 @@ export default function ResultsPage() {
           textColor: "rose",
           items: analytics.topMerchants.map(
             (
-              merchant: { name: any; amount: number | bigint },
+              merchant: { name: any; amount: number | bigint, logo: string },
               index: number
             ) => ({
               rank: index + 1,
               name: merchant.name,
               detail: `${formatCurrency(Number(merchant.amount))} spent`,
+              logo: merchant.logo
             })
           ),
         };
@@ -785,6 +800,7 @@ export default function ResultsPage() {
         <div
           className={`w-full h-full rounded-xl p-8 bg-gradient-to-b ${slide.gradient} text-white flex flex-col shadow-lg`}
         >
+          {slide.backgroundElm && slide.backgroundElm()}
           <p
             className={`text-2xl font-bold text-${slide.textColor}-100 mb-6 text-center`}
           >
@@ -811,6 +827,9 @@ export default function ResultsPage() {
                     {item.detail}
                   </p>
                 </div>
+                { item.logo && (
+                  <img src={item.logo} className="h-16 rounded shadow-lg"/>
+                )}
               </div>
             ))}
           </div>
@@ -822,6 +841,7 @@ export default function ResultsPage() {
       <div
         className={`w-full h-full rounded-xl p-8 bg-gradient-to-b ${slide.gradient} text-white flex flex-col items-center justify-center shadow-lg`}
       >
+        {slide.backgroundElm && slide.backgroundElm()}
         <p className={`text-lg mb-2 opacity-80`}>{slide.title}</p>
         <p className="text-6xl font-bold mb-2">{slide.value}</p>
         <p className={`text-lg opacity-80`}>{slide.subtitle}</p>
