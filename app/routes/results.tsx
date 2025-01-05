@@ -1,6 +1,18 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+} from "react";
 import { Button } from "~/components/ui/button";
-import { ArrowLeftIcon, ArrowRightIcon, Volume2, VolumeX } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  Volume2,
+  VolumeX,
+  Download,
+} from "lucide-react";
 
 import {
   Card,
@@ -74,7 +86,11 @@ function fadeOutAudio(audio: HTMLAudioElement, duration: number = 8000) {
   }, stepDuration);
 }
 
-function useBackgroundAudio(): [React.RefObject<HTMLAudioElement | null>, boolean, () => void] {
+function useBackgroundAudio(): [
+  React.RefObject<HTMLAudioElement | null>,
+  boolean,
+  () => void
+] {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const hasStartedRef = useRef(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -85,7 +101,7 @@ function useBackgroundAudio(): [React.RefObject<HTMLAudioElement | null>, boolea
       audioRef.current = new Audio("/bg.mp3");
       audioRef.current.loop = true;
     }
-    
+
     const audio = audioRef.current;
 
     const startAudio = async () => {
@@ -210,21 +226,43 @@ export default function ResultsPage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [audioRef, isMuted, toggleMute] = useBackgroundAudio();
   const navigate = useNavigate();
-  const rawData = localStorage.getItem('results');
-  const rawTransactions = rawData ? JSON.parse(rawData).raw_transactions.filter(t => t.direction !== 'CREDIT') : null;
-  
+  const rawData = localStorage.getItem("results");
+  const rawTransactions = rawData
+    ? JSON.parse(rawData)
+        .raw_transactions.filter((t) => t.direction !== "CREDIT")
+        .filter((t) => {
+          const date = new Date(t.date);
+          return date.getFullYear() === 2024;
+        })
+    : null;
+
+  const downloadJSON = useCallback(() => {
+    const data = localStorage.getItem("results");
+    if (!data) return;
+
+    const blob = new Blob([data], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "money-wrapped-data.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, []);
+
   const analytics = useMemo(() => {
     if (!rawTransactions) return null;
 
     // Process transactions
     const totalSpent = rawTransactions
-      .filter(t => t.direction === 'DEBIT')
+      .filter((t) => t.direction === "DEBIT")
       .reduce((sum, t) => sum + Math.abs(t.amount), 0);
 
     const uniqueMerchants = new Set(
       rawTransactions
-        .filter(t => t.merchant?.name)
-        .map(t => t.merchant.name)
+        .filter((t) => t.merchant?.name)
+        .map((t) => t.merchant.name)
     ).size;
 
     const transactionCount = rawTransactions.length;
@@ -236,27 +274,40 @@ export default function ResultsPage() {
     }, null);
 
     const averagePurchase = totalSpent / transactionCount;
-    const percentAboveAverage = biggestPurchase 
-      ? Math.round(((Math.abs(biggestPurchase.amount) - averagePurchase) / averagePurchase) * 100)
+    const percentAboveAverage = biggestPurchase
+      ? Math.round(
+          ((Math.abs(biggestPurchase.amount) - averagePurchase) /
+            averagePurchase) *
+            100
+        )
       : 0;
 
     // Group by month
     const monthlySpending = rawTransactions.reduce((acc, t) => {
-      // Use current date since this is recent data
-      const date = new Date();
-      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const date = new Date(t.date);
+      const monthKey = `${date.getFullYear()}-${String(
+        date.getMonth() + 1
+      ).padStart(2, "0")}`;
       acc[monthKey] = (acc[monthKey] || 0) + Math.abs(t.amount);
       return acc;
     }, {});
 
-    const highestSpendingMonth = Object.entries(monthlySpending)
-      .reduce((max, [month, total]) => 
-        (!max || total > max.total) ? { month, total } : max
-      , null);
+    const monthlySpendingArray = Object.entries(monthlySpending)
+      .map(([month, total]) => ({
+        month,
+        monthName: new Intl.DateTimeFormat("en-US", { 
+          month: "long",
+          year: "numeric"
+        }).format(new Date(month + "-01")),
+        total,
+      }))
+      .sort((a, b) => b.total - a.total);
+
+    const highestSpendingMonth = monthlySpendingArray[0] || null;
 
     // Group by merchant
     const merchantSpending = rawTransactions
-      .filter(t => t.merchant?.name)
+      .filter((t) => t.merchant?.name)
       .reduce((acc, t) => {
         const name = t.merchant.name;
         if (!acc[name]) {
@@ -268,26 +319,29 @@ export default function ResultsPage() {
       }, {});
 
     const topMerchants = Object.entries(merchantSpending)
-      .sort(([,a], [,b]) => b.amount - a.amount)
+      .sort(([, a], [, b]) => b.amount - a.amount)
       .slice(0, 5)
-      .map(([name, stats]) => ({ 
-        name, 
+      .map(([name, stats]) => ({
+        name,
         amount: stats.amount,
-        visits: stats.visits 
+        visits: stats.visits,
       }));
 
     // Calculate cafe statistics
-    const cafeTransactions = rawTransactions.filter(t => 
-      t.category?.name === "Cafes and restaurants"
+    const cafeTransactions = rawTransactions.filter(
+      (t) => t.category?.name === "Cafes and restaurants"
     );
-    
+
     const cafeVisits = cafeTransactions.length;
-    const cafeSpending = cafeTransactions.reduce((sum, t) => sum + Math.abs(t.amount), 0);
+    const cafeSpending = cafeTransactions.reduce(
+      (sum, t) => sum + Math.abs(t.amount),
+      0
+    );
     const weeklyAverage = Math.round((cafeVisits / 52) * 10) / 10; // Round to 1 decimal place
 
     // Calculate spending by category
     const categorySpending = rawTransactions
-      .filter(t => t.category?.name)
+      .filter((t) => t.category?.name)
       .reduce((acc, t) => {
         const categoryName = t.category.name;
         if (!acc[categoryName]) {
@@ -298,11 +352,11 @@ export default function ResultsPage() {
       }, {});
 
     const topCategories = Object.entries(categorySpending)
-      .sort(([,a], [,b]) => b - a)
+      .sort(([, a], [, b]) => b - a)
       .slice(0, 5)
       .map(([name, amount]) => ({
         name,
-        amount
+        amount,
       }));
 
     return {
@@ -316,7 +370,8 @@ export default function ResultsPage() {
       cafeVisits,
       cafeSpending,
       weeklyAverage,
-      topCategories
+      topCategories,
+      monthlySpendingArray,
     };
   }, [rawTransactions]);
 
@@ -331,9 +386,9 @@ export default function ResultsPage() {
 
   // Helper function to format currency consistently
   const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
     }).format(amount);
   };
 
@@ -470,7 +525,10 @@ export default function ResultsPage() {
       gradient: placeholderSlides[0].gradient,
       title: placeholderSlides[0].title,
       value: formatCurrency(analytics.totalSpent),
-      subtitle: 'standard' in placeholderSlides[0] ? (placeholderSlides[0] as StandardSlide).subtitle : '',
+      subtitle:
+        "standard" in placeholderSlides[0]
+          ? (placeholderSlides[0] as StandardSlide).subtitle
+          : "",
       textColor: placeholderSlides[0].textColor,
     } as StandardSlide;
 
@@ -479,7 +537,7 @@ export default function ResultsPage() {
       type: "standard",
       gradient: placeholderSlides[1].gradient,
       title: placeholderSlides[1].title,
-      value: analytics.uniqueMerchants?.toString() || '0',
+      value: analytics.uniqueMerchants?.toString() || "0",
       subtitle: "different businesses",
       textColor: placeholderSlides[1].textColor,
     } as StandardSlide;
@@ -488,8 +546,8 @@ export default function ResultsPage() {
     updatedSlides[2] = {
       ...placeholderSlides[2],
       type: "standard",
-      value: (analytics.transactionCount || 0).toLocaleString('en-US'),
-      subtitle: "transactions"
+      value: (analytics.transactionCount || 0).toLocaleString("en-US"),
+      subtitle: "transactions",
     };
 
     // If we have highest spending month data
@@ -498,8 +556,9 @@ export default function ResultsPage() {
         type: "standard",
         gradient: "from-pink-500 to-pink-700",
         title: "Your highest spending month was",
-        value: new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" }).format(new Date(analytics.highestSpendingMonth.month + "-01")),
-        subtitle: "You spent " + formatCurrency(analytics.highestSpendingMonth.total),
+        value: analytics.highestSpendingMonth.monthName,
+        subtitle:
+          "You spent " + formatCurrency(analytics.highestSpendingMonth.total),
         description: "That's your biggest spending month!",
         textColor: "pink",
       };
@@ -513,7 +572,9 @@ export default function ResultsPage() {
         gradient: "from-orange-500 to-orange-700",
         title: "Your favorite merchant was",
         value: topMerchant.name,
-        subtitle: `${formatCurrency(topMerchant.amount)} spent on ${topMerchant.visits} transactions`,
+        subtitle: `${formatCurrency(topMerchant.amount)} spent on ${
+          topMerchant.visits
+        } transactions`,
         description: `That's where you spent the most money this year `,
         textColor: "orange",
       };
@@ -525,11 +586,16 @@ export default function ResultsPage() {
           gradient: "from-rose-500 to-rose-700",
           title: "Your Top 5 Merchants",
           textColor: "rose",
-          items: analytics.topMerchants.map((merchant: { name: any; amount: number | bigint; }, index: number) => ({
-            rank: index + 1,
-            name: merchant.name,
-            detail: `${formatCurrency(Number(merchant.amount))} spent`
-          })),
+          items: analytics.topMerchants.map(
+            (
+              merchant: { name: any; amount: number | bigint },
+              index: number
+            ) => ({
+              rank: index + 1,
+              name: merchant.name,
+              detail: `${formatCurrency(Number(merchant.amount))} spent`,
+            })
+          ),
         };
       }
     }
@@ -543,7 +609,11 @@ export default function ResultsPage() {
         title: "Your biggest purchase",
         value: formatCurrency(Math.abs(purchase.amount)),
         subtitle: purchase.merchant?.name || purchase.description,
-        description: `That's ${Math.round(((Math.abs(purchase.amount) - analytics.averagePurchase) / analytics.averagePurchase) * 100)}% more than your average purchase`,
+        description: `That's ${Math.round(
+          ((Math.abs(purchase.amount) - analytics.averagePurchase) /
+            analytics.averagePurchase) *
+            100
+        )}% more than your average purchase`,
         textColor: "lime",
       };
     }
@@ -556,9 +626,14 @@ export default function ResultsPage() {
         title: "Weekend warrior",
         value: formatCurrency(analytics.weekendSpending.averagePerDay),
         subtitle: "average weekend spending",
-        description: analytics.weekendSpending.percentageHigher > 0 
-          ? `You tend to spend ${Math.round(analytics.weekendSpending.percentageHigher)}% more on weekends`
-          : `You actually spend ${Math.round(Math.abs(analytics.weekendSpending.percentageHigher))}% less on weekends`,
+        description:
+          analytics.weekendSpending.percentageHigher > 0
+            ? `You tend to spend ${Math.round(
+                analytics.weekendSpending.percentageHigher
+              )}% more on weekends`
+            : `You actually spend ${Math.round(
+                Math.abs(analytics.weekendSpending.percentageHigher)
+              )}% less on weekends`,
         textColor: "cyan",
       };
     }
@@ -583,11 +658,18 @@ export default function ResultsPage() {
         gradient: "from-amber-500 to-amber-700",
         title: "Most Expensive Months",
         textColor: "amber",
-        items: analytics.monthlySpendingArray.slice(0, 5).map((month: { monthName: any; total: number | bigint; }, index: number) => ({
-          rank: index + 1,
-          name: month.monthName,
-          detail: `${formatCurrency(Number(month.total))} spent`
-        })),
+        items: analytics.monthlySpendingArray
+          .slice(0, 5)
+          .map(
+            (
+              month: { monthName: any; total: number | bigint },
+              index: number
+            ) => ({
+              rank: index + 1,
+              name: month.monthName,
+              detail: `${formatCurrency(Number(month.total))} spent`,
+            })
+          ),
       };
     }
 
@@ -601,7 +683,7 @@ export default function ResultsPage() {
         items: analytics.topCategories.map((category, index) => ({
           rank: index + 1,
           name: category.name,
-          detail: formatCurrency(category.amount)
+          detail: formatCurrency(category.amount),
         })),
       };
     }
@@ -620,15 +702,15 @@ export default function ResultsPage() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'ArrowRight') {
+      if (event.key === "ArrowRight") {
         handleNextSlide();
-      } else if (event.key === 'ArrowLeft') {
+      } else if (event.key === "ArrowLeft") {
         handlePrevSlide();
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [slides.length]);
 
   const handlePrevSlide = () => {
@@ -649,8 +731,8 @@ export default function ResultsPage() {
           }
         }
         if (nextSlide >= slides.length) {
-          navigate("/final-results", { 
-            state: { analytics } 
+          navigate("/final-results", {
+            state: { analytics },
           });
           return prev;
         }
@@ -708,13 +790,9 @@ export default function ResultsPage() {
       <div
         className={`w-full h-full rounded-xl p-8 bg-gradient-to-b ${slide.gradient} text-white flex flex-col items-center justify-center shadow-lg`}
       >
-        <p className={`text-lg mb-2 opacity-80`}>
-          {slide.title}
-        </p>
+        <p className={`text-lg mb-2 opacity-80`}>{slide.title}</p>
         <p className="text-6xl font-bold mb-2">{slide.value}</p>
-        <p className={`text-lg opacity-80`}>
-          {slide.subtitle}
-        </p>
+        <p className={`text-lg opacity-80`}>{slide.subtitle}</p>
         {slide.description && (
           <p className={`text-lg opacity-80 mt-4 text-center`}>
             {slide.description}
@@ -737,8 +815,8 @@ export default function ResultsPage() {
           }
         }
         if (nextSlide >= slides.length) {
-          navigate("/final-results", { 
-            state: { analytics } 
+          navigate("/final-results", {
+            state: { analytics },
           });
           return prev;
         }
@@ -749,18 +827,25 @@ export default function ResultsPage() {
 
   return (
     <div className="h-screen flex items-center justify-center bg-gray-900 relative p-12 max-md:p-0">
-      <Button
-        variant="outline"
-        size="icon"
-        className="fixed bottom-4 right-4 z-50 bg-black/10 backdrop-blur-sm hover:bg-white/20 border-none text-blue-400"
-        onClick={toggleMute}
-      >
-        {isMuted ? (
-          <VolumeX className="h-4 w-4" />
-        ) : (
-          <Volume2 className="h-4 w-4" />
-        )}
-      </Button>
+      <div className="fixed bottom-4 right-4 flex gap-2">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={toggleMute}
+          className="rounded-full"
+        >
+          {isMuted ? <VolumeX /> : <Volume2 />}
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={downloadJSON}
+          className="rounded-full"
+          title="Download data as JSON"
+        >
+          <Download />
+        </Button>
+      </div>
       <Button
         variant="outline"
         size="icon"
