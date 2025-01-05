@@ -664,7 +664,9 @@ export default function ResultsPage() {
         title: "You visited cafes & restaurants",
         value: `${analytics.cafeVisits} times`,
         subtitle: `spending ${formatCurrency(analytics.cafeSpending)}`,
-        description: `That's about ${analytics.weeklyAverage} visits per week`,
+        description: `That's about ${formatCurrency(
+          analytics.cafeSpending / 52
+        )} per week over ${analytics.weeklyAverage} visits `,
         textColor: "violet",
       };
     }
@@ -822,9 +824,9 @@ export default function ResultsPage() {
       <div
         className={`w-full h-full rounded-xl p-8 bg-gradient-to-b ${slide.gradient} text-white flex flex-col items-center justify-center shadow-lg`}
       >
-        <p className={`text-lg mb-2 opacity-80`}>{slide.title}</p>
-        <p className="text-6xl font-bold mb-2">{slide.value}</p>
-        <p className={`text-lg opacity-80`}>{slide.subtitle}</p>
+        <p className={`text-lg mb-2 opacity-80 text-center`}>{slide.title}</p>
+        <p className="text-6xl font-bold mb-2 text-center">{slide.value}</p>
+        <p className={`text-lg opacity-80 text-center`}>{slide.subtitle}</p>
         {slide.description && (
           <p className={`text-lg opacity-80 mt-4 text-center`}>
             {slide.description}
@@ -864,7 +866,7 @@ export default function ResultsPage() {
           variant="outline"
           size="icon"
           onClick={toggleMute}
-          className="rounded-full"
+          className="z-50 bg-black/10 backdrop-blur-sm hover:bg-white/20 border-none text-blue-400"
         >
           {isMuted ? <VolumeX /> : <Volume2 />}
         </Button>
@@ -909,7 +911,7 @@ export default function ResultsPage() {
         onSlideClick={handleTimelineClick}
       />
 
-      <div className="relative h-full w-full ">
+      <div className="relative h-full w-full -z-10 ">
         {slidesWithAnimations.map((slide, index) => (
           <div
             key={index}

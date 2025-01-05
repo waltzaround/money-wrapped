@@ -231,7 +231,16 @@ export default function FinalResultsPage() {
           <p className="text-gray-900 text-lg">
             Thanks for exploring your spending journey!
           </p>
-          <Link className={buttonVariants({ variant: "outline",className: "mt-6" })} to="/results"><RotateCcw />Replay Journey</Link>
+          <Link
+            className={buttonVariants({
+              variant: "outline",
+              className: "mt-6",
+            })}
+            to="/results"
+          >
+            <RotateCcw />
+            Replay Journey
+          </Link>
         </div>
 
         <div className="grid gap-4">
@@ -1061,6 +1070,45 @@ export default function FinalResultsPage() {
               </CardContent>
             </Card>
           </div>
+          <Card className="">
+            <CardHeader>
+              <CardTitle>Delete Your Data</CardTitle>
+              <CardDescription>
+                Remove all your financial data from this device. This action
+                cannot be undone.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  if (
+                    window.confirm(
+                      "Are you sure you want to delete all your financial data? This action cannot be undone."
+                    )
+                  ) {
+                    // Clear localStorage
+                    localStorage.removeItem("results");
+                    localStorage.removeItem("transactions");
+
+                    // Clear all cookies
+                    document.cookie.split(";").forEach((cookie) => {
+                      document.cookie = cookie
+                        .replace(/^ +/, "")
+                        .replace(
+                          /=.*/,
+                          "=;expires=" + new Date().toUTCString() + ";path=/"
+                        );
+                    });
+
+                    window.location.href = "/";
+                  }
+                }}
+              >
+                Delete All Data
+              </Button>
+            </CardContent>
+          </Card>
         </div>
 
         <div className="mt-12 text-center text-sm text-gray-600">
