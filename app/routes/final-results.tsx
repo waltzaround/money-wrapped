@@ -73,25 +73,17 @@ export default function FinalResultsPage() {
 
     // Calculate spending by day to find the biggest day
     const dailySpending = rawTransactions.reduce((acc, t) => {
-      const date = new Date(t.date);
-      const dayKey = new Intl.DateTimeFormat("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      }).format(date);
-
-      if (!acc[dayKey]) {
-        acc[dayKey] = 0;
+      const date = t.date.split("T")[0]; // Get just the date part
+      if (!acc[date]) {
+        acc[date] = 0;
       }
-      acc[dayKey] += Math.abs(t.amount);
+      acc[date] += Math.abs(t.amount);
       return acc;
     }, {} as Record<string, number>);
 
-    const biggestDay = Object.entries(dailySpending).reduce(
-      (max, [date, amount]) =>
-        !max || amount > max.amount ? { date, amount } : max,
-      null as { date: string; amount: number } | null
-    );
+    const highestSpendingDay = Object.entries(dailySpending || {}).sort(
+      ([, a], [, b]) => b - a
+    )[0];
 
     const spendCategories = Object.entries(categorySpending)
       .map(([category, amount], index) => ({
@@ -115,7 +107,7 @@ export default function FinalResultsPage() {
     return {
       spendCategories,
       totalSpent,
-      biggestDay,
+      highestSpendingDay,
     };
   }, [rawTransactions]);
 
@@ -224,7 +216,7 @@ export default function FinalResultsPage() {
       transactionCount || 0;
 
   return (
-    <div className="min-h-screen  p-6">
+    <div className="min-h-screen  p-6 max-md:p-4">
       <div className="container max-w-6xl mx-auto">
         <div className="text-center my-24">
           <h1 className="text-4xl font-bold mb-4">Your 2024 Money Wrapped</h1>
@@ -280,14 +272,25 @@ export default function FinalResultsPage() {
               </div>
               <div className="p-4 bg-pink-50 rounded-lg">
                 <p className="text-gray-700">
-                  Biggest Day - {analytics?.biggestDay?.date || "No data"}
+                  Biggest Day -{" "}
+                  {analytics?.highestSpendingDay
+                    ? new Intl.DateTimeFormat("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      }).format(new Date(analytics.highestSpendingDay[0]))
+                    : "No data"}
                 </p>
                 <p className="text-2xl font-bold text-pink-600">
                   $
-                  {analytics?.biggestDay?.amount.toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  }) || "0.00"}
+                  {analytics?.highestSpendingDay
+                    ? analytics.highestSpendingDay[1].toLocaleString(
+                        undefined,
+                        {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        }
+                      )
+                    : "0.00"}
                 </p>
               </div>
             </CardContent>
@@ -383,8 +386,8 @@ export default function FinalResultsPage() {
               </ResponsiveContainer>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-4 max-md:grid-cols-1">
-            <div className="aspect-[9/16] rounded-xl border p-8 bg-gradient-to-b from-emerald-100 to-emerald-200 text-gray-800 flex flex-col items-center justify-center">
+          <div className="grid grid-cols-3 gap-4 max-md:flex max-md:flex-col">
+            <div className="rounded-xl border p-8 bg-gradient-to-b from-emerald-100 to-emerald-200 text-gray-800 flex flex-col items-center justify-center">
               <p className="text-lg text-emerald-700 mb-2">
                 This year you spent
               </p>
@@ -400,7 +403,7 @@ export default function FinalResultsPage() {
 
             <div className="col-span-2 rounded-xl  flex flex-col p-8 bg-emerald-50 text-gray-800 border">
               <h3 className="text-2xl font-bold text-emerald-700 mb-4">
-                Your Top 10 Merchants
+                Top Merchants
               </h3>
               <div className="">
                 {Object.entries(
@@ -409,28 +412,49 @@ export default function FinalResultsPage() {
                     .reduce((acc, t) => {
                       const name = t.merchant.name;
                       if (!acc[name]) {
-                        acc[name] = 0;
+                        acc[name] = {
+                          amount: 0,
+                          logo: t.merchant.logo,
+                          count: 0,
+                        };
                       }
-                      acc[name] += Math.abs(t.amount);
+                      acc[name].amount += Math.abs(t.amount);
+                      acc[name].count += 1;
                       return acc;
-                    }, {} as { [key: string]: number })
+                    }, {} as { [key: string]: { amount: number; logo: string; count: number } })
                 )
-                  .sort(([, a], [, b]) => b - a)
+                  .sort(([, a], [, b]) => b.amount - a.amount)
                   .slice(0, 10)
-                  .map(([merchantName, totalAmount], index) => (
+                  .map(([merchantName, data], index) => (
                     <div
                       className="flex justify-between items-center border-t border-emerald-200 pt-3 mt-3"
                       key={merchantName}
                     >
                       <div className="flex items-center gap-2">
-                        <span className="text-emerald-600">#{index + 1}</span>
-                        <span className="font-medium text-gray-800">
-                          {merchantName}
+                        <span className="text-emerald-600 min-w-8">
+                          #{index + 1}
                         </span>
+                        {data.logo ? (
+                          <img
+                            src={data.logo}
+                            className="h-8 w-8 rounded shadow-sm object-cover"
+                          />
+                        ) : (
+                          <div className="h-8 w-8 rounded shadow-sm bg-gray-200" />
+                        )}
+                        <div>
+                          <span className="font-medium text-gray-800">
+                            {merchantName}
+                          </span>
+                          <p className="text-sm text-gray-500">
+                            {data.count} transaction
+                            {data.count !== 1 ? "s" : ""}
+                          </p>
+                        </div>
                       </div>
-                      <span className="text-gray-700">
+                      <span className="text-gray-600">
                         $
-                        {totalAmount.toLocaleString(undefined, {
+                        {data.amount.toLocaleString(undefined, {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
                         })}
@@ -446,8 +470,8 @@ export default function FinalResultsPage() {
             <p className="text-lg text-gray-700">transactions</p>
           </div>
           <div className="flex gap-4 max-md:flex-col">
-            <div className="flex-1 aspect-[9/16] rounded-xl border p-8 bg-gradient-to-b from-orange-100 to-orange-200 text-gray-800 flex flex-col items-center justify-center">
-              <p className="text-lg text-orange-700 mb-2">
+            <div className="flex-1  rounded-xl border p-8 bg-gradient-to-b from-orange-100 to-orange-200 text-gray-800 flex flex-col items-center justify-center">
+              <p className="text-lg text-orange-700 mb-2 text-center">
                 You spend on average about
               </p>
               <p className="text-5xl font-bold mb-2">
@@ -459,18 +483,31 @@ export default function FinalResultsPage() {
               </p>
               <p className="text-lg text-orange-700">per transaction</p>
             </div>
-            <div className="flex-1 aspect-[9/16] rounded-xl border  p-8 bg-gradient-to-b from-lime-200 to-lime-100 text-white flex flex-col items-center justify-center">
+            <div className="flex-1  rounded-xl border  p-8 bg-gradient-to-b from-lime-200 to-lime-100 text-white flex flex-col items-center justify-center">
               <p className="text-lg text-lime-700 mb-2">
                 You spent the most on
               </p>
 
               <p className="text-5xl font-bold text-lime-800  mb-2">
-                24 Jan 2024
+                {analytics?.highestSpendingDay
+                  ? new Intl.DateTimeFormat("en-US", {
+                      month: "short",
+                      day: "numeric",
+                    }).format(new Date(analytics.highestSpendingDay[0]))
+                  : "N/A"}
               </p>
-              <p className="text-lg text-lime-700 text-center">$XX,XXX</p>
+              <p className="text-lg text-lime-700 text-center">
+                $
+                {analytics?.highestSpendingDay
+                  ? analytics.highestSpendingDay[1].toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })
+                  : "0.00"}
+              </p>
             </div>
 
-            <div className="flex-1 aspect-[9/16] rounded-xl border p-8 bg-gradient-to-b from-rose-100 to-rose-200 text-gray-800 flex flex-col items-center justify-center">
+            <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-rose-100 to-rose-200 text-gray-800 flex flex-col items-center justify-center">
               <p className="text-lg text-rose-700 mb-2">You shopped at</p>
               <p className="text-5xl font-bold mb-2">
                 {new Set(rawTransactions?.map((t) => t.merchant)).size || 0}
@@ -478,10 +515,10 @@ export default function FinalResultsPage() {
               <p className="text-lg text-rose-700">different businesses</p>
             </div>
           </div>
-          <div className="grid grid-cols-3 max-md:grid-cols-1 gap-4">
-            <div className="col-span-2 rounded-xl  flex flex-col p-8 bg-blue-50 text-gray-800 border">
+          <div className="grid grid-cols-3 max-md:flex max-md:flex-col gap-4">
+            <div className="col-span-2 rounded-xl  flex flex-col p-8 bg-blue-50 text-gray-800 border max-md:order-2">
               <h3 className="text-2xl font-bold text-blue-700 mb-2">
-                Your Top 10 Restaurants &amp; Cafes
+                Top Restaurants &amp; Cafes
               </h3>
               <div className="">
                 {Object.entries(
@@ -494,28 +531,49 @@ export default function FinalResultsPage() {
                     .reduce((acc, t) => {
                       const name = t.merchant.name;
                       if (!acc[name]) {
-                        acc[name] = 0;
+                        acc[name] = {
+                          amount: 0,
+                          logo: t.merchant.logo,
+                          count: 0,
+                        };
                       }
-                      acc[name] += Math.abs(t.amount);
+                      acc[name].amount += Math.abs(t.amount);
+                      acc[name].count += 1;
                       return acc;
-                    }, {} as { [key: string]: number })
+                    }, {} as { [key: string]: { amount: number; logo: string; count: number } })
                 )
-                  .sort(([, a], [, b]) => b - a)
+                  .sort(([, a], [, b]) => b.amount - a.amount)
                   .slice(0, 10)
-                  .map(([merchantName, totalAmount], index) => (
+                  .map(([merchantName, data], index) => (
                     <div
                       className="flex justify-between items-center mt-4 pt-4 border-t border-blue-200"
                       key={merchantName}
                     >
                       <div className="flex items-center gap-2">
-                        <span className="text-blue-600">#{index + 1}</span>
-                        <span className="font-medium text-gray-800">
-                          {merchantName}
+                        <span className="text-blue-600 min-w-8">
+                          #{index + 1}
                         </span>
+                        {data.logo ? (
+                          <img
+                            src={data.logo}
+                            className="h-8 w-8 rounded shadow-sm object-cover"
+                          />
+                        ) : (
+                          <div className="h-8 w-8 rounded shadow-sm bg-gray-200" />
+                        )}
+                        <div>
+                          <span className="font-medium text-gray-800">
+                            {merchantName}
+                          </span>
+                          <p className="text-sm text-gray-500">
+                            {data.count} transaction
+                            {data.count !== 1 ? "s" : ""}
+                          </p>
+                        </div>
                       </div>
-                      <span className="text-gray-700">
+                      <span className="text-gray-600">
                         $
-                        {totalAmount.toLocaleString(undefined, {
+                        {data.amount.toLocaleString(undefined, {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
                         })}
@@ -524,7 +582,7 @@ export default function FinalResultsPage() {
                   ))}
               </div>
             </div>
-            <div className="flex-1 aspect-[9/16] rounded-xl border p-8 bg-gradient-to-b from-blue-100 to-blue-200 text-gray-800 flex flex-col items-center justify-center">
+            <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-blue-100 to-blue-200 text-gray-800 flex flex-col items-center justify-center">
               <p className="text-lg text-blue-700 mb-2">You spent</p>
               <p className="text-5xl font-bold mb-2">
                 $
@@ -541,10 +599,10 @@ export default function FinalResultsPage() {
               </p>
             </div>
           </div>
-          <div className="grid grid-cols-3 max-md:grid-cols-1 gap-4">
-            <div className="col-span-2 rounded-xl flex flex-col p-8 bg-violet-50 text-gray-800 border">
+          <div className="grid grid-cols-3 max-md:flex max-md:flex-col gap-4">
+            <div className="col-span-2 rounded-xl flex flex-col p-8 bg-violet-50 text-gray-800 border max-md:order-3">
               <h3 className="text-2xl font-bold text-violet-700 mb-2">
-                Your Top 10 Bars &amp; Nightclubs
+                Top Bars &amp; Nightclubs
               </h3>
               <div className="">
                 {Object.entries(
@@ -557,28 +615,49 @@ export default function FinalResultsPage() {
                     .reduce((acc, t) => {
                       const name = t.merchant.name;
                       if (!acc[name]) {
-                        acc[name] = 0;
+                        acc[name] = {
+                          amount: 0,
+                          logo: t.merchant.logo,
+                          count: 0,
+                        };
                       }
-                      acc[name] += Math.abs(t.amount);
+                      acc[name].amount += Math.abs(t.amount);
+                      acc[name].count += 1;
                       return acc;
-                    }, {} as { [key: string]: number })
+                    }, {} as { [key: string]: { amount: number; logo: string; count: number } })
                 )
-                  .sort(([, a], [, b]) => b - a)
+                  .sort(([, a], [, b]) => b.amount - a.amount)
                   .slice(0, 10)
-                  .map(([merchantName, totalAmount], index) => (
+                  .map(([merchantName, data], index) => (
                     <div
                       className="flex justify-between items-center mt-4 pt-4 border-t border-violet-200"
                       key={merchantName}
                     >
                       <div className="flex items-center gap-2">
-                        <span className="text-violet-600">#{index + 1}</span>
-                        <span className="font-medium text-gray-800">
-                          {merchantName}
+                        <span className="text-violet-600 min-w-8">
+                          #{index + 1}
                         </span>
+                        {data.logo ? (
+                          <img
+                            src={data.logo}
+                            className="h-8 w-8 rounded shadow-sm object-cover"
+                          />
+                        ) : (
+                          <div className="h-8 w-8 rounded shadow-sm bg-gray-200" />
+                        )}
+                        <div>
+                          <span className="font-medium text-gray-800">
+                            {merchantName}
+                          </span>
+                          <p className="text-sm text-gray-500">
+                            {data.count} transaction
+                            {data.count !== 1 ? "s" : ""}
+                          </p>
+                        </div>
                       </div>
-                      <span className="text-gray-700">
+                      <span className="text-gray-600">
                         $
-                        {totalAmount.toLocaleString(undefined, {
+                        {data.amount.toLocaleString(undefined, {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
                         })}
@@ -587,7 +666,7 @@ export default function FinalResultsPage() {
                   ))}
               </div>
             </div>
-            <div className="flex-1 aspect-[9/16] rounded-xl border p-8 bg-gradient-to-b from-violet-100 to-violet-200 text-gray-800 flex flex-col items-center justify-center">
+            <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-violet-100 to-violet-200 text-gray-800 flex flex-col items-center justify-center">
               <p className="text-lg text-violet-700 mb-2">You spent</p>
               <p className="text-5xl font-bold mb-2">
                 $
@@ -604,10 +683,10 @@ export default function FinalResultsPage() {
               </p>
             </div>
           </div>
-          <div className="grid grid-cols-3  max-md:grid-cols-1 gap-4">
-            <div className="col-span-2 rounded-xl flex flex-col p-8 bg-purple-50 text-gray-800 border">
-              <h3 className="text-2xl font-bold text-purple-700 mb-6">
-                Your Top 10 Fashion Purchases
+          <div className="grid grid-cols-3 max-md:flex max-md:flex-col gap-4">
+            <div className="col-span-2 rounded-xl flex flex-col p-8 bg-purple-50 text-gray-800 border max-md:p-4 max-md:order-2">
+              <h3 className="text-2xl font-bold text-purple-700 mb-6 max-md:mb-2">
+                Fashion Spending
               </h3>
               <div className="">
                 {Object.entries(
@@ -621,28 +700,49 @@ export default function FinalResultsPage() {
                     .reduce((acc, t) => {
                       const name = t.merchant.name;
                       if (!acc[name]) {
-                        acc[name] = 0;
+                        acc[name] = {
+                          amount: 0,
+                          logo: t.merchant.logo,
+                          count: 0,
+                        };
                       }
-                      acc[name] += Math.abs(t.amount);
+                      acc[name].amount += Math.abs(t.amount);
+                      acc[name].count += 1;
                       return acc;
-                    }, {} as { [key: string]: number })
+                    }, {} as { [key: string]: { amount: number; logo: string; count: number } })
                 )
-                  .sort(([, a], [, b]) => b - a)
+                  .sort(([, a], [, b]) => b.amount - a.amount)
                   .slice(0, 10)
-                  .map(([merchantName, totalAmount], index) => (
+                  .map(([merchantName, data], index) => (
                     <div
                       className="flex justify-between items-center mt-4 pt-4 border-t border-purple-200"
                       key={merchantName}
                     >
                       <div className="flex items-center gap-2">
-                        <span className="text-purple-600">#{index + 1}</span>
-                        <span className="font-medium text-gray-800">
-                          {merchantName}
+                        <span className="text-purple-600 min-w-8">
+                          #{index + 1}
                         </span>
+                        {data.logo ? (
+                          <img
+                            src={data.logo}
+                            className="h-8 w-8 rounded shadow-sm object-cover"
+                          />
+                        ) : (
+                          <div className="h-8 w-8 rounded shadow-sm bg-gray-200" />
+                        )}
+                        <div>
+                          <span className="font-medium text-gray-800">
+                            {merchantName}
+                          </span>
+                          <p className="text-sm text-gray-500">
+                            {data.count} transaction
+                            {data.count !== 1 ? "s" : ""}
+                          </p>
+                        </div>
                       </div>
-                      <span className="text-gray-700">
+                      <span className="text-gray-600">
                         $
-                        {totalAmount.toLocaleString(undefined, {
+                        {data.amount.toLocaleString(undefined, {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
                         })}
@@ -651,7 +751,7 @@ export default function FinalResultsPage() {
                   ))}
               </div>
             </div>
-            <div className="flex-1 aspect-[9/16] rounded-xl border p-8 bg-gradient-to-b from-purple-100 to-purple-200 text-gray-800 flex flex-col items-center justify-center">
+            <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-purple-100 to-purple-200 text-gray-800 flex flex-col items-center justify-center">
               <p className="text-lg text-purple-700 mb-2">You spent</p>
               <p className="text-5xl font-bold mb-2">
                 $
@@ -669,10 +769,10 @@ export default function FinalResultsPage() {
               <p className="text-lg text-purple-700">on fashion</p>
             </div>
           </div>
-          <div className="grid grid-cols-3  max-md:grid-cols-1 gap-4">
-            <div className="col-span-2 rounded-xl flex flex-col p-8 bg-cyan-50 text-gray-800 border">
+          <div className="grid grid-cols-3 max-md:flex max-md:flex-col gap-4">
+            <div className="col-span-2 rounded-xl flex flex-col p-8 bg-cyan-50 text-gray-800 border max-md:order-3">
               <h3 className="text-2xl font-bold text-cyan-700 mb-6">
-                Your Top 10 Lifestyle Purchases
+                Top Lifestyle Purchases
               </h3>
               <div className="">
                 {Object.entries(
@@ -686,28 +786,49 @@ export default function FinalResultsPage() {
                     .reduce((acc, t) => {
                       const name = t.merchant.name;
                       if (!acc[name]) {
-                        acc[name] = 0;
+                        acc[name] = {
+                          amount: 0,
+                          logo: t.merchant.logo,
+                          count: 0,
+                        };
                       }
-                      acc[name] += Math.abs(t.amount);
+                      acc[name].amount += Math.abs(t.amount);
+                      acc[name].count += 1;
                       return acc;
-                    }, {} as { [key: string]: number })
+                    }, {} as { [key: string]: { amount: number; logo: string; count: number } })
                 )
-                  .sort(([, a], [, b]) => b - a)
+                  .sort(([, a], [, b]) => b.amount - a.amount)
                   .slice(0, 10)
-                  .map(([merchantName, totalAmount], index) => (
+                  .map(([merchantName, data], index) => (
                     <div
                       className="flex justify-between items-center mt-4 pt-4 border-t border-cyan-200"
                       key={merchantName}
                     >
                       <div className="flex items-center gap-2">
-                        <span className="text-cyan-600">#{index + 1}</span>
-                        <span className="font-medium text-gray-800">
-                          {merchantName}
+                        <span className="text-cyan-600 min-w-8">
+                          #{index + 1}
                         </span>
+                        {data.logo ? (
+                          <img
+                            src={data.logo}
+                            className="h-8 w-8 rounded shadow-sm object-cover"
+                          />
+                        ) : (
+                          <div className="h-8 w-8 rounded shadow-sm bg-gray-200" />
+                        )}
+                        <div>
+                          <span className="font-medium text-gray-800">
+                            {merchantName}
+                          </span>
+                          <p className="text-sm text-gray-500">
+                            {data.count} transaction
+                            {data.count !== 1 ? "s" : ""}
+                          </p>
+                        </div>
                       </div>
-                      <span className="text-gray-700">
+                      <span className="text-gray-600">
                         $
-                        {totalAmount.toLocaleString(undefined, {
+                        {data.amount.toLocaleString(undefined, {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
                         })}
@@ -716,7 +837,7 @@ export default function FinalResultsPage() {
                   ))}
               </div>
             </div>
-            <div className="flex-1 aspect-[9/16] rounded-xl border p-8 bg-gradient-to-b from-cyan-100 to-cyan-200 text-gray-800 flex flex-col items-center justify-center">
+            <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-cyan-100 to-cyan-200 text-gray-800 flex flex-col items-center justify-center">
               <p className="text-lg text-cyan-700 mb-2">You spent</p>
               <p className="text-5xl font-bold mb-2">
                 $
@@ -734,8 +855,93 @@ export default function FinalResultsPage() {
               <p className="text-lg text-cyan-700">on lifestyle</p>
             </div>
           </div>
-          <div className="grid grid-cols-3  max-md:grid-cols-1 gap-4">
-            <div className="col-span-2 rounded-xl flex flex-col p-8 bg-lime-50 text-gray-800 border">
+          <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-orange-100 to-orange-200 text-gray-800 flex flex-col items-center justify-center">
+            <p className="text-lg text-orange-700 mb-2">You spent</p>
+            <p className="text-5xl font-bold mb-2">
+              $
+              {rawTransactions
+                ?.filter(
+                  (t) =>
+                    t.category?.group?.personal_finance?.name === "Transport"
+                )
+                .reduce((sum, t) => sum + Math.abs(t.amount), 0)
+                .toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+            </p>
+            <p className="text-lg text-orange-700">on transport</p>
+          </div>
+          <div className="rounded-xl border p-8 bg-white">
+            <h3 className="text-2xl font-bold text-orange-700 mb-6">
+              Top transport spending
+            </h3>
+            <div className="">
+              {(() => {
+                const merchantTotals = rawTransactions
+                  ?.filter(
+                    (t) =>
+                      t.category?.group?.personal_finance?.name === "Transport"
+                  )
+                  .reduce((acc, transaction) => {
+                    const merchantName =
+                      transaction.merchant?.name || transaction.description;
+                    if (!acc[merchantName]) {
+                      acc[merchantName] = {
+                        amount: 0,
+                        logo: transaction.merchant?.logo,
+                        count: 0,
+                      };
+                    }
+                    acc[merchantName].amount += Math.abs(transaction.amount);
+                    acc[merchantName].count += 1;
+                    return acc;
+                  }, {} as { [key: string]: { amount: number; logo?: string; count: number } });
+
+                return Object.entries(merchantTotals || {})
+                  .sort(([, a], [, b]) => b.amount - a.amount)
+                  .slice(0, 5)
+                  .map(([merchantName, data], index) => (
+                    <div
+                      className="flex justify-between items-center border-b border-gray-100 pb-3 mb-3"
+                      key={merchantName}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-orange-600 min-w-8">
+                          #{index + 1}
+                        </span>
+                        {data.logo ? (
+                          <img
+                            src={data.logo}
+                            className="h-8 w-8 rounded shadow-sm object-cover"
+                          />
+                        ) : (
+                          <div className="h-8 w-8 rounded shadow-sm bg-gray-200" />
+                        )}
+                        <div>
+                          <span className="font-medium text-gray-800">
+                            {merchantName}
+                          </span>
+                          <p className="text-sm text-gray-500">
+                            {data.count} transaction
+                            {data.count !== 1 ? "s" : ""}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-gray-600">
+                        $
+                        {data.amount.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
+                      </span>
+                    </div>
+                  ));
+              })()}
+            </div>
+          </div>
+          <div className="grid grid-cols-3   max-md:flex max-md:flex-col gap-4">
+            <div className="col-span-2 rounded-xl flex flex-col p-8 bg-lime-50 text-gray-800 border max-md:order-2">
               <h3 className="text-2xl font-bold text-lime-700 mb-6">
                 Your Top 10 Household Purchases
               </h3>
@@ -751,28 +957,49 @@ export default function FinalResultsPage() {
                     .reduce((acc, t) => {
                       const name = t.merchant.name;
                       if (!acc[name]) {
-                        acc[name] = 0;
+                        acc[name] = {
+                          amount: 0,
+                          logo: t.merchant.logo,
+                          count: 0,
+                        };
                       }
-                      acc[name] += Math.abs(t.amount);
+                      acc[name].amount += Math.abs(t.amount);
+                      acc[name].count += 1;
                       return acc;
-                    }, {} as { [key: string]: number })
+                    }, {} as { [key: string]: { amount: number; logo: string; count: number } })
                 )
-                  .sort(([, a], [, b]) => b - a)
+                  .sort(([, a], [, b]) => b.amount - a.amount)
                   .slice(0, 10)
-                  .map(([merchantName, totalAmount], index) => (
+                  .map(([merchantName, data], index) => (
                     <div
                       className="flex justify-between items-center mt-4 pt-4 border-t border-lime-200"
                       key={merchantName}
                     >
                       <div className="flex items-center gap-2">
-                        <span className="text-lime-600">#{index + 1}</span>
-                        <span className="font-medium text-gray-800">
-                          {merchantName}
+                        <span className="text-lime-600 min-w-8">
+                          #{index + 1}
                         </span>
+                        {data.logo ? (
+                          <img
+                            src={data.logo}
+                            className="h-8 w-8 rounded shadow-sm object-cover"
+                          />
+                        ) : (
+                          <div className="h-8 w-8 rounded shadow-sm bg-gray-200" />
+                        )}
+                        <div>
+                          <span className="font-medium text-gray-800">
+                            {merchantName}
+                          </span>
+                          <p className="text-sm text-gray-500">
+                            {data.count} transaction
+                            {data.count !== 1 ? "s" : ""}
+                          </p>
+                        </div>
                       </div>
-                      <span className="text-gray-700">
+                      <span className="text-gray-600">
                         $
-                        {totalAmount.toLocaleString(undefined, {
+                        {data.amount.toLocaleString(undefined, {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
                         })}
@@ -781,7 +1008,7 @@ export default function FinalResultsPage() {
                   ))}
               </div>
             </div>
-            <div className="flex-1 aspect-[9/16] rounded-xl border p-8 bg-gradient-to-b from-lime-100 to-lime-200 text-gray-800 flex flex-col items-center justify-center">
+            <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-lime-100 to-lime-200 text-gray-800 flex flex-col items-center justify-center">
               <p className="text-lg text-lime-700 mb-2">You spent</p>
               <p className="text-5xl font-bold mb-2">
                 $
@@ -800,8 +1027,8 @@ export default function FinalResultsPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-  max-md:grid-cols-1 gap-4">
-            <div className=" rounded-xl  flex flex-col p-8 bg-slate-50 text-gray-800 border">
+          <div className="grid grid-cols-   max-md:flex max-md:flex-col gap-4">
+            <div className="rounded-xl flex flex-col p-8 bg-slate-50 text-gray-800 border max-md:p-4">
               <h3 className="text-2xl font-bold text-slate-700 mb-6">
                 Largest transactions this year
               </h3>
@@ -815,7 +1042,17 @@ export default function FinalResultsPage() {
                       key={index}
                     >
                       <div className="flex items-center gap-4">
-                        <span className="text-slate-600">#{index + 1}</span>
+                        <span className="text-slate-600 min-w-8">
+                          #{index + 1}
+                        </span>
+                        {transaction.merchant?.logo ? (
+                          <img
+                            src={transaction.merchant.logo}
+                            className="h-8 w-8 rounded shadow-sm object-cover"
+                          />
+                        ) : (
+                          <div className="h-8 w-8 rounded shadow-sm bg-gray-200" />
+                        )}
                         <div>
                           <p className="font-medium text-gray-800">
                             {transaction.merchant?.name ||
@@ -831,7 +1068,7 @@ export default function FinalResultsPage() {
                           </p>
                         </div>
                       </div>
-                      <span className="text-gray-700 text-right">
+                      <span className="text-gray-600 text-right">
                         $
                         {Math.abs(transaction.amount).toLocaleString(
                           undefined,
