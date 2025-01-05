@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
-import { useNavigate } from "react-router";
-import { Button } from "~/components/ui/button";
+import { Link, useNavigate } from "react-router";
+import { Button, buttonVariants } from "~/components/ui/button";
 import {
   Card,
   CardHeader,
@@ -8,7 +8,7 @@ import {
   CardDescription,
   CardContent,
 } from "~/components/ui/card";
-import { Share2, Download } from "lucide-react";
+import { Share2, Download, RotateCcw } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -231,6 +231,7 @@ export default function FinalResultsPage() {
           <p className="text-gray-900 text-lg">
             Thanks for exploring your spending journey!
           </p>
+          <Link className={buttonVariants({ variant: "outline",className: "mt-6" })} to="/results"><RotateCcw />Replay Journey</Link>
         </div>
 
         <div className="grid gap-4">
