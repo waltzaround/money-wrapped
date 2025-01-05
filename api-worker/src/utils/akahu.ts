@@ -78,7 +78,7 @@ export async function enrichTransactions(
 			return {
 				...transaction,
 				type: 'TRANSACTION',
-				merchant: merchant ? { id: merchant?._id, name: merchant?.name } : undefined,
+				merchant: merchant ? { id: merchant?._id, name: merchant?.name, logo: merchant?.logo, location: merchant?.location } : undefined,
 				category: category ? { name: category.name, group: category.groups } : undefined,
 			} as AkahuEnrichedTransaction;
 		});
