@@ -10,8 +10,8 @@ import {
 import { Wallet, ClipboardList, LineChart, Info } from "lucide-react";
 import { Header } from "~/components/header";
 
-const REDIRECT_URI = 'https://funny.money.haxx.nz/akahu-auth';
-const CLIENT_ID = 'app_token_cm53ibogp000308mh1ojb39u8';
+const REDIRECT_URI = "https://funny.money.haxx.nz/akahu-auth";
+const CLIENT_ID = "app_token_cm53ibogp000308mh1ojb39u8";
 
 export default function PreparePage() {
   return (
@@ -29,8 +29,7 @@ export default function PreparePage() {
                 </CardTitle>
                 <CardDescription>
                   Log into your bank account with Akahu and choose the accounts
-                  you want reviewed. It can only see your transactions, and
-                  can't do anything else.
+                  you want reviewed.
                 </CardDescription>
               </div>
             </CardHeader>
@@ -41,11 +40,12 @@ export default function PreparePage() {
               <ClipboardList className="w-12 h-12 text-primary" />
               <div>
                 <CardTitle className="text-xl">
-                  Step 2: Select  accounts
+                  Step 2: Select accounts
                 </CardTitle>
                 <CardDescription>
-                  Choose which bank accounts you'd like to include in your year-end review. 
-                  You can select multiple accounts to get a complete picture of your spending.
+                  Choose which bank accounts you'd like to include in your
+                  year-end review. You can select multiple accounts to get a
+                  complete picture of your spending.
                 </CardDescription>
               </div>
             </CardHeader>
@@ -56,8 +56,9 @@ export default function PreparePage() {
               <div>
                 <CardTitle className="text-xl">Step 3: See results</CardTitle>
                 <CardDescription>
-                  Get insights about your spending habits, see your top merchants,
-                  and discover interesting patterns in your financial year.
+                  Get insights about your spending habits, see your top
+                  merchants, and discover interesting patterns in your financial
+                  year.
                 </CardDescription>
               </div>
             </CardHeader>
@@ -65,18 +66,22 @@ export default function PreparePage() {
         </div>
         <div className="flex items-center justify-center mb-6">
           <Info className="w-5 h-5 mr-2 text-primary" />
-          <p className="text-center">The link below will take you to Akahu to start the Process</p>
+          <p className="text-center">
+            The link below will take you to Akahu to start the Process
+          </p>
         </div>
-
 
         <div className="block  w-full">
-          <a href={`https://oauth.akahu.nz?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=ONEOFF`}>
-            <Button size="lg" className="bg-blue-700 w-full block ">Get Started</Button>
+          <a
+            href={`https://oauth.akahu.nz?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(
+              REDIRECT_URI
+            )}&scope=ONEOFF`}
+          >
+            <Button size="lg" className="bg-blue-700 w-full block ">
+              Get Started
+            </Button>
           </a>
-
-
         </div>
-    
       </div>
     </>
   );

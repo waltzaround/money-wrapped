@@ -7,6 +7,7 @@ export default [
   route("/results", "routes/results.tsx"),
   route("/final-results", "routes/final-results.tsx"),
   route("/faq", "routes/faq.tsx"),
+  route("/privacy", "routes/privacy.tsx"),
   route("/akahu-auth", "routes/akahu-auth.tsx"),
   route("/loading", "routes/loading.tsx"),
   // You can add more routes here as needed
