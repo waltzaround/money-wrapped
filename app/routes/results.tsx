@@ -22,7 +22,7 @@ import {
   CardContent,
 } from "~/components/ui/card";
 import { Wallet, ClipboardList, LineChart } from "lucide-react";
-import { useNavigate, useLocation } from "react-router";
+import { useNavigate, useLocation, Link } from "react-router";
 import "~/styles/animations.css";
 
 interface ListItem {
@@ -236,21 +236,6 @@ export default function ResultsPage() {
         })
     : null;
 
-  const downloadJSON = useCallback(() => {
-    const data = localStorage.getItem("results");
-    if (!data) return;
-
-    const blob = new Blob([data], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "money-wrapped-data.json";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }, []);
-
   const analytics = useMemo(() => {
     if (!rawTransactions) return null;
 
@@ -295,9 +280,9 @@ export default function ResultsPage() {
     const monthlySpendingArray = Object.entries(monthlySpending)
       .map(([month, total]) => ({
         month,
-        monthName: new Intl.DateTimeFormat("en-US", { 
+        monthName: new Intl.DateTimeFormat("en-US", {
           month: "long",
-          year: "numeric"
+          year: "numeric",
         }).format(new Date(month + "-01")),
         total,
       }))
@@ -359,6 +344,35 @@ export default function ResultsPage() {
         amount,
       }));
 
+    // Calculate weekend vs weekday spending
+    const weekendSpending = rawTransactions.reduce(
+      (acc, t) => {
+        const date = new Date(t.date);
+        const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+        const amount = Math.abs(t.amount);
+
+        if (isWeekend) {
+          acc.weekendTotal += amount;
+          acc.weekendDays += 1;
+        } else {
+          acc.weekdayTotal += amount;
+          acc.weekdayDays += 1;
+        }
+
+        return acc;
+      },
+      { weekendTotal: 0, weekdayTotal: 0, weekendDays: 0, weekdayDays: 0 }
+    );
+
+    const averageWeekendSpending =
+      weekendSpending.weekendTotal / weekendSpending.weekendDays;
+    const averageWeekdaySpending =
+      weekendSpending.weekdayTotal / weekendSpending.weekdayDays;
+    const percentageHigher =
+      ((averageWeekendSpending - averageWeekdaySpending) /
+        averageWeekdaySpending) *
+      100;
+
     return {
       totalSpent,
       uniqueMerchants,
@@ -372,6 +386,10 @@ export default function ResultsPage() {
       weeklyAverage,
       topCategories,
       monthlySpendingArray,
+      weekendSpending: {
+        averagePerDay: averageWeekendSpending,
+        percentageHigher,
+      },
     };
   }, [rawTransactions]);
 
@@ -826,7 +844,7 @@ export default function ResultsPage() {
   };
 
   return (
-    <div className="h-screen flex items-center justify-center bg-gray-900 relative p-12 max-md:p-0">
+    <div className="h-screen flex items-center justify-center bg-gray-900 relative p-12 max-md:p-0 z-20">
       <div className="fixed bottom-4 right-4 flex gap-2">
         <Button
           variant="outline"
@@ -836,20 +854,28 @@ export default function ResultsPage() {
         >
           {isMuted ? <VolumeX /> : <Volume2 />}
         </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={downloadJSON}
-          className="rounded-full"
-          title="Download data as JSON"
-        >
-          <Download />
-        </Button>
       </div>
       <Button
         variant="outline"
+        className="fixed bottom-4 left-28 z-50 bg-black/10 backdrop-blur-sm hover:bg-white/20 border-none text-blue-400"
+        asChild
+      >
+        <Link
+          to="/final-results"
+          onClick={() => {
+            if (audioRef.current) {
+              audioRef.current.muted = true;
+              setIsMuted(true);
+            }
+          }}
+        >
+          Skip to results
+        </Link>
+      </Button>
+      <Button
+        variant="outline"
         size="icon"
-        className="fixed bottom-4 left-4 z-50 bg-black/10 backdrop-blur-sm hover:bg-white/20 border-none text-blue-400"
+        className="fixed bottom-4 left-4 z-50 bg-black/10 backdrop-blur-sm hover:bg-white/70 hover:text-black border-none text-blue-400"
         onClick={handlePrevSlide}
       >
         <ArrowLeftIcon className="h-4 w-4" />
