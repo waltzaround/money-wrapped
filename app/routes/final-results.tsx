@@ -1068,9 +1068,13 @@ export default function FinalResultsPage() {
             <a className="underline text-blue-700" href="https://walt.online">
               Walter Lim
             </a>{" "}
-            &amp;{" "}
+            ,{" "}
             <a className="underline text-blue-700" href="https://laspruca.nz">
               Connor Hare
+            </a>
+            , &amp;{" "}
+            <a className="underline text-blue-700" href="https://jmw.nz">
+              Jasper Miller-Waugh
             </a>
             .
           </p>

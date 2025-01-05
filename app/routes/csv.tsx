@@ -30,15 +30,15 @@ import { SEO } from "~/components/seo";
 import { API_URL } from "~/lib/api";
 
 const BANK_CONNECTIONS = {
-  ANZ: 'conn_cjgaawozb000001nyd111xixr',
-  ASB: 'conn_cjgaaqcna000001ldwof8tvj0',
-  BNZ: 'conn_cjgaatd57000001pe1t1z0iy9',
-  Heartland: 'conn_ck5rhsdbv0000ftx1bmdu9zas',
-  Kiwibank: 'conn_cjgaac5at000001qi2yw8ftil',
-  Rabobank: 'conn_ckydkmy3r000009mde2sx2i4d',
-  'The Cooperative Bank': 'conn_cjgab1c8e000001pmyxrkhova',
-  TSB: 'conn_cjgab6fis000001qsytf1semy',
-  Westpac: 'conn_cjgaaozdo000001mrnqmkl1m0',
+  ANZ: "conn_cjgaawozb000001nyd111xixr",
+  ASB: "conn_cjgaaqcna000001ldwof8tvj0",
+  BNZ: "conn_cjgaatd57000001pe1t1z0iy9",
+  Heartland: "conn_ck5rhsdbv0000ftx1bmdu9zas",
+  Kiwibank: "conn_cjgaac5at000001qi2yw8ftil",
+  Rabobank: "conn_ckydkmy3r000009mde2sx2i4d",
+  "The Cooperative Bank": "conn_cjgab1c8e000001pmyxrkhova",
+  TSB: "conn_cjgab6fis000001qsytf1semy",
+  Westpac: "conn_cjgaaozdo000001mrnqmkl1m0",
 } as const;
 
 type BankName = keyof typeof BANK_CONNECTIONS;
@@ -140,7 +140,7 @@ export default function PreparePage() {
     try {
       const formData = new FormData();
       console.log(`Sending ${currentFiles.length} files to server`);
-      
+
       currentFiles.forEach((file) => {
         console.log(`Adding file: ${file.name}, size: ${file.size} bytes`);
         formData.append("files", file);
@@ -149,7 +149,6 @@ export default function PreparePage() {
       if (selectedBank) {
         formData.append("connection", BANK_CONNECTIONS[selectedBank]);
       }
-
 
       const response = await fetch(`${API_URL}/upload-csv`, {
         method: "POST",
@@ -163,12 +162,13 @@ export default function PreparePage() {
       const jsonResponse = await response.json();
       console.log("Upload response:", jsonResponse);
 
-      // Navigate to results with the analytics data
-      navigate("/results", { 
-        state: { analytics: jsonResponse }
-      });
+      // Store the raw transactions in localStorage
+      localStorage.setItem("transactions", JSON.stringify(jsonResponse));
 
-      // Handle successful upload
+      // Navigate to loading page for enrichment
+      navigate("/loading");
+
+      // Clear the form
       setCurrentFiles([]);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
@@ -210,7 +210,7 @@ export default function PreparePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO 
+      <SEO
         title="Upload CSV Transaction Data"
         description="Upload your bank transaction data to generate your personalized Money Wrapped insights and financial year in review."
       />
@@ -218,9 +218,12 @@ export default function PreparePage() {
       <main className="container mx-auto py-12 px-4 max-w-3xl">
         <div className="space-y-8">
           <div className="text-start space-y-2">
-            <h1 className="text-4xl font-bold mb-2">Upload Your Bank Statement</h1>
+            <h1 className="text-4xl font-bold mb-2">
+              Upload Your Bank Statement
+            </h1>
             <p className="text-muted-foreground text-lg">
-              We'll analyze your transactions to create your personalized Money Wrapped
+              We'll analyze your transactions to create your personalized Money
+              Wrapped
             </p>
           </div>
 
@@ -235,8 +238,17 @@ export default function PreparePage() {
               </CardDescription>
             </CardHeader>
             <div className="m-6">
-              <label className="block text-sm font-medium text-blue-600 hover:cursor-pointer" htmlFor="bank">Select Your Bank (Optional)<br/><p className="text-sm text-muted-foreground mb-2">This helps the system get you more accurate results</p></label>
-              
+              <label
+                className="block text-sm font-medium text-blue-600 hover:cursor-pointer"
+                htmlFor="bank"
+              >
+                Select Your Bank (Optional)
+                <br />
+                <p className="text-sm text-muted-foreground mb-2">
+                  This helps the system get you more accurate results
+                </p>
+              </label>
+
               <Select
                 onValueChange={(value) => setSelectedBank(value as BankName)}
                 value={selectedBank ?? undefined}
@@ -296,7 +308,6 @@ export default function PreparePage() {
                 </div>
               </div>
             </div>
-            
 
             {uploadError && (
               <div className="mx-6 mb-6 p-4 bg-destructive/10 text-destructive rounded-lg flex items-start gap-2">
@@ -332,7 +343,6 @@ export default function PreparePage() {
               </div>
             )}
 
-       
             <div className="flex justify-end px-6 pb-6">
               <Button
                 onClick={handleSubmit}
@@ -362,13 +372,29 @@ export default function PreparePage() {
               </CardTitle>
               <CardDescription className="space-y-2 p-4 pt-3">
                 <p>1. Log into your online banking portal</p>
-                <p>2. Navigate to your transactions or account activity for each bank account you want to review</p>
+                <p>
+                  2. Navigate to your transactions or account activity for each
+                  bank account you want to review
+                </p>
                 <p>3. Look for an "Export" or "Download" option</p>
                 <p>4. Select CSV format and download your transactions</p>
-                <p>5. For best results, include at least the last 12 months of transactions</p>
-                <p>6. Make sure the CSV files are formatted in the same way as the demo CSV file - download link below</p>
+                <p>
+                  5. For best results, include at least the last 12 months of
+                  transactions
+                </p>
+                <p>
+                  6. Make sure the CSV files are formatted in the same way as
+                  the demo CSV file - download link below
+                </p>
               </CardDescription>
-              <a className="text-blue-600 hover:underline p-4  border-t text-center flex items-center justify-center gap-2" href="/test.csv" download><Download className="h-4 w-4" />Download demo CSV file</a>
+              <a
+                className="text-blue-600 hover:underline p-4  border-t text-center flex items-center justify-center gap-2"
+                href="/test.csv"
+                download
+              >
+                <Download className="h-4 w-4" />
+                Download demo CSV file
+              </a>
             </CardHeader>
           </Card>
         </div>
