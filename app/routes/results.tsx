@@ -24,9 +24,9 @@ import {
 import { Wallet, ClipboardList, LineChart } from "lucide-react";
 import { useNavigate, useLocation, Link } from "react-router";
 import "~/styles/animations.css";
-import FloatingLogos from "~/components/slides/FloatingLogos";
-import TransactionSparkLine from "~/components/slides/TransactionSparkLine";
-import TransactionMonthBars from "~/components/slides/TransactionMonthBars";
+// import FloatingLogos from "~/components/slides/FloatingLogos";
+// import TransactionSparkLine from "~/components/slides/TransactionSparkLine";
+// import TransactionMonthBars from "~/components/slides/TransactionMonthBars";
 
 interface ListItem {
   rank: number;
@@ -565,7 +565,7 @@ export default function ResultsPage() {
           ? (placeholderSlides[0] as StandardSlide).subtitle
           : "",
       textColor: placeholderSlides[0].textColor,
-      backgroundElm: () => <TransactionSparkLine transactions={rawTransactions} />,
+      // backgroundElm: () => <TransactionSparkLine transactions={rawTransactions} />,
     } as StandardSlide;
 
     // Update unique businesses slide
@@ -576,7 +576,7 @@ export default function ResultsPage() {
       value: analytics.uniqueMerchants?.toString() || "0",
       subtitle: "different businesses",
       textColor: placeholderSlides[1].textColor,
-      backgroundElm: () => <FloatingLogos logos={analytics.merchantLogos} />,
+      // backgroundElm: () => <FloatingLogos logos={analytics.merchantLogos} />,
     } as StandardSlide;
 
     // Update transaction count slide
@@ -598,7 +598,7 @@ export default function ResultsPage() {
           "You spent " + formatCurrency(analytics.highestSpendingMonth.total),
         description: "That's your biggest spending month!",
         textColor: "pink",
-        backgroundElm: () => <TransactionMonthBars transactions={rawTransactions} />,
+        // backgroundElm: () => <TransactionMonthBars transactions={rawTransactions} />,
       };
     }
 
