@@ -149,3 +149,48 @@ export async function listTransactions(c: Context<HonoType>, userToken: string):
 
 	return transactions;
 }
+
+
+interface AkahuProcessing {
+	status: 'PROCESSING' | 'COMPLETE' | 'ERROR';
+	status_reason: 'TIMEOUT' | 'PROCESSING_ERROR';
+	available_results: {
+		accounts?: boolean;
+		parties?: boolean;
+		transactions?: boolean;
+		pdfs?: boolean;
+	};
+	connection: {
+		_id: string;
+		name: string;
+		logo: string;
+	}
+	available_accounts_count: number;
+	expires_at: string;
+	created_at: string;
+	updated_at: string;
+
+}
+
+export async function pollResultStatus(c: Context<HonoType>, userToken: string): Promise<AkahuProcessing> {
+	// https://api.oneoff.akahu.io/v1/status/{code}
+
+	const credentials = btoa(`${c.env.AKAHU_APP_TOKEN}:${c.env.AKAHU_APP_SECRET}`);
+	const authorisationHeader = `Basic ${credentials}`;
+
+	const page = await fetch(`https://api.oneoff.akahu.io/v1/status/${userToken}`, {
+		headers: {
+			Authorization: authorisationHeader,
+			'Content-Type': 'application/json',
+		},
+	});
+
+	if (!page.ok) {
+		console.log('Failed to load transactions', page.status, page.statusText);
+		throw new Error(`Failed to fetch transactions: ${page.status} ${page.statusText}`);
+	}
+
+	const data: any = await page.json();
+	console.log(data);
+	return data.item;
+}
