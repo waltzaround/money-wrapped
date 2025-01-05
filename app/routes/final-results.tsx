@@ -216,7 +216,7 @@ export default function FinalResultsPage() {
       transactionCount || 0;
 
   return (
-    <div className="min-h-screen  p-6">
+    <div className="min-h-screen  p-6 max-md:p-4">
       <div className="container max-w-6xl mx-auto">
         <div className="text-center my-24">
           <h1 className="text-4xl font-bold mb-4">Your 2024 Money Wrapped</h1>
@@ -386,7 +386,7 @@ export default function FinalResultsPage() {
               </ResponsiveContainer>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-4 max-md:grid-cols-1">
+          <div className="grid grid-cols-3 gap-4 max-md:flex max-md:flex-col">
             <div className="rounded-xl border p-8 bg-gradient-to-b from-emerald-100 to-emerald-200 text-gray-800 flex flex-col items-center justify-center">
               <p className="text-lg text-emerald-700 mb-2">
                 This year you spent
@@ -403,7 +403,7 @@ export default function FinalResultsPage() {
 
             <div className="col-span-2 rounded-xl  flex flex-col p-8 bg-emerald-50 text-gray-800 border">
               <h3 className="text-2xl font-bold text-emerald-700 mb-4">
-                Your Top 10 Merchants
+                Top Merchants
               </h3>
               <div className="">
                 {Object.entries(
@@ -412,7 +412,11 @@ export default function FinalResultsPage() {
                     .reduce((acc, t) => {
                       const name = t.merchant.name;
                       if (!acc[name]) {
-                        acc[name] = { amount: 0, logo: t.merchant.logo, count: 0 };
+                        acc[name] = {
+                          amount: 0,
+                          logo: t.merchant.logo,
+                          count: 0,
+                        };
                       }
                       acc[name].amount += Math.abs(t.amount);
                       acc[name].count += 1;
@@ -443,7 +447,8 @@ export default function FinalResultsPage() {
                             {merchantName}
                           </span>
                           <p className="text-sm text-gray-500">
-                            {data.count} transaction{data.count !== 1 ? 's' : ''}
+                            {data.count} transaction
+                            {data.count !== 1 ? "s" : ""}
                           </p>
                         </div>
                       </div>
@@ -510,10 +515,10 @@ export default function FinalResultsPage() {
               <p className="text-lg text-rose-700">different businesses</p>
             </div>
           </div>
-          <div className="grid grid-cols-3 max-md:grid-cols-1 gap-4">
-            <div className="col-span-2 rounded-xl  flex flex-col p-8 bg-blue-50 text-gray-800 border">
+          <div className="grid grid-cols-3 max-md:flex max-md:flex-col gap-4">
+            <div className="col-span-2 rounded-xl  flex flex-col p-8 bg-blue-50 text-gray-800 border max-md:order-2">
               <h3 className="text-2xl font-bold text-blue-700 mb-2">
-                Your Top 10 Restaurants &amp; Cafes
+                Top Restaurants &amp; Cafes
               </h3>
               <div className="">
                 {Object.entries(
@@ -526,7 +531,11 @@ export default function FinalResultsPage() {
                     .reduce((acc, t) => {
                       const name = t.merchant.name;
                       if (!acc[name]) {
-                        acc[name] = { amount: 0, logo: t.merchant.logo, count: 0 };
+                        acc[name] = {
+                          amount: 0,
+                          logo: t.merchant.logo,
+                          count: 0,
+                        };
                       }
                       acc[name].amount += Math.abs(t.amount);
                       acc[name].count += 1;
@@ -557,7 +566,8 @@ export default function FinalResultsPage() {
                             {merchantName}
                           </span>
                           <p className="text-sm text-gray-500">
-                            {data.count} transaction{data.count !== 1 ? 's' : ''}
+                            {data.count} transaction
+                            {data.count !== 1 ? "s" : ""}
                           </p>
                         </div>
                       </div>
@@ -589,10 +599,10 @@ export default function FinalResultsPage() {
               </p>
             </div>
           </div>
-          <div className="grid grid-cols-3 max-md:grid-cols-1 gap-4">
-            <div className="col-span-2 rounded-xl flex flex-col p-8 bg-violet-50 text-gray-800 border">
+          <div className="grid grid-cols-3 max-md:flex max-md:flex-col gap-4">
+            <div className="col-span-2 rounded-xl flex flex-col p-8 bg-violet-50 text-gray-800 border max-md:order-3">
               <h3 className="text-2xl font-bold text-violet-700 mb-2">
-                Your Top 10 Bars &amp; Nightclubs
+                Top Bars &amp; Nightclubs
               </h3>
               <div className="">
                 {Object.entries(
@@ -605,7 +615,11 @@ export default function FinalResultsPage() {
                     .reduce((acc, t) => {
                       const name = t.merchant.name;
                       if (!acc[name]) {
-                        acc[name] = { amount: 0, logo: t.merchant.logo, count: 0 };
+                        acc[name] = {
+                          amount: 0,
+                          logo: t.merchant.logo,
+                          count: 0,
+                        };
                       }
                       acc[name].amount += Math.abs(t.amount);
                       acc[name].count += 1;
@@ -636,7 +650,8 @@ export default function FinalResultsPage() {
                             {merchantName}
                           </span>
                           <p className="text-sm text-gray-500">
-                            {data.count} transaction{data.count !== 1 ? 's' : ''}
+                            {data.count} transaction
+                            {data.count !== 1 ? "s" : ""}
                           </p>
                         </div>
                       </div>
@@ -668,10 +683,10 @@ export default function FinalResultsPage() {
               </p>
             </div>
           </div>
-          <div className="grid grid-cols-3  max-md:grid-cols-1 gap-4">
-            <div className="col-span-2 rounded-xl flex flex-col p-8 bg-purple-50 text-gray-800 border">
-              <h3 className="text-2xl font-bold text-purple-700 mb-6">
-                Your Top 10 Fashion Purchases
+          <div className="grid grid-cols-3 max-md:flex max-md:flex-col gap-4">
+            <div className="col-span-2 rounded-xl flex flex-col p-8 bg-purple-50 text-gray-800 border max-md:p-4 max-md:order-2">
+              <h3 className="text-2xl font-bold text-purple-700 mb-6 max-md:mb-2">
+                Fashion Spending
               </h3>
               <div className="">
                 {Object.entries(
@@ -685,7 +700,11 @@ export default function FinalResultsPage() {
                     .reduce((acc, t) => {
                       const name = t.merchant.name;
                       if (!acc[name]) {
-                        acc[name] = { amount: 0, logo: t.merchant.logo, count: 0 };
+                        acc[name] = {
+                          amount: 0,
+                          logo: t.merchant.logo,
+                          count: 0,
+                        };
                       }
                       acc[name].amount += Math.abs(t.amount);
                       acc[name].count += 1;
@@ -716,7 +735,8 @@ export default function FinalResultsPage() {
                             {merchantName}
                           </span>
                           <p className="text-sm text-gray-500">
-                            {data.count} transaction{data.count !== 1 ? 's' : ''}
+                            {data.count} transaction
+                            {data.count !== 1 ? "s" : ""}
                           </p>
                         </div>
                       </div>
@@ -749,10 +769,10 @@ export default function FinalResultsPage() {
               <p className="text-lg text-purple-700">on fashion</p>
             </div>
           </div>
-          <div className="grid grid-cols-3  max-md:grid-cols-1 gap-4">
-            <div className="col-span-2 rounded-xl flex flex-col p-8 bg-cyan-50 text-gray-800 border">
+          <div className="grid grid-cols-3 max-md:flex max-md:flex-col gap-4">
+            <div className="col-span-2 rounded-xl flex flex-col p-8 bg-cyan-50 text-gray-800 border max-md:order-3">
               <h3 className="text-2xl font-bold text-cyan-700 mb-6">
-                Your Top 10 Lifestyle Purchases
+                Top Lifestyle Purchases
               </h3>
               <div className="">
                 {Object.entries(
@@ -766,7 +786,11 @@ export default function FinalResultsPage() {
                     .reduce((acc, t) => {
                       const name = t.merchant.name;
                       if (!acc[name]) {
-                        acc[name] = { amount: 0, logo: t.merchant.logo, count: 0 };
+                        acc[name] = {
+                          amount: 0,
+                          logo: t.merchant.logo,
+                          count: 0,
+                        };
                       }
                       acc[name].amount += Math.abs(t.amount);
                       acc[name].count += 1;
@@ -797,7 +821,8 @@ export default function FinalResultsPage() {
                             {merchantName}
                           </span>
                           <p className="text-sm text-gray-500">
-                            {data.count} transaction{data.count !== 1 ? 's' : ''}
+                            {data.count} transaction
+                            {data.count !== 1 ? "s" : ""}
                           </p>
                         </div>
                       </div>
@@ -898,7 +923,8 @@ export default function FinalResultsPage() {
                             {merchantName}
                           </span>
                           <p className="text-sm text-gray-500">
-                            {data.count} transaction{data.count !== 1 ? 's' : ''}
+                            {data.count} transaction
+                            {data.count !== 1 ? "s" : ""}
                           </p>
                         </div>
                       </div>
@@ -914,8 +940,8 @@ export default function FinalResultsPage() {
               })()}
             </div>
           </div>
-          <div className="grid grid-cols-3  max-md:grid-cols-1 gap-4">
-            <div className="col-span-2 rounded-xl flex flex-col p-8 bg-lime-50 text-gray-800 border">
+          <div className="grid grid-cols-3   max-md:flex max-md:flex-col gap-4">
+            <div className="col-span-2 rounded-xl flex flex-col p-8 bg-lime-50 text-gray-800 border max-md:order-2">
               <h3 className="text-2xl font-bold text-lime-700 mb-6">
                 Your Top 10 Household Purchases
               </h3>
@@ -931,7 +957,11 @@ export default function FinalResultsPage() {
                     .reduce((acc, t) => {
                       const name = t.merchant.name;
                       if (!acc[name]) {
-                        acc[name] = { amount: 0, logo: t.merchant.logo, count: 0 };
+                        acc[name] = {
+                          amount: 0,
+                          logo: t.merchant.logo,
+                          count: 0,
+                        };
                       }
                       acc[name].amount += Math.abs(t.amount);
                       acc[name].count += 1;
@@ -962,7 +992,8 @@ export default function FinalResultsPage() {
                             {merchantName}
                           </span>
                           <p className="text-sm text-gray-500">
-                            {data.count} transaction{data.count !== 1 ? 's' : ''}
+                            {data.count} transaction
+                            {data.count !== 1 ? "s" : ""}
                           </p>
                         </div>
                       </div>
@@ -996,8 +1027,8 @@ export default function FinalResultsPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-  max-md:grid-cols-1 gap-4">
-            <div className=" rounded-xl  flex flex-col p-8 bg-slate-50 text-gray-800 border">
+          <div className="grid grid-cols-   max-md:flex max-md:flex-col gap-4">
+            <div className="rounded-xl flex flex-col p-8 bg-slate-50 text-gray-800 border max-md:p-4">
               <h3 className="text-2xl font-bold text-slate-700 mb-6">
                 Largest transactions this year
               </h3>
