@@ -736,7 +736,21 @@ export default function ResultsPage() {
   };
 
   const handleNextSlide = () => {
-    setCurrentSlide((prev) => Math.min(prev + 1, slides.length - 1));
+    setCurrentSlide((prev) => {
+      if (prev + 1 >= slides.length - 1) {
+        if (audioRef.current) {
+          fadeOutAudio(audioRef.current);
+        }
+      }
+
+      if (prev + 1 >= slides.length) {
+        navigate("/final-results", {
+          state: { analytics },
+        });
+      }
+
+      return Math.min(prev + 1, slides.length - 1);
+    });
   };
 
   useEffect(() => {
