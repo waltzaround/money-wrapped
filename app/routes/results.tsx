@@ -24,11 +24,15 @@ import {
 import { Wallet, ClipboardList, LineChart } from "lucide-react";
 import { useNavigate, useLocation, Link } from "react-router";
 import "~/styles/animations.css";
+// import FloatingLogos from "~/components/slides/FloatingLogos";
+// import TransactionSparkLine from "~/components/slides/TransactionSparkLine";
+// import TransactionMonthBars from "~/components/slides/TransactionMonthBars";
 
 interface ListItem {
   rank: number;
   name: string;
   detail: string;
+  logo: string;
 }
 
 // Add before the interfaces
@@ -48,6 +52,7 @@ interface BaseSlide {
   gradient: string;
   textColor: string;
   animation?: SlideAnimation;
+  backgroundElm?: () => React.ReactNode;
 }
 
 // Update the StandardSlide interface
@@ -250,6 +255,16 @@ export default function ResultsPage() {
         .map((t) => t.merchant.name)
     ).size;
 
+    const merchantLogos = Array.from(
+      new Set<string>(
+        rawTransactions
+          .filter((t) => t.merchant?.logo)
+          .map((t) => t.merchant.logo)
+      )
+    );
+
+    console.log(rawTransactions);
+
     const transactionCount = rawTransactions.length;
 
     // Find biggest purchase
@@ -296,7 +311,7 @@ export default function ResultsPage() {
       .reduce((acc, t) => {
         const name = t.merchant.name;
         if (!acc[name]) {
-          acc[name] = { amount: 0, visits: 0 };
+          acc[name] = { amount: 0, visits: 0, logo: t.merchant.logo };
         }
         acc[name].amount += Math.abs(t.amount);
         acc[name].visits += 1;
@@ -310,6 +325,7 @@ export default function ResultsPage() {
         name,
         amount: stats.amount,
         visits: stats.visits,
+        logo: stats.logo,
       }));
 
     // Calculate cafe statistics
@@ -390,6 +406,7 @@ export default function ResultsPage() {
         averagePerDay: averageWeekendSpending,
         percentageHigher,
       },
+      merchantLogos,
     };
   }, [rawTransactions]);
 
@@ -548,6 +565,7 @@ export default function ResultsPage() {
           ? (placeholderSlides[0] as StandardSlide).subtitle
           : "",
       textColor: placeholderSlides[0].textColor,
+      // backgroundElm: () => <TransactionSparkLine transactions={rawTransactions} />,
     } as StandardSlide;
 
     // Update unique businesses slide
@@ -558,6 +576,7 @@ export default function ResultsPage() {
       value: analytics.uniqueMerchants?.toString() || "0",
       subtitle: "different businesses",
       textColor: placeholderSlides[1].textColor,
+      // backgroundElm: () => <FloatingLogos logos={analytics.merchantLogos} />,
     } as StandardSlide;
 
     // Update transaction count slide
@@ -579,6 +598,7 @@ export default function ResultsPage() {
           "You spent " + formatCurrency(analytics.highestSpendingMonth.total),
         description: "That's your biggest spending month!",
         textColor: "pink",
+        // backgroundElm: () => <TransactionMonthBars transactions={rawTransactions} />,
       };
     }
 
@@ -606,12 +626,13 @@ export default function ResultsPage() {
           textColor: "rose",
           items: analytics.topMerchants.map(
             (
-              merchant: { name: any; amount: number | bigint },
+              merchant: { name: any; amount: number | bigint; logo: string },
               index: number
             ) => ({
               rank: index + 1,
               name: merchant.name,
               detail: `${formatCurrency(Number(merchant.amount))} spent`,
+              logo: merchant.logo,
             })
           ),
         };
@@ -787,6 +808,7 @@ export default function ResultsPage() {
         <div
           className={`w-full h-full rounded-xl p-8 bg-gradient-to-b ${slide.gradient} text-white flex flex-col shadow-lg`}
         >
+          {slide.backgroundElm && slide.backgroundElm()}
           <p
             className={`text-2xl font-bold text-${slide.textColor}-100 mb-6 text-center`}
           >
@@ -805,6 +827,9 @@ export default function ResultsPage() {
                 >
                   {item.rank}
                 </span>
+                {item.logo && (
+                  <img src={item.logo} className="h-16 rounded shadow-lg" />
+                )}
                 <div className="flex-1">
                   <p className={`text-${4 - item.rank + 1}xl font-semibold`}>
                     {item.name}
