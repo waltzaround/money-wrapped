@@ -234,11 +234,12 @@ export default function ResultsPage() {
   const rawData = localStorage.getItem("results");
   const rawTransactions = rawData
     ? JSON.parse(rawData)
-        .raw_transactions.filter((t) => t.direction !== "CREDIT")
+        .raw_transactions
         .filter((t) => {
           const date = new Date(t.date);
-          return date.getFullYear() === 2024;
+          return date.getFullYear() === 2024 && date <= new Date('2024-12-31T23:59:59.999Z');
         })
+        .filter((t) => t.direction !== "CREDIT")
     : null;
 
   const analytics = useMemo(() => {
@@ -823,12 +824,12 @@ export default function ResultsPage() {
                 <span
                   className={`text-${
                     4 - item.rank + 1
-                  }xl font-bold min-w-[2rem]`}
+                  }xl font-bold min-w-[1.5rem]`}
                 >
                   {item.rank}
                 </span>
                 {item.logo && (
-                  <img src={item.logo} className="h-16 rounded shadow-lg" />
+                  <img src={item.logo} className="h-16 max-md:h-10 rounded shadow-lg" />
                 )}
                 <div className="flex-1">
                   <p className={`text-${4 - item.rank + 1}xl font-semibold`}>
