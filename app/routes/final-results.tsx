@@ -46,7 +46,10 @@ export default function FinalResultsPage() {
         .raw_transactions.filter((t) => t.direction !== "CREDIT")
         .filter((t) => {
           const date = new Date(t.date);
-          return date.getFullYear() === 2024 && date <= new Date('2024-12-31T23:59:59.999Z');
+          return (
+            date.getFullYear() === 2024 &&
+            date <= new Date("2024-12-31T23:59:59.999Z")
+          );
         })
         .filter((t) => t.description !== "Online       Payment -  Thank You")
     : null;
@@ -116,6 +119,7 @@ export default function FinalResultsPage() {
     if (!rawTransactions) return [];
 
     const monthlyData = rawTransactions.reduce((acc, t) => {
+      console.log(t.date);
       const date = new Date(t.date);
       const monthKey = new Intl.DateTimeFormat("en-US", {
         month: "long",
@@ -221,20 +225,21 @@ export default function FinalResultsPage() {
         <div className="text-center my-24">
           <h1 className="text-4xl font-bold mb-4">Your 2024 Money Wrapped</h1>
           <p className="text-gray-900 text-lg">
-            Thanks for exploring your spending journey from 1 Jan 2024 to 31 Dec 2024!
+            Thanks for exploring your spending journey from 1 Jan 2024 to 31 Dec
+            2024!
           </p>
           <div className="mt-6 flex gap-4 justify-center items-center flex-wrap">
-          <Link
-            className={buttonVariants({
-              variant: "outline",
-              className: "",
-            })}
-            to="/results"
-          >
-            <RotateCcw />
-            Replay Journey
-          </Link>
-          {/* <Button className="max-xl:hidden" variant="outline" onClick={() => navigate('/edit')}>Edit Transactions</Button> */}
+            <Link
+              className={buttonVariants({
+                variant: "outline",
+                className: "",
+              })}
+              to="/results"
+            >
+              <RotateCcw />
+              Replay Journey
+            </Link>
+            {/* <Button className="max-xl:hidden" variant="outline" onClick={() => navigate('/edit')}>Edit Transactions</Button> */}
           </div>
         </div>
 
@@ -689,7 +694,7 @@ export default function FinalResultsPage() {
           <div className="grid grid-cols-3 max-md:flex max-md:flex-col gap-4">
             <div className="col-span-2 rounded-xl flex flex-col p-8 bg-fuchsia-50 text-gray-800 border max-md:p-4 max-md:order-2">
               <h3 className="text-2xl font-bold text-fuchsia-700 mb-6 max-md:mb-2">
-                Fashion 
+                Fashion
               </h3>
               <div className="">
                 {Object.entries(
@@ -775,7 +780,7 @@ export default function FinalResultsPage() {
           <div className="grid grid-cols-3 max-md:flex max-md:flex-col gap-4">
             <div className="col-span-2 rounded-xl flex flex-col p-8 bg-emerald-50 text-gray-800 border max-md:p-4 max-md:order-2">
               <h3 className="text-2xl font-bold text-emerald-700 mb-6 max-md:mb-2">
-                Education 
+                Education
               </h3>
               <div className="">
                 {Object.entries(
@@ -861,7 +866,7 @@ export default function FinalResultsPage() {
           <div className="grid grid-cols-3 max-md:flex max-md:flex-col gap-4">
             <div className="col-span-2 rounded-xl flex flex-col p-8 bg-violet-50 text-gray-800 border max-md:order-3 max-md:p-4">
               <h3 className="text-2xl font-bold text-violet-700 mb-6 max-md:mb-2">
-                 Lifestyle 
+                Lifestyle
               </h3>
               <div className="">
                 {Object.entries(
@@ -941,7 +946,9 @@ export default function FinalResultsPage() {
                     maximumFractionDigits: 2,
                   })}
               </p>
-              <p className="text-lg text-violet-700">on lifestyle goods and services</p>
+              <p className="text-lg text-violet-700">
+                on lifestyle goods and services
+              </p>
             </div>
           </div>
           <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-orange-100 to-orange-200 text-gray-800 flex flex-col items-center justify-center">
@@ -1112,22 +1119,21 @@ export default function FinalResultsPage() {
                     maximumFractionDigits: 2,
                   })}
               </p>
-              <p className="text-lg text-lime-700">on household goods and services</p>
+              <p className="text-lg text-lime-700">
+                on household goods and services
+              </p>
             </div>
           </div>
           <div className="grid grid-cols-3   max-md:flex max-md:flex-col gap-4">
             <div className="col-span-2 rounded-xl flex flex-col p-8 bg-amber-50 text-gray-800 border max-md:order-2">
-              <h3 className="text-2xl font-bold text-amber-700 mb-6">
-        Food
-              </h3>
+              <h3 className="text-2xl font-bold text-amber-700 mb-6">Food</h3>
               <div className="">
                 {Object.entries(
                   rawTransactions
                     ?.filter(
                       (t) =>
                         t.merchant?.name &&
-                        t.category?.group?.personal_finance?.name ===
-                          "Food"
+                        t.category?.group?.personal_finance?.name === "Food"
                     )
                     .reduce((acc, t) => {
                       const name = t.merchant.name;
@@ -1189,8 +1195,7 @@ export default function FinalResultsPage() {
                 $
                 {rawTransactions
                   ?.filter(
-                    (t) =>
-                      t.category?.group?.personal_finance?.name === "Food"
+                    (t) => t.category?.group?.personal_finance?.name === "Food"
                   )
                   .reduce((sum, t) => sum + Math.abs(t.amount), 0)
                   .toLocaleString(undefined, {
@@ -1461,7 +1466,11 @@ export default function FinalResultsPage() {
                   through Akahu's open finance platform. Learn more about how
                   Akahu makes account connectivity better for everyone.
                 </p>
-                <Button className="mt-4 gap-2 w-full bg-blue-700 " variant="default" asChild>
+                <Button
+                  className="mt-4 gap-2 w-full bg-blue-700 "
+                  variant="default"
+                  asChild
+                >
                   <a href="https://akahu.nz" target="_blank">
                     Learn More About Akahu{" "}
                   </a>
@@ -1476,10 +1485,15 @@ export default function FinalResultsPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600 min-h-20">
-                  Do you like useful tools? We're looking for talented people who enjoy designing and building stuff like this at Watchful.
+                  Do you like useful tools? We're looking for talented people
+                  who enjoy designing and building stuff like this at Watchful.
                 </p>
 
-                <Button className="mt-4 gap-2  w-full bg-blue-700 " asChild variant="default">
+                <Button
+                  className="mt-4 gap-2  w-full bg-blue-700 "
+                  asChild
+                  variant="default"
+                >
                   <a href="https://watchful.co.nz/careers" target="_blank">
                     Learn about Watchful
                   </a>
@@ -1491,7 +1505,8 @@ export default function FinalResultsPage() {
             <CardHeader>
               <CardTitle>Delete Your Data</CardTitle>
               <CardDescription>
-                Remove all your financial data from this device. You will have to start over if you want to see this screen again.
+                Remove all your financial data from this device. You will have
+                to start over if you want to see this screen again.
               </CardDescription>
             </CardHeader>
             <CardContent>

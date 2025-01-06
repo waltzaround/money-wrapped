@@ -4,6 +4,7 @@ import { Button } from "~/components/ui/button";
 import { Progress } from "~/components/ui/progress";
 import { API_URL } from "~/lib/api";
 import { progressListen } from "~/lib/progressUpdates";
+import lzString from "lz-string";
 
 export default function LoadingPage() {
   let [maxSteps, setMaxSteps] = useState(3);
@@ -16,11 +17,23 @@ export default function LoadingPage() {
 
   let [error, setError] = useState<string | undefined>(undefined);
   let [showDone, setShowDone] = useState<boolean>(false);
+  let [transactions] = useState(localStorage.getItem("csv"));
 
   useEffect(() => {
-    const sse = new EventSource(`${API_URL}/akahu/transactions`, {
-      withCredentials: true,
-    });
+    localStorage.removeItem("csv");
+    console.log(transactions ? "Using transactions" : "Not using transactions");
+
+    const sse = transactions
+      ? new EventSource(
+          `${API_URL}/csv/transactions?transactions=${lzString.compressToEncodedURIComponent(
+            transactions
+          )}`,
+          {}
+        )
+      : new EventSource(`${API_URL}/akahu/transactions`, {
+          withCredentials: true,
+        });
+
     sse.onerror = (ev) => {
       console.error("SSE Error:", ev);
     };
@@ -66,7 +79,11 @@ export default function LoadingPage() {
               </span>
             </div>
           </div>
-          {showDone ? <Button asChild className="mt-4 bg-blue-700 text-white"><Link to="/results">View My Results</Link></Button> : undefined}
+          {showDone ? (
+            <Button asChild className="mt-4 bg-blue-700 text-white">
+              <Link to="/results">View My Results</Link>
+            </Button>
+          ) : undefined}
         </div>
       </div>
     </div>
