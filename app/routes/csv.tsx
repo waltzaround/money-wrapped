@@ -162,8 +162,12 @@ export default function PreparePage() {
       const jsonResponse = await response.json();
       console.log("Upload response:", jsonResponse);
 
+      if (!jsonResponse.success) {
+        alert("Could not process csv");
+      }
+
       // Store the raw transactions in localStorage
-      localStorage.setItem("transactions", JSON.stringify(jsonResponse));
+      localStorage.setItem("csv", JSON.stringify(jsonResponse.transactions));
 
       // Navigate to loading page for enrichment
       navigate("/loading");

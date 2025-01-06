@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { Progress } from "~/components/ui/progress";
 import { API_URL } from "~/lib/api";
 import { progressListen } from "~/lib/progressUpdates";
+import lzString from "lz-string";
 
 export default function LoadingPage() {
   let [maxSteps, setMaxSteps] = useState(3);
@@ -17,9 +18,19 @@ export default function LoadingPage() {
   let [showDone, setShowDone] = useState<boolean>(false);
 
   useEffect(() => {
-    const sse = new EventSource(`${API_URL}/akahu/transactions`, {
-      withCredentials: true,
-    });
+    const transactions = localStorage.getItem("csv");
+
+    const sse = transactions
+      ? new EventSource(
+          `${API_URL}/csv/transactions?transactions=${lzString.compressToEncodedURIComponent(
+            transactions
+          )}`,
+          {}
+        )
+      : new EventSource(`${API_URL}/akahu/transactions`, {
+          withCredentials: true,
+        });
+
     sse.onerror = (ev) => {
       console.error("SSE Error:", ev);
     };
