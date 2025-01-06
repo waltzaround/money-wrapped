@@ -5,6 +5,7 @@ import { parse } from 'csv-parse';
 
 export const bodyValidator = z.object({
 	files: z.array(z.instanceof(File)).or(z.instanceof(File).transform((file) => [file])),
+	connection: z.string().optional(),
 });
 
 const handle = async (
@@ -45,7 +46,9 @@ const handle = async (
 					}
 
 					if (detailsColumn === undefined) {
-						detailsColumn = Object.keys(item).find((x) => x.toLowerCase().includes('details'))!;
+						detailsColumn =
+							Object.keys(item).find((x) => x.toLowerCase().includes('code')) ??
+							Object.keys(item).find((x) => x.toLowerCase().includes('details'))!;
 					}
 
 					let amount = item[amountColumn];
@@ -60,9 +63,10 @@ const handle = async (
 					return {
 						id: `tx_${date.toLocaleDateString()}_${count}`,
 						description: description,
-						direction: 'debit',
+						direction: 'DEBIT',
 						date: date.toLocaleDateString(),
 						amount,
+						connection: data.connection,
 					};
 				})
 				.filter((x) => x !== undefined)
@@ -70,7 +74,7 @@ const handle = async (
 		);
 	}
 
-	return c.json({ success: true });
+	return c.json({ success: true, transactions });
 };
 
 export default handle;
