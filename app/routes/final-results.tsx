@@ -46,7 +46,7 @@ export default function FinalResultsPage() {
         .raw_transactions.filter((t) => t.direction !== "CREDIT")
         .filter((t) => {
           const date = new Date(t.date);
-          return date.getFullYear() === 2024;
+          return date.getFullYear() === 2024 && date <= new Date('2024-12-31T23:59:59.999Z');
         })
         .filter((t) => t.description !== "Online       Payment -  Thank You")
     : null;
@@ -221,18 +221,21 @@ export default function FinalResultsPage() {
         <div className="text-center my-24">
           <h1 className="text-4xl font-bold mb-4">Your 2024 Money Wrapped</h1>
           <p className="text-gray-900 text-lg">
-            Thanks for exploring your spending journey!
+            Thanks for exploring your spending journey from 1 Jan 2024 to 31 Dec 2024!
           </p>
+          <div className="mt-6 flex gap-4 justify-center items-center flex-wrap">
           <Link
             className={buttonVariants({
               variant: "outline",
-              className: "mt-6",
+              className: "",
             })}
             to="/results"
           >
             <RotateCcw />
             Replay Journey
           </Link>
+          {/* <Button className="max-xl:hidden" variant="outline" onClick={() => navigate('/edit')}>Edit Transactions</Button> */}
+          </div>
         </div>
 
         <div className="grid gap-4">
@@ -387,8 +390,8 @@ export default function FinalResultsPage() {
             </div>
           </div>
           <div className="grid grid-cols-3 gap-4 max-md:flex max-md:flex-col">
-            <div className="rounded-xl border p-8 bg-gradient-to-b from-emerald-100 to-emerald-200 text-gray-800 flex flex-col items-center justify-center">
-              <p className="text-lg text-emerald-700 mb-2">
+            <div className="rounded-xl border p-8 bg-gradient-to-b from-slate-100 to-slate-200 text-gray-800 flex flex-col items-center justify-center">
+              <p className="text-lg text-slate-700 mb-2">
                 This year you spent
               </p>
               <p className="text-5xl font-bold mb-2">
@@ -398,11 +401,11 @@ export default function FinalResultsPage() {
                   maximumFractionDigits: 2,
                 })}
               </p>
-              <p className="text-lg text-emerald-700">on purchases</p>
+              <p className="text-lg text-slate-700">on purchases</p>
             </div>
 
-            <div className="col-span-2 rounded-xl  flex flex-col p-8 bg-emerald-50 text-gray-800 border">
-              <h3 className="text-2xl font-bold text-emerald-700 mb-4">
+            <div className="col-span-2 rounded-xl  flex flex-col p-8 bg-slate-50 text-gray-800 border max-md:p-4">
+              <h3 className="text-2xl font-bold text-slate-700 mb-4 max-md:mb-2">
                 Top Merchants
               </h3>
               <div className="">
@@ -427,11 +430,11 @@ export default function FinalResultsPage() {
                   .slice(0, 10)
                   .map(([merchantName, data], index) => (
                     <div
-                      className="flex justify-between items-center border-t border-emerald-200 pt-3 mt-3"
+                      className="flex justify-between items-center border-t border-slate-200 pt-3 mt-3"
                       key={merchantName}
                     >
                       <div className="flex items-center gap-2">
-                        <span className="text-emerald-600 min-w-8">
+                        <span className="text-slate-600 min-w-8">
                           #{index + 1}
                         </span>
                         {data.logo ? (
@@ -516,9 +519,9 @@ export default function FinalResultsPage() {
             </div>
           </div>
           <div className="grid grid-cols-3 max-md:flex max-md:flex-col gap-4">
-            <div className="col-span-2 rounded-xl  flex flex-col p-8 bg-blue-50 text-gray-800 border max-md:order-2">
-              <h3 className="text-2xl font-bold text-blue-700 mb-2">
-                Top Restaurants &amp; Cafes
+            <div className="col-span-2 rounded-xl  flex flex-col p-8 bg-violet-50 text-gray-800 border max-md:order-2 max-md:p-4">
+              <h3 className="text-2xl font-bold text-violet-700 mb-6 max-md:mb-2">
+                Restaurants &amp; Cafes
               </h3>
               <div className="">
                 {Object.entries(
@@ -546,11 +549,11 @@ export default function FinalResultsPage() {
                   .slice(0, 10)
                   .map(([merchantName, data], index) => (
                     <div
-                      className="flex justify-between items-center mt-4 pt-4 border-t border-blue-200"
+                      className="flex justify-between items-center mt-4 pt-4 border-t border-violet-200"
                       key={merchantName}
                     >
                       <div className="flex items-center gap-2">
-                        <span className="text-blue-600 min-w-8">
+                        <span className="text-violet-600 min-w-8">
                           #{index + 1}
                         </span>
                         {data.logo ? (
@@ -582,8 +585,8 @@ export default function FinalResultsPage() {
                   ))}
               </div>
             </div>
-            <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-blue-100 to-blue-200 text-gray-800 flex flex-col items-center justify-center">
-              <p className="text-lg text-blue-700 mb-2">You spent</p>
+            <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-violet-100 to-violet-200 text-gray-800 flex flex-col items-center justify-center">
+              <p className="text-lg text-violet-700 mb-2">You spent</p>
               <p className="text-5xl font-bold mb-2">
                 $
                 {rawTransactions
@@ -594,15 +597,15 @@ export default function FinalResultsPage() {
                     maximumFractionDigits: 2,
                   })}
               </p>
-              <p className="text-lg text-blue-700">
+              <p className="text-lg text-violet-700">
                 on Restaurants &amp; Cafes
               </p>
             </div>
           </div>
           <div className="grid grid-cols-3 max-md:flex max-md:flex-col gap-4">
-            <div className="col-span-2 rounded-xl flex flex-col p-8 bg-violet-50 text-gray-800 border max-md:order-3">
-              <h3 className="text-2xl font-bold text-violet-700 mb-2">
-                Top Bars &amp; Nightclubs
+            <div className="col-span-2 rounded-xl flex flex-col p-8 bg-violet-50 text-gray-800 border max-md:order-3 max-md:p-4">
+              <h3 className="text-2xl font-bold text-violet-700 mb-6 max-md:mb-2">
+                Bars &amp; Nightclubs
               </h3>
               <div className="">
                 {Object.entries(
@@ -684,9 +687,9 @@ export default function FinalResultsPage() {
             </div>
           </div>
           <div className="grid grid-cols-3 max-md:flex max-md:flex-col gap-4">
-            <div className="col-span-2 rounded-xl flex flex-col p-8 bg-purple-50 text-gray-800 border max-md:p-4 max-md:order-2">
-              <h3 className="text-2xl font-bold text-purple-700 mb-6 max-md:mb-2">
-                Fashion Spending
+            <div className="col-span-2 rounded-xl flex flex-col p-8 bg-fuchsia-50 text-gray-800 border max-md:p-4 max-md:order-2">
+              <h3 className="text-2xl font-bold text-fuchsia-700 mb-6 max-md:mb-2">
+                Fashion 
               </h3>
               <div className="">
                 {Object.entries(
@@ -715,11 +718,11 @@ export default function FinalResultsPage() {
                   .slice(0, 10)
                   .map(([merchantName, data], index) => (
                     <div
-                      className="flex justify-between items-center mt-4 pt-4 border-t border-purple-200"
+                      className="flex justify-between items-center mt-4 pt-4 border-t border-fuchsia-200"
                       key={merchantName}
                     >
                       <div className="flex items-center gap-2">
-                        <span className="text-purple-600 min-w-8">
+                        <span className="text-fuchsia-600 min-w-8">
                           #{index + 1}
                         </span>
                         {data.logo ? (
@@ -751,8 +754,8 @@ export default function FinalResultsPage() {
                   ))}
               </div>
             </div>
-            <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-purple-100 to-purple-200 text-gray-800 flex flex-col items-center justify-center">
-              <p className="text-lg text-purple-700 mb-2">You spent</p>
+            <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-fuchsia-100 to-fuchsia-200 text-gray-800 flex flex-col items-center justify-center">
+              <p className="text-lg text-fuchsia-700 mb-2">You spent</p>
               <p className="text-5xl font-bold mb-2">
                 $
                 {rawTransactions
@@ -770,9 +773,95 @@ export default function FinalResultsPage() {
             </div>
           </div>
           <div className="grid grid-cols-3 max-md:flex max-md:flex-col gap-4">
-            <div className="col-span-2 rounded-xl flex flex-col p-8 bg-cyan-50 text-gray-800 border max-md:order-3">
-              <h3 className="text-2xl font-bold text-cyan-700 mb-6">
-                Top Lifestyle Purchases
+            <div className="col-span-2 rounded-xl flex flex-col p-8 bg-emerald-50 text-gray-800 border max-md:p-4 max-md:order-2">
+              <h3 className="text-2xl font-bold text-emerald-700 mb-6 max-md:mb-2">
+                Education 
+              </h3>
+              <div className="">
+                {Object.entries(
+                  rawTransactions
+                    ?.filter(
+                      (t) =>
+                        t.merchant?.name &&
+                        t.category?.group?.personal_finance?.name ===
+                          "Education"
+                    )
+                    .reduce((acc, t) => {
+                      const name = t.merchant.name;
+                      if (!acc[name]) {
+                        acc[name] = {
+                          amount: 0,
+                          logo: t.merchant.logo,
+                          count: 0,
+                        };
+                      }
+                      acc[name].amount += Math.abs(t.amount);
+                      acc[name].count += 1;
+                      return acc;
+                    }, {} as { [key: string]: { amount: number; logo: string; count: number } })
+                )
+                  .sort(([, a], [, b]) => b.amount - a.amount)
+                  .slice(0, 10)
+                  .map(([merchantName, data], index) => (
+                    <div
+                      className="flex justify-between items-center mt-4 pt-4 border-t border-emerald-200"
+                      key={merchantName}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-emerald-600 min-w-8">
+                          #{index + 1}
+                        </span>
+                        {data.logo ? (
+                          <img
+                            src={data.logo}
+                            className="h-8 w-8 rounded shadow-sm object-cover"
+                          />
+                        ) : (
+                          <div className="h-8 w-8 rounded shadow-sm bg-gray-200" />
+                        )}
+                        <div>
+                          <span className="font-medium text-gray-800">
+                            {merchantName}
+                          </span>
+                          <p className="text-sm text-gray-500">
+                            {data.count} transaction
+                            {data.count !== 1 ? "s" : ""}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-gray-600">
+                        $
+                        {data.amount.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
+                      </span>
+                    </div>
+                  ))}
+              </div>
+            </div>
+            <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-emerald-100 to-emerald-200 text-gray-800 flex flex-col items-center justify-center">
+              <p className="text-lg text-emerald-700 mb-2">You spent</p>
+              <p className="text-5xl font-bold mb-2">
+                $
+                {rawTransactions
+                  ?.filter(
+                    (t) =>
+                      t.category?.group?.personal_finance?.name === "Education"
+                  )
+                  .reduce((sum, t) => sum + Math.abs(t.amount), 0)
+                  .toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+              </p>
+              <p className="text-lg text-emerald-700">on Education</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 max-md:flex max-md:flex-col gap-4">
+            <div className="col-span-2 rounded-xl flex flex-col p-8 bg-violet-50 text-gray-800 border max-md:order-3 max-md:p-4">
+              <h3 className="text-2xl font-bold text-violet-700 mb-6 max-md:mb-2">
+                 Lifestyle 
               </h3>
               <div className="">
                 {Object.entries(
@@ -801,11 +890,11 @@ export default function FinalResultsPage() {
                   .slice(0, 10)
                   .map(([merchantName, data], index) => (
                     <div
-                      className="flex justify-between items-center mt-4 pt-4 border-t border-cyan-200"
+                      className="flex justify-between items-center mt-4 pt-4 border-t border-violet-200"
                       key={merchantName}
                     >
                       <div className="flex items-center gap-2">
-                        <span className="text-cyan-600 min-w-8">
+                        <span className="text-violet-600 min-w-8">
                           #{index + 1}
                         </span>
                         {data.logo ? (
@@ -837,8 +926,8 @@ export default function FinalResultsPage() {
                   ))}
               </div>
             </div>
-            <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-cyan-100 to-cyan-200 text-gray-800 flex flex-col items-center justify-center">
-              <p className="text-lg text-cyan-700 mb-2">You spent</p>
+            <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-violet-100 to-violet-200 text-gray-800 flex flex-col items-center justify-center">
+              <p className="text-lg text-violet-700 mb-2">You spent</p>
               <p className="text-5xl font-bold mb-2">
                 $
                 {rawTransactions
@@ -852,7 +941,7 @@ export default function FinalResultsPage() {
                     maximumFractionDigits: 2,
                   })}
               </p>
-              <p className="text-lg text-cyan-700">on lifestyle</p>
+              <p className="text-lg text-violet-700">on lifestyle goods and services</p>
             </div>
           </div>
           <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-orange-100 to-orange-200 text-gray-800 flex flex-col items-center justify-center">
@@ -870,11 +959,11 @@ export default function FinalResultsPage() {
                   maximumFractionDigits: 2,
                 })}
             </p>
-            <p className="text-lg text-orange-700">on transport</p>
+            <p className="text-lg text-orange-700">on transport costs</p>
           </div>
-          <div className="rounded-xl border p-8 bg-white">
-            <h3 className="text-2xl font-bold text-orange-700 mb-6">
-              Top transport spending
+          <div className="rounded-xl border p-8 bg-orange-50 max-md:p-4 max-md:mb-4">
+            <h3 className="text-2xl font-bold text-orange-700 mb-6 max-md:mb-4 max-md:border-b border-orange-200 max-md:pb-4">
+              Transport
             </h3>
             <div className="">
               {(() => {
@@ -903,7 +992,7 @@ export default function FinalResultsPage() {
                   .slice(0, 5)
                   .map(([merchantName, data], index) => (
                     <div
-                      className="flex justify-between items-center border-b border-gray-100 pb-3 mb-3"
+                      className="flex justify-between items-center border-b border-orange-200 pb-3 mb-3"
                       key={merchantName}
                     >
                       <div className="flex items-center gap-2">
@@ -941,9 +1030,9 @@ export default function FinalResultsPage() {
             </div>
           </div>
           <div className="grid grid-cols-3   max-md:flex max-md:flex-col gap-4">
-            <div className="col-span-2 rounded-xl flex flex-col p-8 bg-lime-50 text-gray-800 border max-md:order-2">
-              <h3 className="text-2xl font-bold text-lime-700 mb-6">
-                Your Top 10 Household Purchases
+            <div className="col-span-2 rounded-xl flex flex-col p-8 bg-lime-50 text-gray-800 border max-md:order-2  max-md:p-4">
+              <h3 className="text-2xl font-bold text-lime-700 mb-6 max-md:mb-2">
+                Household
               </h3>
               <div className="">
                 {Object.entries(
@@ -1023,7 +1112,93 @@ export default function FinalResultsPage() {
                     maximumFractionDigits: 2,
                   })}
               </p>
-              <p className="text-lg text-lime-700">on household</p>
+              <p className="text-lg text-lime-700">on household goods and services</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-3   max-md:flex max-md:flex-col gap-4">
+            <div className="col-span-2 rounded-xl flex flex-col p-8 bg-amber-50 text-gray-800 border max-md:order-2">
+              <h3 className="text-2xl font-bold text-amber-700 mb-6">
+        Food
+              </h3>
+              <div className="">
+                {Object.entries(
+                  rawTransactions
+                    ?.filter(
+                      (t) =>
+                        t.merchant?.name &&
+                        t.category?.group?.personal_finance?.name ===
+                          "Food"
+                    )
+                    .reduce((acc, t) => {
+                      const name = t.merchant.name;
+                      if (!acc[name]) {
+                        acc[name] = {
+                          amount: 0,
+                          logo: t.merchant.logo,
+                          count: 0,
+                        };
+                      }
+                      acc[name].amount += Math.abs(t.amount);
+                      acc[name].count += 1;
+                      return acc;
+                    }, {} as { [key: string]: { amount: number; logo: string; count: number } })
+                )
+                  .sort(([, a], [, b]) => b.amount - a.amount)
+                  .slice(0, 10)
+                  .map(([merchantName, data], index) => (
+                    <div
+                      className="flex justify-between items-center mt-4 pt-4 border-t border-amber-200"
+                      key={merchantName}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-lime-600 min-w-8">
+                          #{index + 1}
+                        </span>
+                        {data.logo ? (
+                          <img
+                            src={data.logo}
+                            className="h-8 w-8 rounded shadow-sm object-cover"
+                          />
+                        ) : (
+                          <div className="h-8 w-8 rounded shadow-sm bg-gray-200" />
+                        )}
+                        <div>
+                          <span className="font-medium text-gray-800">
+                            {merchantName}
+                          </span>
+                          <p className="text-sm text-gray-500">
+                            {data.count} transaction
+                            {data.count !== 1 ? "s" : ""}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-gray-600">
+                        $
+                        {data.amount.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
+                      </span>
+                    </div>
+                  ))}
+              </div>
+            </div>
+            <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-amber-100 to-amber-200 text-gray-800 flex flex-col items-center justify-center">
+              <p className="text-lg text-amber-700 mb-2">You spent</p>
+              <p className="text-5xl font-bold mb-2">
+                $
+                {rawTransactions
+                  ?.filter(
+                    (t) =>
+                      t.category?.group?.personal_finance?.name === "Food"
+                  )
+                  .reduce((sum, t) => sum + Math.abs(t.amount), 0)
+                  .toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+              </p>
+              <p className="text-lg text-amber-700">on food </p>
             </div>
           </div>
 
@@ -1038,7 +1213,7 @@ export default function FinalResultsPage() {
                   .slice(0, 10)
                   .map((transaction, index) => (
                     <div
-                      className="flex justify-between items-center border-b border-slate-200 pb-3 mb-3"
+                      className="flex justify-between items-center border-b border-slate-200 pb-3 mb-3 last:border-0 last:pb-0 last:mb-0"
                       key={index}
                     >
                       <div className="flex items-center gap-4">
@@ -1083,7 +1258,7 @@ export default function FinalResultsPage() {
               </div>
             </div>
           </div>
-          <div className="w-full rounded-md border min-h-4  0 mt- bg-white">
+          <div className="w-full rounded-md border min-h-4  0 mt- bg-white mb-24">
             <h2 className="text-xl font-semibold p-4 border-b">
               Spend Breakdown
             </h2>
@@ -1275,12 +1450,12 @@ export default function FinalResultsPage() {
                 <CardDescription>Open Banking for New Zealand</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">
+                <p className="text-gray-600 min-h-20">
                   Experience secure, reliable access to your financial data
                   through Akahu's open finance platform. Learn more about how
                   Akahu makes account connectivity better for everyone.
                 </p>
-                <Button className="mt-4 gap-2" variant="default" asChild>
+                <Button className="mt-4 gap-2 w-full bg-blue-700 " variant="default" asChild>
                   <a href="https://akahu.nz" target="_blank">
                     Learn More About Akahu{" "}
                   </a>
@@ -1290,18 +1465,17 @@ export default function FinalResultsPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Looking for a software job?</CardTitle>
+                <CardTitle>Looking for a job?</CardTitle>
                 <CardDescription>Watchful is hiring!</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">
-                  Love building useful tools? The company I work for is looking
-                  for developers who like building useful tools.
+                <p className="text-gray-600 min-h-20">
+                  Do you like useful tools? We're looking for talented people who enjoy designing and building stuff like this at Watchful.
                 </p>
 
-                <Button className="mt-4 gap-2" asChild variant="default">
+                <Button className="mt-4 gap-2  w-full bg-blue-700 " asChild variant="default">
                   <a href="https://watchful.co.nz/careers" target="_blank">
-                    View Open Positions
+                    Learn about Watchful
                   </a>
                 </Button>
               </CardContent>
@@ -1311,8 +1485,7 @@ export default function FinalResultsPage() {
             <CardHeader>
               <CardTitle>Delete Your Data</CardTitle>
               <CardDescription>
-                Remove all your financial data from this device. This action
-                cannot be undone.
+                Remove all your financial data from this device. You will have to start over if you want to see this screen again.
               </CardDescription>
             </CardHeader>
             <CardContent>
