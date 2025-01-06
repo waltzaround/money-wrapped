@@ -64,17 +64,25 @@ const handler = async (c: Context<HonoType, '/akahu/transactions'>) => {
 		let enriched;
 		try {
 			// Save transaction dates before enrichment
+			const transactionDates = new Map(all_transactions.map((x) => [x.id, x.date]));
+
 			enriched = await enrichTransactions(
 				all_transactions.map((x) => ({
 					description: x.description,
 					id: x.id,
 					amount: x.amount,
-					direction: x.direction,
-					_connection: x.connection,
+					direction: x.amount < 0 ? 'DEBIT' : 'CREDIT',
+					_connection: x._connection,
 				})),
 				c.env,
 				abortController.signal,
 			);
+
+			// Reattach dates to enriched transactions
+			enriched = enriched.map((tx) => ({
+				...tx,
+				date: transactionDates.get(tx.id) || '',
+			}));
 		} catch (ex) {
 			console.error(ex);
 			await stream.writeSSE(

@@ -17,9 +17,11 @@ export default function LoadingPage() {
 
   let [error, setError] = useState<string | undefined>(undefined);
   let [showDone, setShowDone] = useState<boolean>(false);
+  let [transactions] = useState(localStorage.getItem("csv"));
 
   useEffect(() => {
-    const transactions = localStorage.getItem("csv");
+    localStorage.removeItem("csv");
+    console.log(transactions ? "Using transactions" : "Not using transactions");
 
     const sse = transactions
       ? new EventSource(
@@ -77,7 +79,11 @@ export default function LoadingPage() {
               </span>
             </div>
           </div>
-          {showDone ? <Button asChild className="mt-4 bg-blue-700 text-white"><Link to="/results">View My Results</Link></Button> : undefined}
+          {showDone ? (
+            <Button asChild className="mt-4 bg-blue-700 text-white">
+              <Link to="/results">View My Results</Link>
+            </Button>
+          ) : undefined}
         </div>
       </div>
     </div>
