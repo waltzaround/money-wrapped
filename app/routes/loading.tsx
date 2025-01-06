@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
+import { Button } from "~/components/ui/button";
 import { Progress } from "~/components/ui/progress";
 import { API_URL } from "~/lib/api";
 import { progressListen } from "~/lib/progressUpdates";
@@ -65,7 +66,7 @@ export default function LoadingPage() {
               </span>
             </div>
           </div>
-          {showDone ? <Link to="/results">View My Results</Link> : undefined}
+          {showDone ? <Button asChild className="mt-4 bg-blue-700 text-white"><Link to="/results">View My Results</Link></Button> : undefined}
         </div>
       </div>
     </div>
