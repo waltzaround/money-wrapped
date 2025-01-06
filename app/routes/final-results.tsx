@@ -392,7 +392,7 @@ export default function FinalResultsPage() {
           <div className="grid grid-cols-3 gap-4 max-md:flex max-md:flex-col">
             <div className="rounded-xl border p-8 bg-gradient-to-b from-slate-100 to-slate-200 text-gray-800 flex flex-col items-center justify-center">
               <p className="text-lg text-slate-700 mb-2">
-                This year you spent
+                In 2024 you spent
               </p>
               <p className="text-5xl font-bold mb-2">
                 $
@@ -1205,7 +1205,7 @@ export default function FinalResultsPage() {
           <div className="grid grid-cols-   max-md:flex max-md:flex-col gap-4">
             <div className="rounded-xl flex flex-col p-8 bg-slate-50 text-gray-800 border max-md:p-4">
               <h3 className="text-2xl font-bold text-slate-700 mb-6">
-                Largest transactions this year
+                Largest transactions in 2024
               </h3>
               <div className="">
                 {rawTransactions
@@ -1529,10 +1529,10 @@ export default function FinalResultsPage() {
 
         <div className="mt-12 text-center text-sm text-gray-600">
           <p>
-            Money Wrapped 2024 is built by{" "}
+            Money Wrapped 2024 is built and maintained by{" "}
             <a className="underline text-blue-700" href="https://walt.online">
               Walter Lim
-            </a>{" "}
+            </a>
             ,{" "}
             <a className="underline text-blue-700" href="https://laspruca.nz">
               Connor Hare
@@ -1544,7 +1544,7 @@ export default function FinalResultsPage() {
             .
           </p>
           <p className="mt-2">
-            All your financial data stays private and secure.
+            All your financial data stays private to your machine after initial processing.
           </p>
         </div>
       </div>
