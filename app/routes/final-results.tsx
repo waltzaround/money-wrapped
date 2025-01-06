@@ -1264,182 +1264,188 @@ export default function FinalResultsPage() {
             </h2>
 
             <div className="mt-4 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <div className="p-4 space-y-4">
-                  <div className="relative h-12 w-full flex rounded-lg overflow-hidden">
-                    {(() => {
-                      const groupTotals =
-                        rawTransactions?.reduce((acc, t) => {
-                          const groupName =
-                            t.category?.group?.personal_finance?.name;
-                          if (groupName) {
-                            if (!acc[groupName]) {
-                              acc[groupName] = 0;
-                            }
-                            acc[groupName] += Math.abs(t.amount);
+              <div className="p-4 space-y-4">
+                <div className="relative w-full">
+                  {(() => {
+                    const groupTotals =
+                      rawTransactions?.reduce((acc, t) => {
+                        const groupName =
+                          t.category?.group?.personal_finance?.name;
+                        if (groupName) {
+                          if (!acc[groupName]) {
+                            acc[groupName] = 0;
                           }
-                          return acc;
-                        }, {} as { [key: string]: number }) || {};
+                          acc[groupName] += Math.abs(t.amount);
+                        }
+                        return acc;
+                      }, {} as { [key: string]: number }) || {};
 
-                      const groups = Object.entries(groupTotals)
-                        .map(([name, amount]) => ({
-                          name,
-                          amount,
-                          color:
-                            name === "Appearance"
-                              ? "bg-fuchsia-500"
-                              : name === "Education"
-                              ? "bg-emerald-500"
-                              : name === "Food"
-                              ? "bg-amber-500"
-                              : name === "Health"
-                              ? "bg-rose-500"
-                              : name === "Household"
-                              ? "bg-sky-500"
-                              : name === "Housing"
-                              ? "bg-indigo-500"
-                              : name === "Lifestyle"
-                              ? "bg-violet-500"
-                              : name === "Professional Services"
-                              ? "bg-teal-500"
-                              : name === "Transport"
-                              ? "bg-orange-500"
-                              : name === "Utilities"
-                              ? "bg-cyan-500"
-                              : "bg-slate-500",
-                        }))
-                        .sort((a, b) => b.amount - a.amount);
+                    const groups = Object.entries(groupTotals)
+                      .map(([name, amount]) => ({
+                        name,
+                        amount,
+                        color:
+                          name === "Appearance"
+                            ? "bg-fuchsia-500"
+                            : name === "Education"
+                            ? "bg-emerald-500"
+                            : name === "Food"
+                            ? "bg-amber-500"
+                            : name === "Health"
+                            ? "bg-rose-500"
+                            : name === "Household"
+                            ? "bg-sky-500"
+                            : name === "Housing"
+                            ? "bg-indigo-500"
+                            : name === "Lifestyle"
+                            ? "bg-violet-500"
+                            : name === "Professional Services"
+                            ? "bg-teal-500"
+                            : name === "Transport"
+                            ? "bg-orange-500"
+                            : name === "Utilities"
+                            ? "bg-cyan-500"
+                            : "bg-slate-500",
+                      }))
+                      .sort((a, b) => b.amount - a.amount);
 
-                      const total = groups.reduce(
-                        (sum, group) => sum + group.amount,
-                        0
-                      );
+                    const total = groups.reduce(
+                      (sum, group) => sum + group.amount,
+                      0
+                    );
+
+                    // Create an array of 100 cells (each representing ~1%)
+                    const cells = Array(100).fill(null);
+                    let currentGroupIndex = 0;
+                    let remainingGroupPercentage = (groups[0]?.amount / total) * 100 || 0;
+                    
+                    const filledCells = cells.map((_, index) => {
+                      if (remainingGroupPercentage <= 0) {
+                        currentGroupIndex++;
+                        remainingGroupPercentage = (groups[currentGroupIndex]?.amount / total) * 100 || 0;
+                      }
+                      
+                      const currentGroup = groups[currentGroupIndex];
+                      if (!currentGroup) return null;
+                      
+                      remainingGroupPercentage--;
+                      
+                      return {
+                        group: currentGroup,
+                        colorClass: currentGroup.color,
+                      };
+                    });
+
+                    return (
+                      <div className="grid grid-rows-[repeat(4,minmax(1rem,1fr))] md:grid-rows-[repeat(4,minmax(2rem,1fr))] gap-[0] grid-flow-col gap-[0.2rem] mx-auto rounded-md overflow-hidden">
+                        {filledCells.map((cell, index) => (
+                          cell && (
+                            <div
+                              key={index}
+                              className={cn(
+                                "aspect-square  transition-all relative group cursor-pointer",
+                                cell.colorClass
+                              )}
+                            >
+                              <div className="hidden group-hover:block absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-white px-3 py-2 rounded-md shadow-lg text-sm whitespace-nowrap z-10 border">
+                                <div className="font-medium">
+                                  {cell.group.name}
+                                </div>
+                                <div className="text-gray-600">
+                                  ${cell.group.amount.toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })}
+                                </div>
+                                <div className="text-gray-500">
+                                  {((cell.group.amount / total) * 100).toFixed(1)}% of total
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mt-6">
+                  {(() => {
+                    const groupTotals =
+                      rawTransactions?.reduce((acc, t) => {
+                        const groupName =
+                          t.category?.group?.personal_finance?.name;
+                        if (groupName) {
+                          if (!acc[groupName]) {
+                            acc[groupName] = 0;
+                          }
+                          acc[groupName] += Math.abs(t.amount);
+                        }
+                        return acc;
+                      }, {} as { [key: string]: number }) || {};
+
+                    const groups = Object.entries(groupTotals)
+                      .map(([name, amount]) => ({
+                        name,
+                        amount,
+                        color:
+                          name === "Appearance"
+                            ? "bg-fuchsia-500"
+                            : name === "Education"
+                            ? "bg-emerald-500"
+                            : name === "Food"
+                            ? "bg-amber-500"
+                            : name === "Health"
+                            ? "bg-rose-500"
+                            : name === "Household"
+                            ? "bg-sky-500"
+                            : name === "Housing"
+                            ? "bg-indigo-500"
+                            : name === "Lifestyle"
+                            ? "bg-violet-500"
+                            : name === "Professional Services"
+                            ? "bg-teal-500"
+                            : name === "Transport"
+                            ? "bg-orange-500"
+                            : name === "Utilities"
+                            ? "bg-cyan-500"
+                            : "bg-slate-500",
+                      }))
+                      .sort((a, b) => b.amount - a.amount);
+
+                    const total = groups.reduce(
+                      (sum, group) => sum + group.amount,
+                      0
+                    );
+
+                    return groups.map((group) => {
+                      const percentage = (
+                        (group.amount / total) *
+                        100
+                      ).toFixed(1);
 
                       return (
-                        <>
-                          {groups.map((group, index) => {
-                            const percentage = (group.amount / total) * 100;
-                            const previousWidth = groups
-                              .slice(0, index)
-                              .reduce(
-                                (sum, g) => sum + (g.amount / total) * 100,
-                                0
-                              );
-
-                            return (
-                              <div
-                                key={group.name}
-                                className={cn(
-                                  "h-full transition-all relative group",
-                                  group.color
-                                )}
-                                style={{ width: `${percentage}%` }}
-                              >
-                                {/* Tooltip */}
-                                <div className="opacity-0 group-hover:opacity-100 absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-white px-3 py-2 rounded-md shadow-lg text-sm whitespace-nowrap z-10 border">
-                                  <div className="font-medium">
-                                    {group.name}
-                                  </div>
-                                  <div className="text-gray-600">
-                                    $
-                                    {group.amount.toLocaleString(undefined, {
-                                      minimumFractionDigits: 2,
-                                      maximumFractionDigits: 2,
-                                    })}
-                                  </div>
-                                  <div className="text-gray-500">
-                                    {percentage.toFixed(1)}% of total
-                                  </div>
-                                </div>
-
-                                {/* Hover effect overlay */}
-                                <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity" />
-                              </div>
-                            );
-                          })}
-                        </>
-                      );
-                    })()}
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mt-6">
-                    {(() => {
-                      const groupTotals =
-                        rawTransactions?.reduce((acc, t) => {
-                          const groupName =
-                            t.category?.group?.personal_finance?.name;
-                          if (groupName) {
-                            if (!acc[groupName]) {
-                              acc[groupName] = 0;
-                            }
-                            acc[groupName] += Math.abs(t.amount);
-                          }
-                          return acc;
-                        }, {} as { [key: string]: number }) || {};
-
-                      const groups = Object.entries(groupTotals)
-                        .map(([name, amount]) => ({
-                          name,
-                          amount,
-                          color:
-                            name === "Appearance"
-                              ? "bg-fuchsia-500"
-                              : name === "Education"
-                              ? "bg-emerald-500"
-                              : name === "Food"
-                              ? "bg-amber-500"
-                              : name === "Health"
-                              ? "bg-rose-500"
-                              : name === "Household"
-                              ? "bg-sky-500"
-                              : name === "Housing"
-                              ? "bg-indigo-500"
-                              : name === "Lifestyle"
-                              ? "bg-violet-500"
-                              : name === "Professional Services"
-                              ? "bg-teal-500"
-                              : name === "Transport"
-                              ? "bg-orange-500"
-                              : name === "Utilities"
-                              ? "bg-cyan-500"
-                              : "bg-slate-500",
-                        }))
-                        .sort((a, b) => b.amount - a.amount);
-
-                      const total = groups.reduce(
-                        (sum, group) => sum + group.amount,
-                        0
-                      );
-
-                      return groups.map((group) => {
-                        const percentage = (
-                          (group.amount / total) *
-                          100
-                        ).toFixed(1);
-
-                        return (
+                        <div
+                          key={group.name}
+                          className="flex items-center gap-2"
+                        >
                           <div
-                            key={group.name}
-                            className="flex items-center gap-2"
-                          >
-                            <div
-                              className={cn("w-5 h-5 rounded", group.color)}
-                            />
-                            <span className="text-sm text-gray-600">
-                              {group.name}
-                              <br />$
-                              {group.amount.toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}{" "}
-                              ({percentage}%)
-                            </span>
-                          </div>
-                        );
-                      });
-                    })()}
-                  </div>
+                            className={cn("w-5 h-5 rounded", group.color)}
+                          />
+                          <span className="text-sm text-gray-600">
+                            {group.name}
+                            <br />$
+                            {group.amount.toLocaleString(undefined, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}{" "}
+                            ({percentage}%)
+                          </span>
+                        </div>
+                      );
+                    });
+                  })()}
                 </div>
-              </ResponsiveContainer>
+              </div>
             </div>
           </div>
 
