@@ -5,6 +5,7 @@ import uploadCsvHandler, { bodyValidator as uploadCsvBody } from './routes/uploa
 import authCallbackHandler from './routes/akahu-auth';
 import { HonoType } from './types';
 import akahuEnrich from './routes/akahu-enrich';
+import csvEnrich from './routes/enrich-csv';
 
 const app = new Hono<HonoType>();
 
@@ -13,12 +14,13 @@ app.use(
 		origin: ['http://localhost:5173', 'https://money.haxx.nz'],
 		allowHeaders: ['Content-Type'],
 		allowMethods: ['GET', 'POST', 'OPTIONS'],
-		credentials: true
+		credentials: true,
 	}),
 );
 
 app.get('/akahu-auth', authCallbackHandler);
 app.get('/akahu/transactions', akahuEnrich);
+app.get('/csv/transactions', csvEnrich);
 
 app.get('/app-url', (c) => c.json({ url: c.env.APP_URL }));
 

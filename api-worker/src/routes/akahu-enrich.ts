@@ -148,7 +148,7 @@ export default async function akahuEnrich(c: Context<HonoType, '/akahu/transacti
 				);
 			},
 			limitName: 'genie',
-			concurrent: 2,
+			concurrent: 10,
 		});
 
 		let enriched;
