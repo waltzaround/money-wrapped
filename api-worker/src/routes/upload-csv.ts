@@ -2,6 +2,7 @@ import { Context } from 'hono';
 import { z } from 'zod';
 import { HonoType } from '../types';
 import { parse } from 'csv-parse';
+import { DateTime } from 'luxon';
 
 export const bodyValidator = z.object({
 	files: z.array(z.instanceof(File)).or(z.instanceof(File).transform((file) => [file])),
@@ -35,7 +36,7 @@ const handle = async (
 		let detailsColumn: string;
 
 		transactions.push(
-			...(await parse(csv, { cast: true, cast_date: true, columns: true })
+			...(await parse(csv, { cast: true, columns: true })
 				.map((item) => {
 					if (dateColumn === undefined) {
 						dateColumn = Object.keys(item).find((x) => x.toLowerCase().includes('date'))!;
@@ -55,16 +56,21 @@ const handle = async (
 					let date = item[dateColumn];
 					let description = item[detailsColumn];
 
-					if (!(date instanceof Date) || date.getFullYear() != 2024) {
+					const parsedDate = DateTime.fromFormat(date, 'D', { locale: 'en-NZ' });
+
+					if (!parsedDate.isValid) {
+						console.log(date + " isn't a valid date");
 						return undefined;
 					}
 
+					console.log(parsedDate.toISO());
+
 					count++;
 					return {
-						id: `tx_${date.toLocaleDateString()}_${count}`,
+						id: `tx_${parsedDate.toISO()}_${count}`,
 						description: description,
 						direction: 'DEBIT',
-						date: date.toLocaleDateString(),
+						date: parsedDate.toISO(),
 						amount,
 						connection: data.connection,
 					};
