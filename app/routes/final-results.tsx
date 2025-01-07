@@ -29,6 +29,7 @@ import {
 
 import { cn } from "~/lib/utils";
 import type { TransactionAnalytics } from "../types";
+import html2canvas from 'html2canvas';
 
 type SpendCategory = {
   category: string;
@@ -265,17 +266,13 @@ export default function FinalResultsPage() {
               <div className="p-4 bg-blue-50 rounded-lg">
                 <p className="text-gray-700">Transactions</p>
                 <p className="text-2xl font-bold text-blue-600">
-                  {transactionCount}
+                  {transactionCount.toLocaleString()}
                 </p>
               </div>
               <div className="p-4 bg-purple-50 rounded-lg">
                 <p className="text-gray-700">Businesses</p>
                 <p className="text-2xl font-bold text-purple-600">
-                  {new Set(
-                    rawTransactions
-                      ?.filter((t) => t.merchant?.name)
-                      .map((t) => t.merchant.name)
-                  ).size || 0}
+                  {(new Set(rawTransactions?.map((t) => t.merchant)).size || 0).toLocaleString()}
                 </p>
               </div>
               <div className="p-4 bg-pink-50 rounded-lg">
@@ -409,10 +406,36 @@ export default function FinalResultsPage() {
               <p className="text-lg text-slate-700">on purchases</p>
             </div>
 
-            <div className="col-span-2 rounded-xl  flex flex-col p-8 bg-slate-50 text-gray-800 border max-md:p-4">
-              <h3 className="text-2xl font-bold text-slate-700 mb-4 max-md:mb-2">
+            <div className="col-span-2 rounded-xl  flex flex-col p-8 bg-slate-50 text-gray-800 border max-md:p-4" id="top-merchants">
+              <div className="flex justify-between items-center mb-4 max-md:mb-2">
+              <h3 className="text-2xl font-bold text-slate-700 ">
                 Top Merchants
               </h3>
+              <button 
+                className="text-blue-600 hover:text-slate-800"
+                onClick={() => {
+                  const element = document.getElementById('top-merchants');
+                  if (element) {
+                    setTimeout(() => {
+                      html2canvas(element, {
+                        useCORS: true,
+                        scale: 2, 
+                        backgroundColor: '#ffffff',
+                      }).then(canvas => {
+                        const link = document.createElement('a');
+                        link.download = 'top-merchants.png';
+                        link.href = canvas.toDataURL('image/png');
+                        link.click();
+                      }).catch(err => {
+                        console.error('Screenshot failed:', err);
+                      });
+                    }, 500);
+                  }
+                }}
+              >
+                Download
+              </button>
+              </div>
               <div className="">
                 {Object.entries(
                   rawTransactions
@@ -474,7 +497,7 @@ export default function FinalResultsPage() {
           </div>
           <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-gray-100 to-gray-200 text-gray-800 flex flex-col items-center justify-center">
             <p className="text-lg text-gray-700 mb-2">You made</p>
-            <p className="text-5xl font-bold mb-2">{transactionCount}</p>
+            <p className="text-5xl font-bold mb-2">{transactionCount.toLocaleString()}</p>
             <p className="text-lg text-gray-700">transactions</p>
           </div>
           <div className="flex gap-4 max-md:flex-col">
@@ -498,9 +521,10 @@ export default function FinalResultsPage() {
 
               <p className="text-5xl font-bold text-lime-800  mb-2">
                 {analytics?.highestSpendingDay
-                  ? new Intl.DateTimeFormat("en-US", {
+                  ? new Intl.DateTimeFormat("en-NZ", {
                       month: "short",
                       day: "numeric",
+                      year: "numeric",
                     }).format(new Date(analytics.highestSpendingDay[0]))
                   : "N/A"}
               </p>
@@ -518,7 +542,7 @@ export default function FinalResultsPage() {
             <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-rose-100 to-rose-200 text-gray-800 flex flex-col items-center justify-center">
               <p className="text-lg text-rose-700 mb-2">You shopped at</p>
               <p className="text-5xl font-bold mb-2">
-                {new Set(rawTransactions?.map((t) => t.merchant)).size || 0}
+                {(new Set(rawTransactions?.map((t) => t.merchant)).size || 0).toLocaleString()}
               </p>
               <p className="text-lg text-rose-700">different businesses</p>
             </div>
@@ -999,7 +1023,7 @@ export default function FinalResultsPage() {
                   .slice(0, 5)
                   .map(([merchantName, data], index) => (
                     <div
-                      className="flex justify-between items-center border-b border-orange-200 pb-3 mb-3"
+                      className="flex justify-between items-center border-b border-orange-200 pb-3 mb-3 last:border-0 last:pb-0 last:mb-0"
                       key={merchantName}
                     >
                       <div className="flex items-center gap-2">
@@ -1037,7 +1061,7 @@ export default function FinalResultsPage() {
             </div>
           </div>
           <div className="grid grid-cols-3   max-md:flex max-md:flex-col gap-4">
-            <div className="col-span-2 rounded-xl flex flex-col p-8 bg-lime-50 text-gray-800 border max-md:order-2  max-md:p-4">
+            <div className="col-span-2 rounded-xl flex flex-col p-8 bg-lime-50 text-gray-800 border max-md:p-4 max-md:order-2">
               <h3 className="text-2xl font-bold text-lime-700 mb-6 max-md:mb-2">
                 Household
               </h3>
@@ -1342,7 +1366,7 @@ export default function FinalResultsPage() {
                     });
 
                     return (
-                      <div className="grid grid-rows-[repeat(4,minmax(1rem,1fr))] md:grid-rows-[repeat(4,minmax(2rem,1fr))] gap-[0] grid-flow-col gap-[0.2rem] mx-auto rounded-md overflow-hidden">
+                      <div className="grid grid-rows-[repeat(4,minmax(1rem,1fr))] md:grid-rows-[repeat(4,minmax(2rem,1fr))] gap-[0] grid-flow-col gap-[0.2rem] mx-auto ">
                         {filledCells.map((cell, index) => (
                           cell && (
                             <div
