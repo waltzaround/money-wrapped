@@ -52,7 +52,6 @@ export default function PreparePage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedBank, setSelectedBank] = useState<BankName | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = async (file: File) => {
@@ -134,6 +133,8 @@ export default function PreparePage() {
       return;
     }
 
+  
+
     setIsSubmitting(true);
     setUploadError(null);
 
@@ -146,9 +147,7 @@ export default function PreparePage() {
         formData.append("files", file);
       });
 
-      if (selectedBank) {
-        formData.append("connection", BANK_CONNECTIONS[selectedBank]);
-      }
+   
 
       const response = await fetch(`${API_URL}/upload-csv`, {
         method: "POST",
@@ -164,10 +163,22 @@ export default function PreparePage() {
 
       if (!jsonResponse.success) {
         alert("Could not process csv");
+        return;
+      }
+
+      if (!jsonResponse.transactions?.length) {
+        toast({
+          title: "No valid transactions",
+          description: "No valid 2024 transactions found in the CSV file.",
+          variant: "destructive",
+        });
+        return;
       }
 
       // Store the raw transactions in localStorage
-      localStorage.setItem("csv", JSON.stringify(jsonResponse.transactions));
+      localStorage.setItem("csv", JSON.stringify({
+        raw_transactions: jsonResponse.transactions
+      }));
 
       // Navigate to loading page for enrichment
       navigate("/loading");
@@ -241,34 +252,7 @@ export default function PreparePage() {
                 Export your bank transactions as a CSV file and upload it here
               </CardDescription>
             </CardHeader>
-            <div className="m-6">
-              <label
-                className="block text-sm font-medium text-blue-600 hover:cursor-pointer"
-                htmlFor="bank"
-              >
-                Select Your Bank (Optional)
-                <br />
-                <p className="text-sm text-muted-foreground mb-2">
-                  This helps the system get you more accurate results
-                </p>
-              </label>
-
-              <Select
-                onValueChange={(value) => setSelectedBank(value as BankName)}
-                value={selectedBank ?? undefined}
-              >
-                <SelectTrigger id="bank" className="w-full">
-                  <SelectValue placeholder="Select your bank" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.keys(BANK_CONNECTIONS).map((bank) => (
-                    <SelectItem key={bank} value={bank}>
-                      {bank}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+           
 
             <div
               className={cn(

@@ -17,7 +17,9 @@ const handler = async (c: Context<HonoType, '/akahu/transactions'>) => {
 
 	const decompressed = lzString.decompressFromEncodedURIComponent(compressedTransactions);
 
-	const all_transactions = JSON.parse(decompressed);
+	const data = JSON.parse(decompressed);
+	const all_transactions = data.raw_transactions;
+	console.log('Transactions to enrich:', all_transactions);
 	let currentStep = 0;
 
 	return streamSSE(c, async (stream) => {
@@ -97,7 +99,13 @@ const handler = async (c: Context<HonoType, '/akahu/transactions'>) => {
 		}
 
 		let dataPack = JSON.stringify({
-			raw_transactions: enriched,
+			raw_transactions: enriched.map((tx) => ({
+				...tx,
+				connection: {
+					id: tx._connection,
+					name: tx._connection.includes('cjgaawozb') ? 'ANZ' : 'ASB',
+				},
+			})),
 			date: new Date().toISOString(),
 		});
 
