@@ -472,25 +472,13 @@ export default function FinalResultsPage() {
               </div>
             </div>
           </div>
+        
+          <div className="flex gap-4 max-md:flex-col">
           <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-gray-100 to-gray-200 text-gray-800 flex flex-col items-center justify-center">
             <p className="text-lg text-gray-700 mb-2">You made</p>
             <p className="text-5xl font-bold mb-2">{transactionCount}</p>
             <p className="text-lg text-gray-700">transactions</p>
           </div>
-          <div className="flex gap-4 max-md:flex-col">
-            <div className="flex-1  rounded-xl border p-8 bg-gradient-to-b from-orange-100 to-orange-200 text-gray-800 flex flex-col items-center justify-center">
-              <p className="text-lg text-orange-700 mb-2 text-center">
-                You spend on average about
-              </p>
-              <p className="text-5xl font-bold mb-2">
-                $
-                {averageTransaction.toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
-              </p>
-              <p className="text-lg text-orange-700">per transaction</p>
-            </div>
             <div className="flex-1  rounded-xl border  p-8 bg-gradient-to-b from-lime-200 to-lime-100 text-white flex flex-col items-center justify-center">
               <p className="text-lg text-lime-700 mb-2">
                 You spent the most on
@@ -608,6 +596,22 @@ export default function FinalResultsPage() {
             </div>
           </div>
           <div className="grid grid-cols-3 max-md:flex max-md:flex-col gap-4">
+          <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-violet-100 to-violet-200 text-gray-800 flex flex-col items-center justify-center">
+              <p className="text-lg text-violet-700 mb-2">You spent</p>
+              <p className="text-5xl font-bold mb-2">
+                $
+                {rawTransactions
+                  ?.filter((t) => t.category?.name === "Bars, pubs, nightclubs")
+                  .reduce((sum, t) => sum + Math.abs(t.amount), 0)
+                  .toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+              </p>
+              <p className="text-lg text-violet-700">
+                on Bars &amp; Nightclubs
+              </p>
+            </div>
             <div className="col-span-2 rounded-xl flex flex-col p-8 bg-violet-50 text-gray-800 border max-md:order-3 max-md:p-4">
               <h3 className="text-2xl font-bold text-violet-700 mb-6 max-md:mb-2">
                 Bars &amp; Nightclubs
@@ -674,22 +678,7 @@ export default function FinalResultsPage() {
                   ))}
               </div>
             </div>
-            <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-violet-100 to-violet-200 text-gray-800 flex flex-col items-center justify-center">
-              <p className="text-lg text-violet-700 mb-2">You spent</p>
-              <p className="text-5xl font-bold mb-2">
-                $
-                {rawTransactions
-                  ?.filter((t) => t.category?.name === "Bars, pubs, nightclubs")
-                  .reduce((sum, t) => sum + Math.abs(t.amount), 0)
-                  .toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
-              </p>
-              <p className="text-lg text-violet-700">
-                on Bars &amp; Nightclubs
-              </p>
-            </div>
+            
           </div>
           <div className="grid grid-cols-3 max-md:flex max-md:flex-col gap-4">
             <div className="col-span-2 rounded-xl flex flex-col p-8 bg-fuchsia-50 text-gray-800 border max-md:p-4 max-md:order-2">
@@ -778,6 +767,23 @@ export default function FinalResultsPage() {
             </div>
           </div>
           <div className="grid grid-cols-3 max-md:flex max-md:flex-col gap-4">
+          <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-emerald-100 to-emerald-200 text-gray-800 flex flex-col items-center justify-center">
+              <p className="text-lg text-emerald-700 mb-2">You spent</p>
+              <p className="text-5xl font-bold mb-2">
+                $
+                {rawTransactions
+                  ?.filter(
+                    (t) =>
+                      t.category?.group?.personal_finance?.name === "Education"
+                  )
+                  .reduce((sum, t) => sum + Math.abs(t.amount), 0)
+                  .toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+              </p>
+              <p className="text-lg text-emerald-700">on Education</p>
+            </div>
             <div className="col-span-2 rounded-xl flex flex-col p-8 bg-emerald-50 text-gray-800 border max-md:p-4 max-md:order-2">
               <h3 className="text-2xl font-bold text-emerald-700 mb-6 max-md:mb-2">
                 Education
@@ -845,23 +851,7 @@ export default function FinalResultsPage() {
                   ))}
               </div>
             </div>
-            <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-emerald-100 to-emerald-200 text-gray-800 flex flex-col items-center justify-center">
-              <p className="text-lg text-emerald-700 mb-2">You spent</p>
-              <p className="text-5xl font-bold mb-2">
-                $
-                {rawTransactions
-                  ?.filter(
-                    (t) =>
-                      t.category?.group?.personal_finance?.name === "Education"
-                  )
-                  .reduce((sum, t) => sum + Math.abs(t.amount), 0)
-                  .toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
-              </p>
-              <p className="text-lg text-emerald-700">on Education</p>
-            </div>
+       
           </div>
           <div className="grid grid-cols-3 max-md:flex max-md:flex-col gap-4">
             <div className="col-span-2 rounded-xl flex flex-col p-8 bg-violet-50 text-gray-800 border max-md:order-3 max-md:p-4">
@@ -1037,6 +1027,25 @@ export default function FinalResultsPage() {
             </div>
           </div>
           <div className="grid grid-cols-3   max-md:flex max-md:flex-col gap-4">
+          <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-lime-100 to-lime-200 text-gray-800 flex flex-col items-center justify-center">
+              <p className="text-lg text-lime-700 mb-2">You spent</p>
+              <p className="text-5xl font-bold mb-2">
+                $
+                {rawTransactions
+                  ?.filter(
+                    (t) =>
+                      t.category?.group?.personal_finance?.name === "Household"
+                  )
+                  .reduce((sum, t) => sum + Math.abs(t.amount), 0)
+                  .toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+              </p>
+              <p className="text-lg text-lime-700">
+                on household goods and services
+              </p>
+            </div>
             <div className="col-span-2 rounded-xl flex flex-col p-8 bg-lime-50 text-gray-800 border max-md:order-2  max-md:p-4">
               <h3 className="text-2xl font-bold text-lime-700 mb-6 max-md:mb-2">
                 Household
@@ -1104,25 +1113,7 @@ export default function FinalResultsPage() {
                   ))}
               </div>
             </div>
-            <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-lime-100 to-lime-200 text-gray-800 flex flex-col items-center justify-center">
-              <p className="text-lg text-lime-700 mb-2">You spent</p>
-              <p className="text-5xl font-bold mb-2">
-                $
-                {rawTransactions
-                  ?.filter(
-                    (t) =>
-                      t.category?.group?.personal_finance?.name === "Household"
-                  )
-                  .reduce((sum, t) => sum + Math.abs(t.amount), 0)
-                  .toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
-              </p>
-              <p className="text-lg text-lime-700">
-                on household goods and services
-              </p>
-            </div>
+            
           </div>
           <div className="grid grid-cols-3   max-md:flex max-md:flex-col gap-4">
             <div className="col-span-2 rounded-xl flex flex-col p-8 bg-amber-50 text-gray-800 border max-md:order-2">
