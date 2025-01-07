@@ -88,14 +88,14 @@ export function Welcome() {
   return (
     <>
       <Helmet>
-        <title>Welcome to Money Wrapped - Your Financial Year in Review</title>
+        <title>Money Wrapped - Your Financial Year in Review</title>
         <meta
           name="description"
           content="Get started with Money Wrapped and discover insights about your spending habits and financial patterns with our personalized year-end financial review."
         />
         <meta
           property="og:title"
-          content="Welcome to Money Wrapped - Your Financial Year in Review"
+          content="Money Wrapped - Your Financial Year in Review"
         />
         <meta
           property="og:description"
@@ -106,7 +106,7 @@ export function Welcome() {
         <meta name="twitter:card" content="summary_large_image" />
         <meta
           name="twitter:title"
-          content="Welcome to Money Wrapped - Your Financial Year in Review"
+          content="Money Wrapped - Your Financial Year in Review"
         />
         <meta
           name="twitter:description"
@@ -117,14 +117,15 @@ export function Welcome() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           {/* Hero Section */}
           <section className="text-start mb-16">
-            <div className="inline-block mb-6">
+            <div className="flex items-center gap-4 mb-6">
               <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl w-20 h-20 shadow-lg flex items-center justify-center">
                 <Wallet className="w-10 h-10 text-white" />
               </div>
-            </div>
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-400 bg-clip-text text-transparent mb-6">
+              <h1 className="text-5xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-400 bg-clip-text text-transparent ">
               Money Wrapped 2024
             </h1>
+            </div>
+          
             <p className="text-2xl text-gray-600 max-w-4xl tracking-tight leading-relaxed">
               Discover your 2024 financial story. Learn about your spending
               habits in minutes.
@@ -181,7 +182,7 @@ export function Welcome() {
 
           {/* Demo Section */}
           <section>
-            <div className="text-center mb-12">
+            <div className="text-center mb-6 border border-gray-200 p-12 rounded-2xl flex items-center justify-center flex-col bg-gradient-to-br from-slate-100 to-slate-200">
               <h2 className="text-3xl font-bold text-gray-900">
                 Preview Your 2024 Story
               </h2>
