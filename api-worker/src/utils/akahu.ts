@@ -6,6 +6,20 @@ type ArrayExtract<T> = T extends (infer U)[] ? U : T;
 
 export const year = '2024';
 
+export enum BANK_CONNECTIONS {
+	ANZ = "conn_cjgaawozb000001nyd111xixr",
+	ASB = "conn_cjgaaqcna000001ldwof8tvj0",
+	BNZ = "conn_cjgaatd57000001pe1t1z0iy9",
+	Heartland = "conn_ck5rhsdbv0000ftx1bmdu9zas",
+	Kiwibank = "conn_cjgaac5at000001qi2yw8ftil",
+	Rabobank = "conn_ckydkmy3r000009mde2sx2i4d",
+	"The Cooperative Bank" = "conn_cjgab1c8e000001pmyxrkhova",
+	TSB = "conn_cjgab6fis000001qsytf1semy",
+	Westpac = "conn_cjgaaozdo000001mrnqmkl1m0",
+	UNKNOWN = "",
+};
+
+
 type AkahuEnrichedTransaction = {
 	type: string;
 	merchant?: {
