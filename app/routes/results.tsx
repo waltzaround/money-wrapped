@@ -241,21 +241,28 @@ export default function ResultsPage() {
             date <= new Date("2024-12-31T23:59:59.999Z")
           );
         })
-        .filter((t) => t.direction !== "CREDIT")
+        // Keep only debit transactions (negative amounts)
+        .filter((t) => t.amount < 0)
     : null;
 
   const analytics = useMemo(() => {
     if (!rawTransactions) return null;
 
     // Process transactions
-    const totalSpent = rawTransactions
-      .filter((t) => t.direction === "DEBIT")
-      .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+    const totalSpent = rawTransactions.reduce((sum, t) => sum + Math.abs(t.amount), 0);
 
     const uniqueMerchants = new Set(
       rawTransactions
-        .filter((t) => t.merchant?.name)
-        .map((t) => t.merchant.name)
+        .map((t) => {
+          // For ANZ transactions without merchant data, use the description
+          if (!t.merchant?.name) {
+            // Clean up the description (remove location details after the first space)
+            const cleanDesc = t.description.split(/\s{2,}/)[0].trim();
+            return cleanDesc;
+          }
+          return t.merchant.name;
+        })
+        .filter(Boolean)
     ).size;
 
     const merchantLogos = Array.from(

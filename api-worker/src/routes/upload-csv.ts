@@ -113,6 +113,11 @@ const handle = async (
 					console.log('Found amount column:', amountColumn);
 				}
 
+				if (detailsColumn === undefined) {
+					detailsColumn = isANZ ? 'Details' : 'Process Date';
+					console.log('Found details column:', detailsColumn);
+				}
+
 				let amount = Number(item[amountColumn]);
 				let date = item[dateColumn];
 				
@@ -163,7 +168,8 @@ const handle = async (
 						return undefined;
 					}
 				} else {
-					description = item[detailsColumn]?.toString().trim() || '';
+					// For ANZ, use the Details column
+					description = item['Details']?.toString().trim() || '';
 				}
 
 				console.log('Description:', description);
