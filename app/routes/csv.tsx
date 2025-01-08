@@ -55,11 +55,16 @@ export default function PreparePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const readyToAnalyze = useMemo(() => {
-    console.log('Upload Status:', {
-      hasFiles: currentFiles.length > 0 ? '✅ Files selected' : '❌ No files selected',
-      uploadStatus: !isUploading ? '✅ Not uploading' : '⏳ Currently uploading',
-      processingStatus: !isProcessing ? '✅ Not processing' : '⏳ Currently processing',
-      errorStatus: !uploadError ? '✅ No errors' : `❌ Error: ${uploadError}`
+    console.log("Upload Status:", {
+      hasFiles:
+        currentFiles.length > 0 ? "✅ Files selected" : "❌ No files selected",
+      uploadStatus: !isUploading
+        ? "✅ Not uploading"
+        : "⏳ Currently uploading",
+      processingStatus: !isProcessing
+        ? "✅ Not processing"
+        : "⏳ Currently processing",
+      errorStatus: !uploadError ? "✅ No errors" : `❌ Error: ${uploadError}`,
     });
     return (
       currentFiles.length > 0 && !isUploading && !isProcessing && !uploadError
@@ -86,9 +91,9 @@ export default function PreparePage() {
       // Get unique transactions (removing duplicates)
       const uniqueTransactions = new Set(transactions);
 
-      if (uniqueTransactions.size < 20) {
+      if (uniqueTransactions.size < 10) {
         throw new Error(
-          `Not enough transactions in ${file.name}. Found ${uniqueTransactions.size}, need at least 200 transactions from 2024.`
+          `Not enough transactions in ${file.name}. Found ${uniqueTransactions.size}, need at least 10 transactions from 2024.`
         );
       }
 
