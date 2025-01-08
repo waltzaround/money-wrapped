@@ -5,7 +5,11 @@ const bankFilters = {
 	[BANK_CONNECTIONS.Kiwibank]: (transaction: RawTransaction) => {
 		// Internal transfers
 		return !transaction.description.startsWith('TRANSFER TO') && !transaction.description.startsWith('TRANSFER FROM');
-	}
+	},
+	[BANK_CONNECTIONS.ASB]: (transaction: RawTransaction) => {
+		// Internal transfers
+		return !transaction.description.startsWith('TRANSFER TO') && !transaction.description.startsWith('TRANSFER FROM');
+	},
 }
 
 export function bankFilter(transaction: RawTransaction): boolean {
