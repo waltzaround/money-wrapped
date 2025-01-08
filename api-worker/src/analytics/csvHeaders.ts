@@ -77,24 +77,11 @@ function checkForAccountNumber(value: string): boolean {
 	return re.test(value);
 }
 
-export function intuteHeaders(data: any[][]): ParsingMeta | null {
-	// Use row data to determine headers
-
-	return null
-}
-
-export function loadHeaders(rawHeaders: string[], data: any[][], depth: number): ParsingMeta{
-	if (depth >= 10) {
-		console.log('Could not find headers after 3 attempts, giving up');
-		throw new Error('Could not find headers');
-	}
-
-	console.log(`[DEPTH: ${depth}] Attempting to load headers: ${rawHeaders}`);
-
+function oneHeaderScan(rawHeaders: string[], data: any[][]): ParsingMeta{
 	let result: ParsingMeta = {
 		headers: [],
 		account_id: null,
-		row_number_used: depth
+		row_number_used: 0
 	}
 
 	for (let headerValue of rawHeaders) {
@@ -136,6 +123,36 @@ export function loadHeaders(rawHeaders: string[], data: any[][], depth: number):
 		result.headers.push(header);
 	}
 
+	return result;
+}
+
+export function intuteHeaders(data: any[][]): ParsingMeta | null {
+	// Use row data to determine headers
+	const firstRowSignature = oneHeaderScan(data[0], data.slice(1));
+	const possibleMatch = bankSignatureMatch("", firstRowSignature);
+
+	if (possibleMatch.dataColumns) {
+		return {
+			headers: possibleMatch.dataColumns.map((type) => ({type, name: "", confidence: 0.5})),
+			account_id: null,
+			row_number_used: 0
+		}
+	}
+
+	return null
+}
+
+export function loadHeaders(rawHeaders: string[], data: any[][], depth: number): ParsingMeta{
+	if (depth >= 10) {
+		console.log('Could not find headers after 10 row scans attempts, moving to data match');
+		throw new Error('Could not find headers');
+	}
+
+	console.log(`[DEPTH: ${depth}] Attempting to load headers: ${rawHeaders}`);
+
+	const result = oneHeaderScan(rawHeaders, data);
+	result.row_number_used = depth;
+
 	const valid = validHeaders(result.headers);
 	if (!valid) {
 		return loadHeaders(data[0], data.slice(1), depth + 1);
@@ -151,21 +168,27 @@ const rawHeaderBankMap = {
 const parsedHeaderBankMap = [
 	{
 		bank: BANK_CONNECTIONS.Kiwibank,
-		columns: [ColumnType.AccountNumberData, ColumnType.Empty, ColumnType.Empty, ColumnType.Empty, ColumnType.Empty]
+		columns: [ColumnType.AccountNumberData, ColumnType.Empty, ColumnType.Empty, ColumnType.Empty, ColumnType.Empty],
+		dataColumns: [ColumnType.Date, ColumnType.Details, ColumnType.Empty, ColumnType.Amount, ColumnType.Balance]
 	}
 ]
 
-export function bankSignatureMatch(csv: string, meta: ParsingMeta): BANK_CONNECTIONS {
+interface SignatureMatch {
+	bank: BANK_CONNECTIONS;
+	dataColumns?: ColumnType[];
+}
+
+export function bankSignatureMatch(csv: string, meta: ParsingMeta): SignatureMatch {
 	let raw_line = csv.split('\n')[meta.row_number_used].trim();
 
 	for (let [signature, bank] of Object.entries(rawHeaderBankMap)) {
 		if (raw_line === signature) {
-			return bank;
+			return {bank};
 		}
 	}
 
 	// Check fuzzier parsed headers
-	for (let {bank, columns} of parsedHeaderBankMap) {
+	for (let {bank, columns, dataColumns} of parsedHeaderBankMap) {
 		if (columns.length !== meta.headers.length) {
 			continue;
 		}
@@ -179,9 +202,9 @@ export function bankSignatureMatch(csv: string, meta: ParsingMeta): BANK_CONNECT
 		}
 
 		if (match) {
-			return bank;
+			return {bank, dataColumns};
 		}
 	}
 
-	return BANK_CONNECTIONS.UNKNOWN;
+	return {bank: BANK_CONNECTIONS.UNKNOWN};
 }

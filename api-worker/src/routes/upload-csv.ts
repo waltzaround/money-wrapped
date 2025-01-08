@@ -25,7 +25,6 @@ const handle = async (
 	>,
 ) => {
 	const data = c.req.valid('form');
-	console.log('Form data:', data);
 
 	const csvs = await Promise.all(data.files.map((x) => x.text()));
 	const transactions: RawTransaction[] = [];

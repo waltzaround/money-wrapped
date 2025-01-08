@@ -57,22 +57,6 @@ interface TransactionAnalytics {
   };
 }
 
-const bankFilters = {
-	[BANK_CONNECTIONS.Kiwibank]: (transaction: Transaction) => {
-		// Internal transfers
-		return !transaction.description.startsWith('TRANSACTIONS');
-	}
-}
-
-export function bankFilter(transaction: Transaction ,): boolean {
-	const connectionID = transaction._connection ?? "";
-	if (connectionID in bankFilters) {
-		const filter = bankFilters[connectionID as keyof typeof bankFilters];
-		return filter(transaction);
-	}
-
-	return true;
-}
 
 
 export function analyzeTransactions(transactions: Transaction[]): TransactionAnalytics {
@@ -100,8 +84,6 @@ export function analyzeTransactions(transactions: Transaction[]): TransactionAna
       biggestSpendingDay: { date: '', total: 0 }
     };
   }
-	// Bank specific filters
-	const bankFiltered = transactions.filter(bankFilter);
 
   // Parse and sort transactions by date
   const sortedByDate = [...transactions].filter(t => t && t.date).sort((a, b) => {

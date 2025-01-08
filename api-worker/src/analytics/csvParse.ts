@@ -3,6 +3,7 @@ import { parse } from "csv-parse";
 import Sugar from "sugar";
 import Fuse from 'fuse.js'
 import { bankSignatureMatch, ColumnType, intuteHeaders, loadHeaders, ParsingMeta } from "./csvHeaders";
+import { bankFilter } from "./bankFilter";
 
 export interface RawTransaction {
 	id: string;
@@ -133,12 +134,11 @@ export async function parseCSV(csv: string, id: number): Promise<RawTransaction[
 				direction: amount < 0 ? 'debit' : 'credit',
 				date: parsedDate.toISOString(),
 				amount: amount,
-				_connection: connectionId as RawTransaction['_connection'],
+				_connection: connectionId.bank as RawTransaction['_connection'],
 			};
-			console.log('Created transaction:', transaction);
 			return transaction;
 		})
-		.filter((x) => x !== undefined);
+		.filter((x) => x !== undefined).filter(bankFilter);
 
 	return parsedTransactions;
 }
