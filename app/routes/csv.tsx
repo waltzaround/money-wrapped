@@ -55,8 +55,15 @@ export default function PreparePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const readyToAnalyze = useMemo(() => {
-    console.log(currentFiles.length > 0, !isUploading, !isProcessing, !uploadError)
-    return currentFiles.length > 0 && !isUploading && !isProcessing && !uploadError;
+    console.log('Upload Status:', {
+      hasFiles: currentFiles.length > 0 ? '✅ Files selected' : '❌ No files selected',
+      uploadStatus: !isUploading ? '✅ Not uploading' : '⏳ Currently uploading',
+      processingStatus: !isProcessing ? '✅ Not processing' : '⏳ Currently processing',
+      errorStatus: !uploadError ? '✅ No errors' : `❌ Error: ${uploadError}`
+    });
+    return (
+      currentFiles.length > 0 && !isUploading && !isProcessing && !uploadError
+    );
   }, [currentFiles, isUploading, isProcessing]);
 
   const handleFile = async (file: File) => {
@@ -138,8 +145,6 @@ export default function PreparePage() {
       return;
     }
 
-  
-
     setIsSubmitting(true);
     setUploadError(null);
 
@@ -151,8 +156,6 @@ export default function PreparePage() {
         console.log(`Adding file: ${file.name}, size: ${file.size} bytes`);
         formData.append("files", file);
       });
-
-   
 
       const response = await fetch(`${API_URL}/upload-csv`, {
         method: "POST",
@@ -181,9 +184,12 @@ export default function PreparePage() {
       }
 
       // Store the raw transactions in localStorage
-      localStorage.setItem("csv", JSON.stringify({
-        raw_transactions: jsonResponse.transactions
-      }));
+      localStorage.setItem(
+        "csv",
+        JSON.stringify({
+          raw_transactions: jsonResponse.transactions,
+        })
+      );
 
       // Navigate to loading page for enrichment
       navigate("/loading");
@@ -241,6 +247,7 @@ export default function PreparePage() {
             <h1 className="text-4xl font-bold mb-2">
               Upload Your Bank Statement
             </h1>
+            &copy;{" "}
             <p className="text-muted-foreground text-lg">
               We'll analyze your transactions to create your personalized Money
               Wrapped
@@ -257,7 +264,6 @@ export default function PreparePage() {
                 Export your bank transactions as a CSV file and upload it here
               </CardDescription>
             </CardHeader>
-           
 
             <div
               className={cn(

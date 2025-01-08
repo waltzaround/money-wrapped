@@ -7,13 +7,37 @@ const bankFilters = {
 		return !transaction.description.startsWith('TRANSFER TO') && !transaction.description.startsWith('TRANSFER FROM');
 	},
 	[BANK_CONNECTIONS.ASB]: (transaction: RawTransaction) => {
-		// Internal transfers
-		return !transaction.description.startsWith('TRANSFER TO') && !transaction.description.startsWith('TRANSFER FROM');
+		// Debug logging
+		console.log('ASB Transaction:', {
+			description: transaction.description,
+			shouldFilter: transaction.description.includes('MB TRANSFER') || 
+				transaction.description.includes('TFR OUT') ||
+				transaction.description.startsWith('TRANSFER TO') || 
+				transaction.description.startsWith('TRANSFER FROM')
+		});
+
+		// Internal transfers - return false to filter OUT the transaction
+		return !(
+			transaction.description.includes('MB TRANSFER') || 
+			transaction.description.includes('TFR OUT') ||
+			transaction.description.startsWith('TRANSFER TO') || 
+			transaction.description.startsWith('TRANSFER FROM')
+		);
+	},
+	[BANK_CONNECTIONS.BNZ]: (transaction: RawTransaction) => {
+		// Filter out internal transfers (INTERNET XFR) and bill payments (BP)
+		return !transaction.description.includes('INTERNET XFR') && !transaction.description.includes('BP');
 	},
 }
 
 export function bankFilter(transaction: RawTransaction): boolean {
 	const connectionID = transaction._connection ?? "";
+	console.log('Bank Detection:', {
+		connectionID,
+		isASB: connectionID === BANK_CONNECTIONS.ASB,
+		availableBanks: BANK_CONNECTIONS
+	});
+	
 	if (connectionID in bankFilters) {
 		const filter = bankFilters[connectionID as keyof typeof bankFilters];
 		return filter(transaction);

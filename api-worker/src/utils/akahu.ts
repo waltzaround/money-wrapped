@@ -78,7 +78,7 @@ export async function enrichTransactions(
 		return transactions.map((transaction) => {
 			const result = enrichments.get(transaction.id!);
 
-			console.log(result?.results);
+			// console.log(result?.results);
 
 			if (result === undefined || result.results.length == 0) {
 				return {

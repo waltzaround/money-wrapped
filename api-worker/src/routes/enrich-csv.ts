@@ -20,7 +20,7 @@ const handler = async (c: Context<HonoType, '/akahu/transactions'>) => {
 
 	const data = JSON.parse(decompressed);
 	const all_transactions: RawTransaction[] = data.raw_transactions;
-	console.log('Transactions to enrich:', all_transactions);
+	// console.log('Transactions to enrich:', all_transactions);
 	let currentStep = 0;
 
 	return streamSSE(c, async (stream) => {

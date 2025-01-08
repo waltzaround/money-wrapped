@@ -163,7 +163,10 @@ export function loadHeaders(rawHeaders: string[], data: any[][], depth: number):
 
 const rawHeaderBankMap = {
 	"Account number,Date,Memo/Description,Source Code (payment type),TP ref,TP part,TP code,OP ref,OP part,OP code,OP name,OP Bank Account Number,Amount (credit),Amount (debit),Amount,Balance": BANK_CONNECTIONS.Kiwibank,
-	"Date,Unique Id,Tran Type,Cheque Number,Payee,Memo,Amount": BANK_CONNECTIONS.ANZ
+	"Date,Unique Id,Tran Type,Cheque Number,Payee,Memo,Amount": BANK_CONNECTIONS.ASB,
+	"Transaction Date,Unique Id,Transaction Type,Cheque Number,Payee,Particulars,Code,Reference,Amount,Date Processed,Foreign Currency Amount,Conversion Charge": BANK_CONNECTIONS.ANZ,
+	"Date,Amount,Other Party,Description,Reference,Particulars,Analysis Code": BANK_CONNECTIONS.Westpac,
+	"Date,Amount,Payee,Particulars,Code,Reference,Tran Type,This Party Account,Other Party Account,Serial,Transaction Code,Batch Number,Originating Bank/Branch,Processed Date": BANK_CONNECTIONS.BNZ
 }
 const parsedHeaderBankMap = [
 	{

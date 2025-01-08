@@ -31,7 +31,7 @@ export async function parseCSV(csv: string, id: number): Promise<RawTransaction[
 	for await (const record of parseResult) {
 		records.push(record);
 	}
-	console.log('Parsed record:', records);
+	// console.log('Parsed record:', records);
 
 	let parsingMeta: ParsingMeta | null = null;
 
@@ -55,7 +55,7 @@ export async function parseCSV(csv: string, id: number): Promise<RawTransaction[
 
 	const parsedTransactions: RawTransaction[] = records.slice(parsingMeta.row_number_used + 1)
 		.map((item, count) => {
-			console.log('Processing transaction:', item);
+			// console.log('Processing transaction:', item);
 
 			let headers = Array.from(parsingMeta.headers.entries());
 
