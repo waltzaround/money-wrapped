@@ -2,7 +2,7 @@ import type { GenieSearchBodyParam } from "@api/akahu";
 import { parse } from "csv-parse";
 import Sugar from "sugar";
 import Fuse from 'fuse.js'
-import { bankSignatureMatch, ColumnType, intuteHeaders, loadHeaders, ParsingMeta } from "./csvHeaders";
+import { bankSignatureMatch, ColumnType, intuteHeaders, loadHeaders, ParsingMeta, BANK_CONNECTIONS } from "./csvHeaders";
 import { bankFilter } from "./bankFilter";
 
 export interface RawTransaction {
@@ -12,6 +12,7 @@ export interface RawTransaction {
 	date: string;
 	amount: number;
 	_connection: GenieSearchBodyParam[number]['_connection'];
+	type?: string;
 }
 
 
@@ -23,7 +24,6 @@ export async function parseCSV(csv: string, id: number): Promise<RawTransaction[
 		trim: true,
 		relax_quotes: true,
 		relax_column_count: true,
-
 	});
 
 
@@ -77,16 +77,27 @@ export async function parseCSV(csv: string, id: number): Promise<RawTransaction[
 			}
 
 			let description = [];
-			for (let [i, detailsHeaders] of headers.filter(([,x]) => x.type === ColumnType.Details)) {
-				if (typeof item[i] === 'string') {
-					description.push(item[i]);
+			// Special handling for Kiwibank
+			if (connectionId.bank === BANK_CONNECTIONS.Kiwibank) {
+				description = headers.map((h, i) => h.type === ColumnType.Details ? item[i] : null)
+					.filter(x => x !== null && typeof x === 'string');
+			} else if (connectionId.bank === BANK_CONNECTIONS.Westpac && typeof item[2] === 'string') {
+				description = [item[2]];  // Other Party
+				if (!item[2].trim() && typeof item[3] === 'string') {
+					description = [item[3]];
+				}
+			} else {
+				for (let [i, detailsHeaders] of headers.filter(([,x]) => x.type === ColumnType.Details)) {
+					if (typeof item[i] === 'string') {
+						description.push(item[i]);
+					}
 				}
 			}
 			if (description.length === 0) {
 				return undefined;
 			}
 
-			// Find the longest description
+			// Find the longest description (only used for non-Westpac banks now)
 			let parsedDescription = description.reduce(
 				function (a, b) {
 					return a.length > b.length ? a : b;
@@ -95,19 +106,30 @@ export async function parseCSV(csv: string, id: number): Promise<RawTransaction[
 
 			// Negative = Spend (Debit), Positive = Income (Credit)
 			let amount: number = 0;
-			// Merge together sources, prefering credit & debit
-			for (let [i, amountHeaders] of headers.filter(([,x]) => [ColumnType.Debit, ColumnType.Credit].includes(x.type))) {
-				let value = parseFloat(item[i]);
-				if (isNaN(value)) {
-					continue;
+			// Special handling for Kiwibank amounts
+			if (connectionId.bank === BANK_CONNECTIONS.Kiwibank) {
+				for (let [i, amountHeaders] of headers.filter(([,x]) => x.type === ColumnType.Amount)) {
+					let value = parseFloat(item[i]);
+					if (!isNaN(value)) {
+						amount = value;
+						break;
+					}
 				}
-				if (amountHeaders.type === ColumnType.Debit) {
-					value = -Math.abs(value);
-				} else if (amountHeaders.type === ColumnType.Credit) {
-					value = Math.abs(value);
-				}
+			} else {
+				// Existing amount parsing logic for other banks
+				for (let [i, amountHeaders] of headers.filter(([,x]) => [ColumnType.Debit, ColumnType.Credit].includes(x.type))) {
+					let value = parseFloat(item[i]);
+					if (isNaN(value)) {
+						continue;
+					}
+					if (amountHeaders.type === ColumnType.Debit) {
+						value = -Math.abs(value);
+					} else if (amountHeaders.type === ColumnType.Credit) {
+						value = Math.abs(value);
+					}
 
-				amount += value;
+					amount += value;
+				}
 			}
 
 			// If we couldn't find an amount, try the amount column
@@ -135,6 +157,7 @@ export async function parseCSV(csv: string, id: number): Promise<RawTransaction[
 				date: parsedDate.toISOString(),
 				amount: amount,
 				_connection: connectionId.bank as RawTransaction['_connection'],
+				type: item[6],  
 			};
 			return transaction;
 		})

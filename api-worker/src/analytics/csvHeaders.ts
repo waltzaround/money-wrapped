@@ -1,6 +1,7 @@
 import Fuse from "fuse.js";
 import fuzzysort from "fuzzysort";
 import { BANK_CONNECTIONS } from "../utils/akahu";
+export { BANK_CONNECTIONS };
 
 export enum ColumnType {
 	Date,
@@ -143,26 +144,25 @@ export function intuteHeaders(data: any[][]): ParsingMeta | null {
 }
 
 export function loadHeaders(rawHeaders: string[], data: any[][], depth: number): ParsingMeta{
-	if (depth >= 10) {
-		console.log('Could not find headers after 10 row scans attempts, moving to data match');
-		throw new Error('Could not find headers');
-	}
-
-	console.log(`[DEPTH: ${depth}] Attempting to load headers: ${rawHeaders}`);
-
-	const result = oneHeaderScan(rawHeaders, data);
-	result.row_number_used = depth;
-
-	const valid = validHeaders(result.headers);
-	if (!valid) {
-		return loadHeaders(data[0], data.slice(1), depth + 1);
-	}
-
-	return result;
+    // Skip account number line for Kiwibank
+    if (rawHeaders.length === 1 && rawHeaders[0].match(/\d{2}-\d{4}-\d{7}-\d{2}/)) {
+        return loadHeaders(data[0], data.slice(1), depth + 1);
+    }
+    
+    let meta = oneHeaderScan(rawHeaders, data);
+    if (!validHeaders(meta.headers)) {
+        if (depth < 5 && data.length > 0) {
+            return loadHeaders(data[0], data.slice(1), depth + 1);
+        }
+        throw new Error('Could not find valid headers');
+    }
+    meta.row_number_used = depth;
+    return meta;
 }
 
 const rawHeaderBankMap = {
 	"Account number,Date,Memo/Description,Source Code (payment type),TP ref,TP part,TP code,OP ref,OP part,OP code,OP name,OP Bank Account Number,Amount (credit),Amount (debit),Amount,Balance": BANK_CONNECTIONS.Kiwibank,
+	"Date,Description,,Amount,Balance": BANK_CONNECTIONS.Kiwibank,
 	"Date,Unique Id,Tran Type,Cheque Number,Payee,Memo,Amount": BANK_CONNECTIONS.ASB,
 	"Transaction Date,Unique Id,Transaction Type,Cheque Number,Payee,Particulars,Code,Reference,Amount,Date Processed,Foreign Currency Amount,Conversion Charge": BANK_CONNECTIONS.ANZ,
 	"Date,Amount,Other Party,Description,Reference,Particulars,Analysis Code": BANK_CONNECTIONS.Westpac,
@@ -173,6 +173,24 @@ const parsedHeaderBankMap = [
 		bank: BANK_CONNECTIONS.Kiwibank,
 		columns: [ColumnType.AccountNumberData, ColumnType.Empty, ColumnType.Empty, ColumnType.Empty, ColumnType.Empty],
 		dataColumns: [ColumnType.Date, ColumnType.Details, ColumnType.Empty, ColumnType.Amount, ColumnType.Balance]
+	},
+	{
+		bank: BANK_CONNECTIONS.Westpac,
+		columns: [
+			ColumnType.Date,          // Date
+			ColumnType.Amount,        // Amount
+			ColumnType.Details,       // Other Party
+			ColumnType.Details,       // Description
+			ColumnType.Details,       // Reference
+			ColumnType.Details,       // Particulars
+			ColumnType.Empty         // Analysis Code
+		],
+		dataColumns: [
+			ColumnType.Date,          // Use Date
+			ColumnType.Amount,        // Use Amount
+			ColumnType.Details,       // Use Other Party as primary description
+			ColumnType.Details        // Use Description as backup
+		]
 	}
 ]
 

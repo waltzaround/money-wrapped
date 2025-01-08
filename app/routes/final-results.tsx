@@ -511,6 +511,7 @@ export default function FinalResultsPage() {
               <p className="text-lg text-rose-700">different businesses</p>
             </div>
           </div>
+          {rawTransactions?.some(t => t.category?.name === "Cafes and restaurants") && (
           <div className="grid grid-cols-3 max-md:flex max-md:flex-col gap-4">
             <div className="col-span-2 rounded-xl  flex flex-col p-8 bg-violet-50 text-gray-800 border max-md:order-2 max-md:p-4">
               <h3 className="text-2xl font-bold text-violet-700 mb-6 max-md:mb-2">
@@ -578,6 +579,7 @@ export default function FinalResultsPage() {
                   ))}
               </div>
             </div>
+      
             <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-violet-100 to-violet-200 text-gray-800 flex flex-col items-center justify-center">
               <p className="text-lg text-violet-700 mb-2">You spent</p>
               <p className="text-5xl font-bold mb-2">
@@ -594,7 +596,8 @@ export default function FinalResultsPage() {
                 on Restaurants &amp; Cafes
               </p>
             </div>
-          </div>
+          </div>      
+        )}
           <div className="grid grid-cols-3 max-md:flex max-md:flex-col gap-4">
           <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-violet-100 to-violet-200 text-gray-800 flex flex-col items-center justify-center">
               <p className="text-lg text-violet-700 mb-2">You spent</p>
@@ -766,6 +769,7 @@ export default function FinalResultsPage() {
               <p className="text-lg text-purple-700">on fashion</p>
             </div>
           </div>
+          {rawTransactions?.some(t => t.category?.name === "Education") && (
           <div className="grid grid-cols-3 max-md:flex max-md:flex-col gap-4">
           <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-emerald-100 to-emerald-200 text-gray-800 flex flex-col items-center justify-center">
               <p className="text-lg text-emerald-700 mb-2">You spent</p>
@@ -853,6 +857,7 @@ export default function FinalResultsPage() {
             </div>
        
           </div>
+        )}
           <div className="grid grid-cols-3 max-md:flex max-md:flex-col gap-4">
             <div className="col-span-2 rounded-xl flex flex-col p-8 bg-violet-50 text-gray-800 border max-md:order-3 max-md:p-4">
               <h3 className="text-2xl font-bold text-violet-700 mb-6 max-md:mb-2">

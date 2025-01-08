@@ -25,8 +25,15 @@ const bankFilters = {
 		);
 	},
 	[BANK_CONNECTIONS.BNZ]: (transaction: RawTransaction) => {
-		// Filter out internal transfers (INTERNET XFR) and bill payments (BP)
-		return !transaction.description.includes('INTERNET XFR') && !transaction.description.includes('BP');
+		// Debug logging
+		console.log('BNZ Transaction:', {
+			description: transaction.description,
+			type: (transaction as any).type,
+			shouldFilter: (transaction as any).type === 'INTERNET XFR'
+		});
+
+		// Filter out internal transfers (INTERNET XFR)
+		return (transaction as any).type !== 'INTERNET XFR';
 	},
 }
 
