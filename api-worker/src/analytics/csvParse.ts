@@ -133,7 +133,7 @@ export async function parseCSV(csv: string, id: number): Promise<RawTransaction[
 				direction: amount < 0 ? 'debit' : 'credit',
 				date: parsedDate.toISOString(),
 				amount: amount,
-				_connection: connectionId,
+				_connection: connectionId as RawTransaction['_connection'],
 			};
 			console.log('Created transaction:', transaction);
 			return transaction;

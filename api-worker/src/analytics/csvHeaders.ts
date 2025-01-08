@@ -18,13 +18,30 @@ export enum ColumnType {
 export const descriptions = {
 	[ColumnType.Date]: ["date","transaction date","date of transaction","transaction date"],
 	[ColumnType.Amount]: ["amount","transaction amount"],
-	[ColumnType.Debit]: ["debit","debit amount","debit transaction","debit amount"],
-	[ColumnType.Credit]: ["credit","credit amount","credit transaction","credit amount"],
+	[ColumnType.Debit]: ["debit","debit amount","debit transaction"],
+	[ColumnType.Credit]: ["credit","credit amount","credit transaction"],
 	[ColumnType.Details]: ["details","transaction details","transaction description","transaction details", "payee"],
 	[ColumnType.Balance]: ["balance","account balance","account balance after transaction","account balance"],
 	[ColumnType.AccountNumber]: ["account number","account"],
 }
 
+function break_into_words(value: string): string[] {
+	const split = value.split(' ');
+	if (split.length != 2) {
+		return [value];
+	}
+	const [first, second] = split;
+
+	return [`${second} ${first}`, `${first} ${second}`];
+}
+
+const descriptionsArray = Object.entries(descriptions).map(([key, value]) => value.map(break_into_words).flat().map(x=>({key, value: x}))).flat();
+const fuse = new Fuse(descriptionsArray, {
+	keys: ["value"],
+	// return all results, we will filter them later
+	threshold: Infinity,
+	includeScore: true,
+})
 export interface Header {
 	type: ColumnType;
 	name: string;
@@ -41,9 +58,10 @@ function extremeNormalise(value: string): string {
 	return value.normalize().toLowerCase().replace(/[^a-z\s]/g, '');
 }
 
-function matchValue(value: string, potentials: string[]): number {
-	const result = fuzzysort.go(value, potentials, {all: true});
-	return Math.max(...result.map(x => x.score), 0);
+function matchValue(value: string): { key: string; score: number; } | null {
+
+	const result = fuse.search(extremeNormalise(value));
+	return result.length > 1 ? {key: result[0].item.key, score: result[0].score || NaN} : null;
 }
 
 function validHeaders(headers: Header[]): boolean {
@@ -108,14 +126,11 @@ export function loadHeaders(rawHeaders: string[], data: any[][], depth: number):
 			continue;
 		}
 
-		for (const [key, value] of Object.entries(descriptions)) {
-			let columnType = Number.parseInt(key) as ColumnType;
-			let confidence = matchValue(headerValue, value);
+		let potential_match = matchValue(headerValue);
 
-			if (confidence > 0.45 && confidence > header.confidence) {
-				header.type = columnType;
-				header.confidence = confidence;
-			}
+		if (potential_match && potential_match.score < 0.5) {
+			header.type = Number.parseInt(potential_match.key) as ColumnType;
+			header.confidence = potential_match.score;
 		}
 
 		result.headers.push(header);
@@ -125,8 +140,6 @@ export function loadHeaders(rawHeaders: string[], data: any[][], depth: number):
 	if (!valid) {
 		return loadHeaders(data[0], data.slice(1), depth + 1);
 	}
-
-	console.log('Loaded headers!', result.headers);
 
 	return result;
 }
