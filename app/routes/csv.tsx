@@ -55,11 +55,16 @@ export default function PreparePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const readyToAnalyze = useMemo(() => {
-    console.log('Upload Status:', {
-      hasFiles: currentFiles.length > 0 ? '✅ Files selected' : '❌ No files selected',
-      uploadStatus: !isUploading ? '✅ Not uploading' : '⏳ Currently uploading',
-      processingStatus: !isProcessing ? '✅ Not processing' : '⏳ Currently processing',
-      errorStatus: !uploadError ? '✅ No errors' : `❌ Error: ${uploadError}`
+    console.log("Upload Status:", {
+      hasFiles:
+        currentFiles.length > 0 ? "✅ Files selected" : "❌ No files selected",
+      uploadStatus: !isUploading
+        ? "✅ Not uploading"
+        : "⏳ Currently uploading",
+      processingStatus: !isProcessing
+        ? "✅ Not processing"
+        : "⏳ Currently processing",
+      errorStatus: !uploadError ? "✅ No errors" : `❌ Error: ${uploadError}`,
     });
     return (
       currentFiles.length > 0 && !isUploading && !isProcessing && !uploadError
