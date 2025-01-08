@@ -2,9 +2,10 @@ import { Context, Hono } from 'hono';
 import { HonoType } from '../types';
 import { streamSSE } from 'hono/streaming';
 import { ce } from '../utils/progressUpdate';
-import { enrichTransactions } from '../utils/akahu';
+import { BANK_CONNECTIONS, enrichTransactions } from '../utils/akahu';
 import { rateLimit } from '../utils/rateLimit';
 import lzString from 'lz-string';
+import { RawTransaction } from '../analytics/csvParse';
 
 const handler = async (c: Context<HonoType, '/akahu/transactions'>) => {
 	const maxProgress = 2;
@@ -18,7 +19,7 @@ const handler = async (c: Context<HonoType, '/akahu/transactions'>) => {
 	const decompressed = lzString.decompressFromEncodedURIComponent(compressedTransactions);
 
 	const data = JSON.parse(decompressed);
-	const all_transactions = data.raw_transactions;
+	const all_transactions: RawTransaction[] = data.raw_transactions;
 	console.log('Transactions to enrich:', all_transactions);
 	let currentStep = 0;
 
@@ -83,7 +84,7 @@ const handler = async (c: Context<HonoType, '/akahu/transactions'>) => {
 			// Reattach dates to enriched transactions
 			enriched = enriched.map((tx) => ({
 				...tx,
-				date: transactionDates.get(tx.id) || '',
+				date: (tx.id && transactionDates.get(tx.id)) || '',
 			}));
 		} catch (ex) {
 			console.error(ex);
@@ -103,7 +104,7 @@ const handler = async (c: Context<HonoType, '/akahu/transactions'>) => {
 				...tx,
 				connection: {
 					id: tx._connection,
-					name: tx._connection.includes('cjgaawozb') ? 'ANZ' : 'ASB',
+					name: BANK_CONNECTIONS[tx._connection as keyof typeof BANK_CONNECTIONS ?? BANK_CONNECTIONS.UNKNOWN],
 				},
 			})),
 			date: new Date().toISOString(),

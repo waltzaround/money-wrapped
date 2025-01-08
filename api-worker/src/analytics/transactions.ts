@@ -1,8 +1,11 @@
+import { BANK_CONNECTIONS } from "../utils/akahu";
+
 interface Transaction {
   date: string;
   amount: number;
   description: string;
   merchant?: string;
+	_connection?: BANK_CONNECTIONS;
 }
 
 interface MonthlySpending {
@@ -53,6 +56,8 @@ interface TransactionAnalytics {
     total: number;
   };
 }
+
+
 
 export function analyzeTransactions(transactions: Transaction[]): TransactionAnalytics {
   if (!transactions.length) {

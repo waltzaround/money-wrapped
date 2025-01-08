@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useMemo } from "react";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -54,6 +54,11 @@ export default function PreparePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const readyToAnalyze = useMemo(() => {
+    console.log(currentFiles.length > 0, !isUploading, !isProcessing, !uploadError)
+    return currentFiles.length > 0 && !isUploading && !isProcessing && !uploadError;
+  }, [currentFiles, isUploading, isProcessing]);
+
   const handleFile = async (file: File) => {
     if (!file) return;
 
@@ -74,7 +79,7 @@ export default function PreparePage() {
       // Get unique transactions (removing duplicates)
       const uniqueTransactions = new Set(transactions);
 
-      if (uniqueTransactions.size < 120) {
+      if (uniqueTransactions.size < 20) {
         throw new Error(
           `Not enough transactions in ${file.name}. Found ${uniqueTransactions.size}, need at least 200 transactions from 2024.`
         );
@@ -334,7 +339,7 @@ export default function PreparePage() {
             <div className="flex justify-end px-6 pb-6">
               <Button
                 onClick={handleSubmit}
-                disabled={isSubmitting}
+                disabled={!readyToAnalyze}
                 className="w-full bg-blue-700"
               >
                 {isSubmitting ? (
