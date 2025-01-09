@@ -1,3 +1,5 @@
+import type { SSE } from "./vender/see";
+
 export type  ProgressEvent = {
 	event: "max-progress",
 	progress: number
@@ -15,9 +17,9 @@ export type  ProgressEvent = {
 	progress: number
 };
 
-export function progressListen(sse: EventSource, callback: (event: ProgressEvent) => void){
+export function progressListen(sse: SSE, callback: (event: ProgressEvent) => void){
     sse.onmessage = (event) => {
-        const data = JSON.parse(event.data);
+        const data = JSON.parse(event.data || "{}");
         callback(data);
     };
 }

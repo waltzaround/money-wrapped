@@ -19,8 +19,8 @@ app.use(
 );
 
 app.get('/akahu-auth', authCallbackHandler);
-app.get('/akahu/transactions', akahuEnrich);
-app.get('/csv/transactions', csvEnrich);
+app.post('/akahu/transactions', akahuEnrich);
+app.post('/csv/transactions', csvEnrich);
 
 app.get('/app-url', (c) => c.json({ url: c.env.APP_URL }));
 

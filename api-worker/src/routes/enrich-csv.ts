@@ -7,10 +7,10 @@ import { rateLimit } from '../utils/rateLimit';
 import lzString from 'lz-string';
 import { RawTransaction } from '../analytics/csvParse';
 
-const handler = async (c: Context<HonoType, '/akahu/transactions'>) => {
+const handler = async (c: Context<HonoType, '/csv/transactions'>) => {
 	const maxProgress = 2;
 
-	const compressedTransactions = c.req.query('transactions');
+	const compressedTransactions = await c.req.text();
 
 	if (!compressedTransactions) {
 		return c.json({ success: false, message: 'No transactions provided' });

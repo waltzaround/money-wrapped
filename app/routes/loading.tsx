@@ -5,6 +5,8 @@ import { Progress } from "~/components/ui/progress";
 import { API_URL } from "~/lib/api";
 import { progressListen } from "~/lib/progressUpdates";
 import lzString from "lz-string";
+import {SSE} from "~/lib/vender/see";
+import { ArrowLeft } from "lucide-react";
 
 export default function LoadingPage() {
   let [maxSteps, setMaxSteps] = useState(3);
@@ -24,14 +26,15 @@ export default function LoadingPage() {
     console.log(transactions ? "Using transactions" : "Not using transactions");
 
     const sse = transactions
-      ? new EventSource(
-          `${API_URL}/csv/transactions?transactions=${lzString.compressToEncodedURIComponent(
+      ? new SSE(
+          `${API_URL}/csv/transactions`,
+          {method: "POST", payload: lzString.compressToEncodedURIComponent(
             transactions
-          )}`,
-          {}
+          )}
         )
-      : new EventSource(`${API_URL}/akahu/transactions`, {
+      : new SSE(`${API_URL}/akahu/transactions`, {
           withCredentials: true,
+          method: "POST"
         });
 
     sse.onerror = (ev) => {
@@ -84,6 +87,12 @@ export default function LoadingPage() {
               <Link to="/results">View My Results</Link>
             </Button>
           ) : undefined}
+
+          {error ? (
+            <Button asChild className="mt-4 bg-blue-700 text-white">
+              <Link to="/"><ArrowLeft/> Retry</Link>
+            </Button>
+            ) : undefined}
         </div>
       </div>
     </div>

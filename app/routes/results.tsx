@@ -32,7 +32,7 @@ interface ListItem {
   rank: number;
   name: string;
   detail: string;
-  logo: string;
+  logo?: string;
 }
 
 // Add before the interfaces
@@ -562,10 +562,12 @@ export default function ResultsPage() {
     if (!analytics) return placeholderSlides;
 
     // Create a new array for the updated slides
-    const updatedSlides = [...placeholderSlides];
+    // const updatedSlides = [...placeholderSlides];
+
+    const updatedSlides: (StandardSlide | ListSlide)[] = []; // Reusing the placeholder slides caused confusion
 
     // Update total spent slide
-    updatedSlides[0] = {
+    updatedSlides.push({
       type: "standard",
       gradient: placeholderSlides[0].gradient,
       title: placeholderSlides[0].title,
@@ -576,10 +578,10 @@ export default function ResultsPage() {
           : "",
       textColor: placeholderSlides[0].textColor,
       // backgroundElm: () => <TransactionSparkLine transactions={rawTransactions} />,
-    } as StandardSlide;
+    });
 
     // Update unique businesses slide
-    updatedSlides[1] = {
+    updatedSlides.push({
       type: "standard",
       gradient: placeholderSlides[1].gradient,
       title: placeholderSlides[1].title,
@@ -587,19 +589,19 @@ export default function ResultsPage() {
       subtitle: "different businesses",
       textColor: placeholderSlides[1].textColor,
       // backgroundElm: () => <FloatingLogos logos={analytics.merchantLogos} />,
-    } as StandardSlide;
+    });
 
     // Update transaction count slide
-    updatedSlides[2] = {
+    updatedSlides.push({
       ...placeholderSlides[2],
       type: "standard",
       value: (analytics.transactionCount || 0).toLocaleString("en-US"),
       subtitle: "transactions",
-    };
+    });
 
     // If we have highest spending month data
     if (analytics.highestSpendingMonth) {
-      updatedSlides[3] = {
+      updatedSlides.push({
         type: "standard",
         gradient: "from-pink-500 to-pink-700",
         title: "Your highest spending month was",
@@ -609,13 +611,13 @@ export default function ResultsPage() {
         description: "That's your biggest spending month!",
         textColor: "pink",
         // backgroundElm: () => <TransactionMonthBars transactions={rawTransactions} />,
-      };
+      });
     }
 
     // If we have top merchants data
     if (analytics.topMerchants?.length > 0) {
       const topMerchant = analytics.topMerchants[0];
-      updatedSlides[4] = {
+      updatedSlides.push({
         type: "standard",
         gradient: "from-orange-500 to-orange-700",
         title: "Your favorite merchant was",
@@ -625,34 +627,14 @@ export default function ResultsPage() {
         } transactions`,
         description: `That's where you spent the most money this year `,
         textColor: "orange",
-      };
+      });
 
-      // Also update the top restaurants list if we have enough merchants
-      if (analytics.topMerchants.length >= 5) {
-        updatedSlides[8] = {
-          type: "list",
-          gradient: "from-rose-500 to-rose-700",
-          title: "Your Top 5 Merchants",
-          textColor: "rose",
-          items: analytics.topMerchants.map(
-            (
-              merchant: { name: any; amount: number | bigint; logo: string },
-              index: number
-            ) => ({
-              rank: index + 1,
-              name: merchant.name,
-              detail: `${formatCurrency(Number(merchant.amount))} spent`,
-              logo: merchant.logo,
-            })
-          ),
-        };
-      }
     }
 
     // Update biggest purchase slide if we have the data
     if (analytics.biggestPurchase) {
       const purchase = analytics.biggestPurchase;
-      updatedSlides[5] = {
+      updatedSlides.push({
         type: "standard",
         gradient: "from-lime-500 to-lime-700",
         title: "Your biggest purchase",
@@ -664,12 +646,12 @@ export default function ResultsPage() {
             100
         )}% more than your average purchase`,
         textColor: "lime",
-      };
+      });
     }
 
     // If we have weekend spending data
     if (analytics.weekendSpending) {
-      updatedSlides[6] = {
+      updatedSlides.push({
         type: "standard",
         gradient: "from-cyan-500 to-cyan-700",
         title: "Weekend warrior",
@@ -684,12 +666,12 @@ export default function ResultsPage() {
                 Math.abs(analytics.weekendSpending.percentageHigher)
               )}% less on weekends`,
         textColor: "cyan",
-      };
+      });
     }
 
     // If we have cafe visits data
     if (analytics.cafeVisits) {
-      updatedSlides[7] = {
+      updatedSlides.push({
         type: "standard",
         gradient: "from-violet-500 to-violet-700",
         title: "You visited cafes & restaurants",
@@ -699,12 +681,34 @@ export default function ResultsPage() {
           analytics.cafeSpending / 52
         )} per week over ${analytics.weeklyAverage} visits `,
         textColor: "violet",
-      };
+      });
     }
+
+    // Also update the top restaurants list if we have enough merchants
+    if (analytics.topMerchants?.length >= 5) {
+      updatedSlides.push({
+        type: "list",
+        gradient: "from-rose-500 to-rose-700",
+        title: "Your Top 5 Merchants",
+        textColor: "rose",
+        items: analytics.topMerchants.map(
+          (
+            merchant: { name: any; amount: number | bigint; logo: string },
+            index: number
+          ) => ({
+            rank: index + 1,
+            name: merchant.name,
+            detail: `${formatCurrency(Number(merchant.amount))} spent`,
+            logo: merchant.logo,
+          })
+        ),
+      });
+    }
+    
 
     // If we have monthly spending data
     if (analytics.monthlySpendingArray?.length > 0) {
-      updatedSlides[9] = {
+      updatedSlides.push({
         type: "list",
         gradient: "from-amber-500 to-amber-700",
         title: "Most Expensive Months",
@@ -721,12 +725,12 @@ export default function ResultsPage() {
               detail: `${formatCurrency(Number(month.total))} spent`,
             })
           ),
-      };
+      });
     }
 
     // If we have top categories data
     if (analytics.topCategories?.length > 0) {
-      updatedSlides[10] = {
+      updatedSlides.push({
         type: "list",
         gradient: "from-teal-500 to-teal-700",
         title: "Top Spending Categories",
@@ -736,7 +740,7 @@ export default function ResultsPage() {
           name: category.name,
           detail: formatCurrency(category.amount),
         })),
-      };
+      });
     }
 
     return updatedSlides;

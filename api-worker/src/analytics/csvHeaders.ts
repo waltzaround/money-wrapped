@@ -148,10 +148,12 @@ export function loadHeaders(rawHeaders: string[], data: any[][], depth: number):
     if (rawHeaders.length === 1 && rawHeaders[0].match(/\d{2}-\d{4}-\d{7}-\d{2}/)) {
         return loadHeaders(data[0], data.slice(1), depth + 1);
     }
-    
+
     let meta = oneHeaderScan(rawHeaders, data);
     if (!validHeaders(meta.headers)) {
-        if (depth < 5 && data.length > 0) {
+
+		// Some banks hide the header super deep into the CSV, there's no harm in looking for it
+        if (depth < 10 && data.length > 0) {
             return loadHeaders(data[0], data.slice(1), depth + 1);
         }
         throw new Error('Could not find valid headers');
