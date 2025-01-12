@@ -53,6 +53,7 @@ export interface ParsingMeta {
 	headers: Header[];
 	account_id: string | null;
 	row_number_used: number;
+	connection_id?: BANK_CONNECTIONS;
 }
 
 function extremeNormalise(value: string): string {
@@ -134,9 +135,10 @@ export function intuteHeaders(data: any[][]): ParsingMeta | null {
 
 	if (possibleMatch.dataColumns) {
 		return {
-			headers: possibleMatch.dataColumns.map((type) => ({type, name: "", confidence: 0.5})),
+			headers: possibleMatch.dataColumns.map((type, i) => ({...firstRowSignature.headers[i], type})),
 			account_id: null,
-			row_number_used: 0
+			row_number_used: 0,
+			connection_id: possibleMatch.bank
 		}
 	}
 

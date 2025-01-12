@@ -50,8 +50,9 @@ export async function parseCSV(csv: string, id: number): Promise<RawTransaction[
 		return [];
 	}
 
-	let connectionId = bankSignatureMatch(csv, parsingMeta);
-
+	if (!parsingMeta.connection_id) {
+		parsingMeta.connection_id = bankSignatureMatch(csv, parsingMeta).bank;
+	}
 
 	const parsedTransactions: RawTransaction[] = records.slice(parsingMeta.row_number_used + 1)
 		.map((item, count) => {
@@ -78,10 +79,10 @@ export async function parseCSV(csv: string, id: number): Promise<RawTransaction[
 
 			let description = [];
 			// Special handling for Kiwibank
-			if (connectionId.bank === BANK_CONNECTIONS.Kiwibank) {
-				description = headers.map((h, i) => h.type === ColumnType.Details ? item[i] : null)
+			if (parsingMeta.connection_id === BANK_CONNECTIONS.Kiwibank) {
+				description = headers.map(([_,h], i) => h.type === ColumnType.Details ? item[i] : null)
 					.filter(x => x !== null && typeof x === 'string');
-			} else if (connectionId.bank === BANK_CONNECTIONS.Westpac && typeof item[2] === 'string') {
+			} else if (parsingMeta.connection_id === BANK_CONNECTIONS.Westpac && typeof item[2] === 'string') {
 				description = [item[2]];  // Other Party
 				if (!item[2].trim() && typeof item[3] === 'string') {
 					description = [item[3]];
@@ -107,7 +108,7 @@ export async function parseCSV(csv: string, id: number): Promise<RawTransaction[
 			// Negative = Spend (Debit), Positive = Income (Credit)
 			let amount: number = 0;
 			// Special handling for Kiwibank amounts
-			if (connectionId.bank === BANK_CONNECTIONS.Kiwibank) {
+			if (parsingMeta.connection_id === BANK_CONNECTIONS.Kiwibank) {
 				for (let [i, amountHeaders] of headers.filter(([,x]) => x.type === ColumnType.Amount)) {
 					let value = parseFloat(item[i]);
 					if (!isNaN(value)) {
@@ -156,8 +157,8 @@ export async function parseCSV(csv: string, id: number): Promise<RawTransaction[
 				direction: amount < 0 ? 'debit' : 'credit',
 				date: parsedDate.toISOString(),
 				amount: amount,
-				_connection: connectionId.bank as RawTransaction['_connection'],
-				type: item[6],  
+				_connection: parsingMeta.connection_id as RawTransaction['_connection'],
+				type: item[6],
 			};
 			return transaction;
 		})
