@@ -5,6 +5,7 @@ import { ce } from '../utils/progressUpdate';
 import { getCookie } from 'hono/cookie';
 import { enrichTransactions, listTransactions, pollResultStatus, Transaction, year } from '../utils/akahu';
 import { rateLimit } from '../utils/rateLimit';
+import { bankFilter } from '../analytics/bankFilter';
 
 export default async function akahuEnrich(c: Context<HonoType, '/akahu/transactions'>) {
 	const maxProgress = 5;
@@ -31,12 +32,13 @@ export default async function akahuEnrich(c: Context<HonoType, '/akahu/transacti
 		await stream.writeSSE(
 			ce({
 				event: 'progress',
-				message: `Ingesting bank connection ${year} transactions`,
+				message: `Ingesting ${year} transactions`,
 				progress: currentStep++,
 			}),
 		);
 
 		let available_accounts;
+		let bank_name;
 
 		try {
 			const initial_time = Date.now();
@@ -64,6 +66,7 @@ export default async function akahuEnrich(c: Context<HonoType, '/akahu/transacti
 
 				if (resultList.status === 'COMPLETE') {
 					available_accounts = resultList.available_accounts_count?.toString() || "all";
+					bank_name = resultList.connection.name;
 					break;
 				}
 
@@ -97,7 +100,7 @@ export default async function akahuEnrich(c: Context<HonoType, '/akahu/transacti
 		await stream.writeSSE(
 			ce({
 				event: 'progress',
-				message: `Hunting down all of your ${year} transactions from ${available_accounts} accounts`,
+				message: `Hunting down all transactions from ${available_accounts} ${bank_name} accounts`,
 				progress: currentStep++,
 			}),
 		);
@@ -108,7 +111,7 @@ export default async function akahuEnrich(c: Context<HonoType, '/akahu/transacti
 
 		let all_transactions: Transaction[] = [];
 		try {
-			all_transactions = await listTransactions(c, user_token);
+			all_transactions = (await listTransactions(c, user_token)).filter(bankFilter);
 		} catch (ex) {
 			console.error(ex);
 
