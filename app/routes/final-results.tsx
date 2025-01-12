@@ -28,7 +28,8 @@ import {
 } from "recharts";
 
 import { cn } from "~/lib/utils";
-import type { TransactionAnalytics } from "../types";
+import type { Transaction, TransactionAnalytics } from "../types";
+import { findSubscriptions } from "~/lib/analytics/subscriptionFinder";
 
 type SpendCategory = {
   category: string;
@@ -42,8 +43,8 @@ export default function FinalResultsPage() {
 
   const rawData = localStorage.getItem("results");
   const rawTransactions = rawData
-    ? JSON.parse(rawData)
-        .raw_transactions.filter((t) => t.direction !== "CREDIT")
+    ? (JSON.parse(rawData)
+        .raw_transactions as Transaction[]).filter((t) => t.direction !== "CREDIT")
         .filter((t) => {
           const date = new Date(t.date);
           return (
@@ -65,8 +66,8 @@ export default function FinalResultsPage() {
     // Calculate spending by category for the pie chart
     const categorySpending = rawTransactions
       .filter((t) => t.category?.name)
-      .reduce((acc, t) => {
-        const categoryName = t.category.name;
+      .reduce<Record<string, number>>((acc, t) => {
+        const categoryName = t.category?.name ?? "";
         if (!acc[categoryName]) {
           acc[categoryName] = 0;
         }
@@ -107,10 +108,13 @@ export default function FinalResultsPage() {
       }))
       .sort((a, b) => b.amount - a.amount);
 
+    const subscriptionSpending = findSubscriptions(rawTransactions);
+
     return {
       spendCategories,
       totalSpent,
       highestSpendingDay,
+      subscriptionSpending
     };
   }, [rawTransactions]);
 
@@ -206,6 +210,7 @@ export default function FinalResultsPage() {
         return dateA.getTime() - dateB.getTime();
       });
   }, [rawTransactions]);
+  
 
   const spendingData = {
     monthly: monthlySpendingData,
@@ -216,8 +221,8 @@ export default function FinalResultsPage() {
   const totalSpent = analytics?.totalSpent || 0;
   const transactionCount = rawTransactions?.length || 0;
   const averageTransaction =
-    rawTransactions?.reduce((sum, t) => sum + Math.abs(t.amount), 0) /
-      transactionCount || 0;
+    (rawTransactions?.reduce((sum, t) => sum + Math.abs(t.amount), 0) ?? 0) /
+      transactionCount || Infinity;
 
   return (
     <div className="min-h-screen  p-6 max-md:p-4">
@@ -274,7 +279,7 @@ export default function FinalResultsPage() {
                   {new Set(
                     rawTransactions
                       ?.filter((t) => t.merchant?.name)
-                      .map((t) => t.merchant.name)
+                      .map((t) => t.merchant?.name)
                   ).size || 0}
                 </p>
               </div>
@@ -417,19 +422,19 @@ export default function FinalResultsPage() {
                 {Object.entries(
                   rawTransactions
                     ?.filter((t) => t.merchant?.name)
-                    .reduce((acc, t) => {
-                      const name = t.merchant.name;
+                    .reduce<Record<string, {amount: number, logo?: string, count: number}>>((acc, t) => {
+                      const name = t.merchant?.name ?? "";
                       if (!acc[name]) {
                         acc[name] = {
                           amount: 0,
-                          logo: t.merchant.logo,
+                          logo: t.merchant?.logo,
                           count: 0,
                         };
                       }
                       acc[name].amount += Math.abs(t.amount);
                       acc[name].count += 1;
                       return acc;
-                    }, {} as { [key: string]: { amount: number; logo: string; count: number } })
+                    }, {} ) ?? {}
                 )
                   .sort(([, a], [, b]) => b.amount - a.amount)
                   .slice(0, 10)
@@ -526,18 +531,18 @@ export default function FinalResultsPage() {
                         t.category?.name === "Cafes and restaurants"
                     )
                     .reduce((acc, t) => {
-                      const name = t.merchant.name;
+                      const name = t.merchant?.name ?? "";
                       if (!acc[name]) {
                         acc[name] = {
                           amount: 0,
-                          logo: t.merchant.logo,
+                          logo: t.merchant?.logo,
                           count: 0,
                         };
                       }
                       acc[name].amount += Math.abs(t.amount);
                       acc[name].count += 1;
                       return acc;
-                    }, {} as { [key: string]: { amount: number; logo: string; count: number } })
+                    }, {} as { [key: string]: { amount: number; logo?: string; count: number } })
                 )
                   .sort(([, a], [, b]) => b.amount - a.amount)
                   .slice(0, 10)
@@ -628,18 +633,18 @@ export default function FinalResultsPage() {
                         t.category?.name === "Bars, pubs, nightclubs"
                     )
                     .reduce((acc, t) => {
-                      const name = t.merchant.name;
+                      const name = t.merchant?.name ?? "";
                       if (!acc[name]) {
                         acc[name] = {
                           amount: 0,
-                          logo: t.merchant.logo,
+                          logo: t.merchant?.logo,
                           count: 0,
                         };
                       }
                       acc[name].amount += Math.abs(t.amount);
                       acc[name].count += 1;
                       return acc;
-                    }, {} as { [key: string]: { amount: number; logo: string; count: number } })
+                    }, {} as { [key: string]: { amount: number; logo?: string; count: number } }) ?? {}
                 )
                   .sort(([, a], [, b]) => b.amount - a.amount)
                   .slice(0, 10)
@@ -698,18 +703,18 @@ export default function FinalResultsPage() {
                           "Appearance"
                     )
                     .reduce((acc, t) => {
-                      const name = t.merchant.name;
+                      const name = t.merchant?.name ?? "";
                       if (!acc[name]) {
                         acc[name] = {
                           amount: 0,
-                          logo: t.merchant.logo,
+                          logo: t.merchant?.logo,
                           count: 0,
                         };
                       }
                       acc[name].amount += Math.abs(t.amount);
                       acc[name].count += 1;
                       return acc;
-                    }, {} as { [key: string]: { amount: number; logo: string; count: number } })
+                    }, {} as { [key: string]: { amount: number; logo?: string; count: number } }) ?? {}
                 )
                   .sort(([, a], [, b]) => b.amount - a.amount)
                   .slice(0, 10)
@@ -802,18 +807,18 @@ export default function FinalResultsPage() {
                           "Education"
                     )
                     .reduce((acc, t) => {
-                      const name = t.merchant.name;
+                      const name = t.merchant?.name ?? "";
                       if (!acc[name]) {
                         acc[name] = {
                           amount: 0,
-                          logo: t.merchant.logo,
+                          logo: t.merchant?.logo,
                           count: 0,
                         };
                       }
                       acc[name].amount += Math.abs(t.amount);
                       acc[name].count += 1;
                       return acc;
-                    }, {} as { [key: string]: { amount: number; logo: string; count: number } })
+                    }, {} as { [key: string]: { amount: number; logo?: string; count: number } })
                 )
                   .sort(([, a], [, b]) => b.amount - a.amount)
                   .slice(0, 10)
@@ -873,18 +878,18 @@ export default function FinalResultsPage() {
                           "Lifestyle"
                     )
                     .reduce((acc, t) => {
-                      const name = t.merchant.name;
+                      const name = t.merchant?.name ?? "";
                       if (!acc[name]) {
                         acc[name] = {
                           amount: 0,
-                          logo: t.merchant.logo,
+                          logo: t.merchant?.logo,
                           count: 0,
                         };
                       }
                       acc[name].amount += Math.abs(t.amount);
                       acc[name].count += 1;
                       return acc;
-                    }, {} as { [key: string]: { amount: number; logo: string; count: number } })
+                    }, {} as { [key: string]: { amount: number; logo?: string; count: number } }) ?? {}
                 )
                   .sort(([, a], [, b]) => b.amount - a.amount)
                   .slice(0, 10)
@@ -1065,18 +1070,18 @@ export default function FinalResultsPage() {
                           "Household"
                     )
                     .reduce((acc, t) => {
-                      const name = t.merchant.name;
+                      const name = t.merchant?.name ?? "";
                       if (!acc[name]) {
                         acc[name] = {
                           amount: 0,
-                          logo: t.merchant.logo,
+                          logo: t.merchant?.logo,
                           count: 0,
                         };
                       }
                       acc[name].amount += Math.abs(t.amount);
                       acc[name].count += 1;
                       return acc;
-                    }, {} as { [key: string]: { amount: number; logo: string; count: number } })
+                    }, {} as { [key: string]: { amount: number; logo?: string; count: number } }) ?? {}
                 )
                   .sort(([, a], [, b]) => b.amount - a.amount)
                   .slice(0, 10)
@@ -1118,7 +1123,6 @@ export default function FinalResultsPage() {
                   ))}
               </div>
             </div>
-            
           </div>
           <div className="grid grid-cols-3   max-md:flex max-md:flex-col gap-4">
             <div className="col-span-2 rounded-xl flex flex-col p-8 bg-amber-50 text-gray-800 border max-md:order-2">
@@ -1132,18 +1136,18 @@ export default function FinalResultsPage() {
                         t.category?.group?.personal_finance?.name === "Food"
                     )
                     .reduce((acc, t) => {
-                      const name = t.merchant.name;
+                      const name = t.merchant?.name ?? "";
                       if (!acc[name]) {
                         acc[name] = {
                           amount: 0,
-                          logo: t.merchant.logo,
+                          logo: t.merchant?.logo,
                           count: 0,
                         };
                       }
                       acc[name].amount += Math.abs(t.amount);
                       acc[name].count += 1;
                       return acc;
-                    }, {} as { [key: string]: { amount: number; logo: string; count: number } })
+                    }, {} as { [key: string]: { amount: number; logo?: string; count: number } }) ?? ""
                 )
                   .sort(([, a], [, b]) => b.amount - a.amount)
                   .slice(0, 10)
@@ -1202,7 +1206,85 @@ export default function FinalResultsPage() {
               <p className="text-lg text-amber-700">on food </p>
             </div>
           </div>
+          {analytics?.subscriptionSpending && analytics.subscriptionSpending.length > 0 && (
+          <div className="grid grid-cols-3   max-md:flex max-md:flex-col gap-4">
+          <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-blue-100 to-blue-200 text-gray-800 flex flex-col items-center justify-center">
+              <p className="text-lg text-blue-700 mb-2">You spent</p>
+              <p className="text-5xl font-bold mb-2">
+                $
+                {analytics.subscriptionSpending
+                  .reduce((sum, t) => sum + Math.abs(t.total), 0)
+                  .toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+              </p>
+              <p className="text-lg text-blue-700">
+                on recurring payments
+              </p>
+            </div>
+            <div className="col-span-2 rounded-xl flex flex-col p-8 bg-blue-50 text-gray-800 border max-md:order-2  max-md:p-4">
+              <h3 className="text-2xl font-bold blue-lime-700 mb-6 max-md:mb-2">
+                Subscriptions
+              </h3>
+              <div className="">
+                
+                  {analytics.subscriptionSpending
+                  .sort((a,b) => b.total - a.total)
+                  .slice(0, 10)
+                  .map(({
+                    frequency,
+                    merchant,
+                    total,
+                    transactionCount,
+                    transactions,
+                    individualCharge
+                  }, index) => (
+                    <div
+                      className="flex justify-between items-center mt-4 pt-4 border-t border-blue-200"
+                      key={merchant.name}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-blue-600 min-w-8">
+                          #{index + 1}
+                        </span>
+                        {merchant.logo ? (
+                          <img
+                            src={merchant.logo}
+                            className="h-8 w-8 rounded shadow-sm object-cover"
+                          />
+                        ) : (
+                          <div className="h-8 w-8 rounded shadow-sm bg-gray-200" />
+                        )}
+                        <div>
+                          <span className="font-medium text-gray-800">
+                            {merchant.name}
+                          </span>
+                          <p className="text-sm text-gray-500"> 
+                            {transactionCount} transaction
+                            {transactionCount !== 1 ? "s" : ""} totaling
+                            ${Math.abs(total).toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-gray-600">
+                        $
+                        {Math.abs(individualCharge).toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })} / {frequency} {typeof frequency === "number" && "Days"}
+                      </span>
+                    </div>
+                  )
+                )}
+              </div>
+            </div>
+          </div>
 
+          )}
           <div className="grid grid-cols-   max-md:flex max-md:flex-col gap-4">
             <div className="rounded-xl flex flex-col p-8 bg-slate-50 text-gray-800 border max-md:p-4">
               <h3 className="text-2xl font-bold text-slate-700 mb-6">
