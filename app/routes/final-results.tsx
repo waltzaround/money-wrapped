@@ -44,15 +44,15 @@ export default function FinalResultsPage() {
   const rawData = localStorage.getItem("results");
   const rawTransactions = rawData
     ? (JSON.parse(rawData)
-        .raw_transactions as Transaction[]).filter((t) => t.direction !== "CREDIT")
-        .filter((t) => {
-          const date = new Date(t.date);
-          return (
-            date.getFullYear() === 2024 &&
-            date <= new Date("2024-12-31T23:59:59.999Z")
-          );
-        })
-        .filter((t) => t.description !== "Online       Payment -  Thank You")
+      .raw_transactions as Transaction[]).filter((t) => t.direction !== "CREDIT")
+      .filter((t) => {
+        const date = new Date(t.date);
+        return (
+          date.getFullYear() === 2024 &&
+          date <= new Date("2024-12-31T23:59:59.999Z")
+        );
+      })
+      .filter((t) => t.description !== "Online       Payment -  Thank You")
     : null;
 
   const analytics = useMemo(() => {
@@ -93,18 +93,17 @@ export default function FinalResultsPage() {
       .map(([category, amount], index) => ({
         category,
         amount,
-        color: `bg-${
-          [
-            "blue",
-            "green",
-            "yellow",
-            "red",
-            "purple",
-            "pink",
-            "indigo",
-            "gray",
-          ][index % 8]
-        }-500`,
+        color: `bg-${[
+          "blue",
+          "green",
+          "yellow",
+          "red",
+          "purple",
+          "pink",
+          "indigo",
+          "gray",
+        ][index % 8]
+          }-500`,
       }))
       .sort((a, b) => b.amount - a.amount);
 
@@ -210,7 +209,7 @@ export default function FinalResultsPage() {
         return dateA.getTime() - dateB.getTime();
       });
   }, [rawTransactions]);
-  
+
 
   const spendingData = {
     monthly: monthlySpendingData,
@@ -222,7 +221,7 @@ export default function FinalResultsPage() {
   const transactionCount = rawTransactions?.length || 0;
   const averageTransaction =
     (rawTransactions?.reduce((sum, t) => sum + Math.abs(t.amount), 0) ?? 0) /
-      transactionCount || Infinity;
+    transactionCount || Infinity;
 
   return (
     <div className="min-h-screen  p-6 max-md:p-4">
@@ -288,21 +287,21 @@ export default function FinalResultsPage() {
                   Biggest Day -{" "}
                   {analytics?.highestSpendingDay
                     ? new Intl.DateTimeFormat("en-US", {
-                        month: "short",
-                        day: "numeric",
-                      }).format(new Date(analytics.highestSpendingDay[0]))
+                      month: "short",
+                      day: "numeric",
+                    }).format(new Date(analytics.highestSpendingDay[0]))
                     : "No data"}
                 </p>
                 <p className="text-2xl font-bold text-pink-600">
                   $
                   {analytics?.highestSpendingDay
                     ? analytics.highestSpendingDay[1].toLocaleString(
-                        undefined,
-                        {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        }
-                      )
+                      undefined,
+                      {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      }
+                    )
                     : "0.00"}
                 </p>
               </div>
@@ -422,7 +421,7 @@ export default function FinalResultsPage() {
                 {Object.entries(
                   rawTransactions
                     ?.filter((t) => t.merchant?.name)
-                    .reduce<Record<string, {amount: number, logo?: string, count: number}>>((acc, t) => {
+                    .reduce<Record<string, { amount: number, logo?: string, count: number }>>((acc, t) => {
                       const name = t.merchant?.name ?? "";
                       if (!acc[name]) {
                         acc[name] = {
@@ -434,7 +433,7 @@ export default function FinalResultsPage() {
                       acc[name].amount += Math.abs(t.amount);
                       acc[name].count += 1;
                       return acc;
-                    }, {} ) ?? {}
+                    }, {}) ?? {}
                 )
                   .sort(([, a], [, b]) => b.amount - a.amount)
                   .slice(0, 10)
@@ -477,13 +476,13 @@ export default function FinalResultsPage() {
               </div>
             </div>
           </div>
-        
+
           <div className="flex gap-4 max-md:flex-col">
-          <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-gray-100 to-gray-200 text-gray-800 flex flex-col items-center justify-center">
-            <p className="text-lg text-gray-700 mb-2">You made</p>
-            <p className="text-5xl font-bold mb-2">{transactionCount}</p>
-            <p className="text-lg text-gray-700">transactions</p>
-          </div>
+            <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-gray-100 to-gray-200 text-gray-800 flex flex-col items-center justify-center">
+              <p className="text-lg text-gray-700 mb-2">You made</p>
+              <p className="text-5xl font-bold mb-2">{transactionCount}</p>
+              <p className="text-lg text-gray-700">transactions</p>
+            </div>
             <div className="flex-1  rounded-xl border  p-8 bg-gradient-to-b from-lime-200 to-lime-100 text-white flex flex-col items-center justify-center">
               <p className="text-lg text-lime-700 mb-2">
                 You spent the most on
@@ -492,18 +491,18 @@ export default function FinalResultsPage() {
               <p className="text-5xl font-bold text-lime-800  mb-2">
                 {analytics?.highestSpendingDay
                   ? new Intl.DateTimeFormat("en-US", {
-                      month: "short",
-                      day: "numeric",
-                    }).format(new Date(analytics.highestSpendingDay[0]))
+                    month: "short",
+                    day: "numeric",
+                  }).format(new Date(analytics.highestSpendingDay[0]))
                   : "N/A"}
               </p>
               <p className="text-lg text-lime-700 text-center">
                 $
                 {analytics?.highestSpendingDay
                   ? analytics.highestSpendingDay[1].toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })
                   : "0.00"}
               </p>
             </div>
@@ -517,94 +516,94 @@ export default function FinalResultsPage() {
             </div>
           </div>
           {rawTransactions?.some(t => t.category?.name === "Cafes and restaurants") && (
-          <div className="grid grid-cols-3 max-md:flex max-md:flex-col gap-4">
-            <div className="col-span-2 rounded-xl  flex flex-col p-8 bg-violet-50 text-gray-800 border max-md:order-2 max-md:p-4">
-              <h3 className="text-2xl font-bold text-violet-700 mb-6 max-md:mb-2">
-                Restaurants &amp; Cafes
-              </h3>
-              <div className="">
-                {Object.entries(
-                  rawTransactions
-                    ?.filter(
-                      (t) =>
-                        t.merchant?.name &&
-                        t.category?.name === "Cafes and restaurants"
-                    )
-                    .reduce((acc, t) => {
-                      const name = t.merchant?.name ?? "";
-                      if (!acc[name]) {
-                        acc[name] = {
-                          amount: 0,
-                          logo: t.merchant?.logo,
-                          count: 0,
-                        };
-                      }
-                      acc[name].amount += Math.abs(t.amount);
-                      acc[name].count += 1;
-                      return acc;
-                    }, {} as { [key: string]: { amount: number; logo?: string; count: number } })
-                )
-                  .sort(([, a], [, b]) => b.amount - a.amount)
-                  .slice(0, 10)
-                  .map(([merchantName, data], index) => (
-                    <div
-                      className="flex justify-between items-center mt-4 pt-4 border-t border-violet-200"
-                      key={merchantName}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-violet-600 min-w-8">
-                          #{index + 1}
-                        </span>
-                        {data.logo ? (
-                          <img
-                            src={data.logo}
-                            className="h-8 w-8 rounded shadow-sm object-cover"
-                          />
-                        ) : (
-                          <div className="h-8 w-8 rounded shadow-sm bg-gray-200" />
-                        )}
-                        <div>
-                          <span className="font-medium text-gray-800">
-                            {merchantName}
+            <div className="grid grid-cols-3 max-md:flex max-md:flex-col gap-4">
+              <div className="col-span-2 rounded-xl  flex flex-col p-8 bg-violet-50 text-gray-800 border max-md:order-2 max-md:p-4">
+                <h3 className="text-2xl font-bold text-violet-700 mb-6 max-md:mb-2">
+                  Restaurants &amp; Cafes
+                </h3>
+                <div className="">
+                  {Object.entries(
+                    rawTransactions
+                      ?.filter(
+                        (t) =>
+                          t.merchant?.name &&
+                          t.category?.name === "Cafes and restaurants"
+                      )
+                      .reduce((acc, t) => {
+                        const name = t.merchant?.name ?? "";
+                        if (!acc[name]) {
+                          acc[name] = {
+                            amount: 0,
+                            logo: t.merchant?.logo,
+                            count: 0,
+                          };
+                        }
+                        acc[name].amount += Math.abs(t.amount);
+                        acc[name].count += 1;
+                        return acc;
+                      }, {} as { [key: string]: { amount: number; logo?: string; count: number } })
+                  )
+                    .sort(([, a], [, b]) => b.amount - a.amount)
+                    .slice(0, 10)
+                    .map(([merchantName, data], index) => (
+                      <div
+                        className="flex justify-between items-center mt-4 pt-4 border-t border-violet-200"
+                        key={merchantName}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-violet-600 min-w-8">
+                            #{index + 1}
                           </span>
-                          <p className="text-sm text-gray-500">
-                            {data.count} transaction
-                            {data.count !== 1 ? "s" : ""}
-                          </p>
+                          {data.logo ? (
+                            <img
+                              src={data.logo}
+                              className="h-8 w-8 rounded shadow-sm object-cover"
+                            />
+                          ) : (
+                            <div className="h-8 w-8 rounded shadow-sm bg-gray-200" />
+                          )}
+                          <div>
+                            <span className="font-medium text-gray-800">
+                              {merchantName}
+                            </span>
+                            <p className="text-sm text-gray-500">
+                              {data.count} transaction
+                              {data.count !== 1 ? "s" : ""}
+                            </p>
+                          </div>
                         </div>
+                        <span className="text-gray-600">
+                          $
+                          {data.amount.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </span>
                       </div>
-                      <span className="text-gray-600">
-                        $
-                        {data.amount.toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
-                      </span>
-                    </div>
-                  ))}
+                    ))}
+                </div>
+              </div>
+
+              <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-violet-100 to-violet-200 text-gray-800 flex flex-col items-center justify-center">
+                <p className="text-lg text-violet-700 mb-2">You spent</p>
+                <p className="text-5xl font-bold mb-2">
+                  $
+                  {rawTransactions
+                    ?.filter((t) => t.category?.name === "Cafes and restaurants")
+                    .reduce((sum, t) => sum + Math.abs(t.amount), 0)
+                    .toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                </p>
+                <p className="text-lg text-violet-700">
+                  on Restaurants &amp; Cafes
+                </p>
               </div>
             </div>
-      
-            <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-violet-100 to-violet-200 text-gray-800 flex flex-col items-center justify-center">
-              <p className="text-lg text-violet-700 mb-2">You spent</p>
-              <p className="text-5xl font-bold mb-2">
-                $
-                {rawTransactions
-                  ?.filter((t) => t.category?.name === "Cafes and restaurants")
-                  .reduce((sum, t) => sum + Math.abs(t.amount), 0)
-                  .toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
-              </p>
-              <p className="text-lg text-violet-700">
-                on Restaurants &amp; Cafes
-              </p>
-            </div>
-          </div>      
-        )}
+          )}
           <div className="grid grid-cols-3 max-md:flex max-md:flex-col gap-4">
-          <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-violet-100 to-violet-200 text-gray-800 flex flex-col items-center justify-center">
+            <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-violet-100 to-violet-200 text-gray-800 flex flex-col items-center justify-center">
               <p className="text-lg text-violet-700 mb-2">You spent</p>
               <p className="text-5xl font-bold mb-2">
                 $
@@ -686,7 +685,7 @@ export default function FinalResultsPage() {
                   ))}
               </div>
             </div>
-            
+
           </div>
           <div className="grid grid-cols-3 max-md:flex max-md:flex-col gap-4">
             <div className="col-span-2 rounded-xl flex flex-col p-8 bg-fuchsia-50 text-gray-800 border max-md:p-4 max-md:order-2">
@@ -700,7 +699,7 @@ export default function FinalResultsPage() {
                       (t) =>
                         t.merchant?.name &&
                         t.category?.group?.personal_finance?.name ===
-                          "Appearance"
+                        "Appearance"
                     )
                     .reduce((acc, t) => {
                       const name = t.merchant?.name ?? "";
@@ -775,94 +774,94 @@ export default function FinalResultsPage() {
             </div>
           </div>
           {rawTransactions?.some(t => t.category?.name === "Education") && (
-          <div className="grid grid-cols-3 max-md:flex max-md:flex-col gap-4">
-          <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-emerald-100 to-emerald-200 text-gray-800 flex flex-col items-center justify-center">
-              <p className="text-lg text-emerald-700 mb-2">You spent</p>
-              <p className="text-5xl font-bold mb-2">
-                $
-                {rawTransactions
-                  ?.filter(
-                    (t) =>
-                      t.category?.group?.personal_finance?.name === "Education"
-                  )
-                  .reduce((sum, t) => sum + Math.abs(t.amount), 0)
-                  .toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
-              </p>
-              <p className="text-lg text-emerald-700">on Education</p>
-            </div>
-            <div className="col-span-2 rounded-xl flex flex-col p-8 bg-emerald-50 text-gray-800 border max-md:p-4 max-md:order-2">
-              <h3 className="text-2xl font-bold text-emerald-700 mb-6 max-md:mb-2">
-                Education
-              </h3>
-              <div className="">
-                {Object.entries(
-                  rawTransactions
+            <div className="grid grid-cols-3 max-md:flex max-md:flex-col gap-4">
+              <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-emerald-100 to-emerald-200 text-gray-800 flex flex-col items-center justify-center">
+                <p className="text-lg text-emerald-700 mb-2">You spent</p>
+                <p className="text-5xl font-bold mb-2">
+                  $
+                  {rawTransactions
                     ?.filter(
                       (t) =>
-                        t.merchant?.name &&
-                        t.category?.group?.personal_finance?.name ===
-                          "Education"
+                        t.category?.group?.personal_finance?.name === "Education"
                     )
-                    .reduce((acc, t) => {
-                      const name = t.merchant?.name ?? "";
-                      if (!acc[name]) {
-                        acc[name] = {
-                          amount: 0,
-                          logo: t.merchant?.logo,
-                          count: 0,
-                        };
-                      }
-                      acc[name].amount += Math.abs(t.amount);
-                      acc[name].count += 1;
-                      return acc;
-                    }, {} as { [key: string]: { amount: number; logo?: string; count: number } })
-                )
-                  .sort(([, a], [, b]) => b.amount - a.amount)
-                  .slice(0, 10)
-                  .map(([merchantName, data], index) => (
-                    <div
-                      className="flex justify-between items-center mt-4 pt-4 border-t border-emerald-200"
-                      key={merchantName}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-emerald-600 min-w-8">
-                          #{index + 1}
-                        </span>
-                        {data.logo ? (
-                          <img
-                            src={data.logo}
-                            className="h-8 w-8 rounded shadow-sm object-cover"
-                          />
-                        ) : (
-                          <div className="h-8 w-8 rounded shadow-sm bg-gray-200" />
-                        )}
-                        <div>
-                          <span className="font-medium text-gray-800">
-                            {merchantName}
-                          </span>
-                          <p className="text-sm text-gray-500">
-                            {data.count} transaction
-                            {data.count !== 1 ? "s" : ""}
-                          </p>
-                        </div>
-                      </div>
-                      <span className="text-gray-600">
-                        $
-                        {data.amount.toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
-                      </span>
-                    </div>
-                  ))}
+                    .reduce((sum, t) => sum + Math.abs(t.amount), 0)
+                    .toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                </p>
+                <p className="text-lg text-emerald-700">on Education</p>
               </div>
+              <div className="col-span-2 rounded-xl flex flex-col p-8 bg-emerald-50 text-gray-800 border max-md:p-4 max-md:order-2">
+                <h3 className="text-2xl font-bold text-emerald-700 mb-6 max-md:mb-2">
+                  Education
+                </h3>
+                <div className="">
+                  {Object.entries(
+                    rawTransactions
+                      ?.filter(
+                        (t) =>
+                          t.merchant?.name &&
+                          t.category?.group?.personal_finance?.name ===
+                          "Education"
+                      )
+                      .reduce((acc, t) => {
+                        const name = t.merchant?.name ?? "";
+                        if (!acc[name]) {
+                          acc[name] = {
+                            amount: 0,
+                            logo: t.merchant?.logo,
+                            count: 0,
+                          };
+                        }
+                        acc[name].amount += Math.abs(t.amount);
+                        acc[name].count += 1;
+                        return acc;
+                      }, {} as { [key: string]: { amount: number; logo?: string; count: number } })
+                  )
+                    .sort(([, a], [, b]) => b.amount - a.amount)
+                    .slice(0, 10)
+                    .map(([merchantName, data], index) => (
+                      <div
+                        className="flex justify-between items-center mt-4 pt-4 border-t border-emerald-200"
+                        key={merchantName}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-emerald-600 min-w-8">
+                            #{index + 1}
+                          </span>
+                          {data.logo ? (
+                            <img
+                              src={data.logo}
+                              className="h-8 w-8 rounded shadow-sm object-cover"
+                            />
+                          ) : (
+                            <div className="h-8 w-8 rounded shadow-sm bg-gray-200" />
+                          )}
+                          <div>
+                            <span className="font-medium text-gray-800">
+                              {merchantName}
+                            </span>
+                            <p className="text-sm text-gray-500">
+                              {data.count} transaction
+                              {data.count !== 1 ? "s" : ""}
+                            </p>
+                          </div>
+                        </div>
+                        <span className="text-gray-600">
+                          $
+                          {data.amount.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </span>
+                      </div>
+                    ))}
+                </div>
+              </div>
+
             </div>
-       
-          </div>
-        )}
+          )}
           <div className="grid grid-cols-3 max-md:flex max-md:flex-col gap-4">
             <div className="col-span-2 rounded-xl flex flex-col p-8 bg-violet-50 text-gray-800 border max-md:order-3 max-md:p-4">
               <h3 className="text-2xl font-bold text-violet-700 mb-6 max-md:mb-2">
@@ -875,7 +874,7 @@ export default function FinalResultsPage() {
                       (t) =>
                         t.merchant?.name &&
                         t.category?.group?.personal_finance?.name ===
-                          "Lifestyle"
+                        "Lifestyle"
                     )
                     .reduce((acc, t) => {
                       const name = t.merchant?.name ?? "";
@@ -1037,7 +1036,7 @@ export default function FinalResultsPage() {
             </div>
           </div>
           <div className="grid grid-cols-3   max-md:flex max-md:flex-col gap-4">
-          <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-lime-100 to-lime-200 text-gray-800 flex flex-col items-center justify-center">
+            <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-lime-100 to-lime-200 text-gray-800 flex flex-col items-center justify-center">
               <p className="text-lg text-lime-700 mb-2">You spent</p>
               <p className="text-5xl font-bold mb-2">
                 $
@@ -1067,7 +1066,7 @@ export default function FinalResultsPage() {
                       (t) =>
                         t.merchant?.name &&
                         t.category?.group?.personal_finance?.name ===
-                          "Household"
+                        "Household"
                     )
                     .reduce((acc, t) => {
                       const name = t.merchant?.name ?? "";
@@ -1207,82 +1206,82 @@ export default function FinalResultsPage() {
             </div>
           </div>
           {analytics?.subscriptionSpending && analytics.subscriptionSpending.length > 0 && (
-          <div className="grid grid-cols-3   max-md:flex max-md:flex-col gap-4">
-          <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-blue-100 to-blue-200 text-gray-800 flex flex-col items-center justify-center">
-              <p className="text-lg text-blue-700 mb-2">You spent</p>
-              <p className="text-5xl font-bold mb-2">
-                $
-                {analytics.subscriptionSpending
-                  .reduce((sum, t) => sum + Math.abs(t.total), 0)
-                  .toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
-              </p>
-              <p className="text-lg text-blue-700">
-                on recurring payments
-              </p>
-            </div>
-            <div className="col-span-2 rounded-xl flex flex-col p-8 bg-blue-50 text-gray-800 border max-md:order-2  max-md:p-4">
-              <h3 className="text-2xl font-bold blue-lime-700 mb-6 max-md:mb-2">
-                Subscriptions
-              </h3>
-              <div className="">
-                
+            <div className="grid grid-cols-3   max-md:flex max-md:flex-col gap-4">
+              <div className="flex-1 rounded-xl border p-8 bg-gradient-to-b from-blue-100 to-blue-200 text-gray-800 flex flex-col items-center justify-center">
+                <p className="text-lg text-blue-700 mb-2">You spent</p>
+                <p className="text-5xl font-bold mb-2">
+                  $
                   {analytics.subscriptionSpending
-                  .sort((a,b) => b.total - a.total)
-                  .slice(0, 10)
-                  .map(({
-                    frequency,
-                    merchant,
-                    total,
-                    transactionCount,
-                    transactions,
-                    individualCharge
-                  }, index) => (
-                    <div
-                      className="flex justify-between items-center mt-4 pt-4 border-t border-blue-200"
-                      key={merchant.name}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-blue-600 min-w-8">
-                          #{index + 1}
-                        </span>
-                        {merchant.logo ? (
-                          <img
-                            src={merchant.logo}
-                            className="h-8 w-8 rounded shadow-sm object-cover"
-                          />
-                        ) : (
-                          <div className="h-8 w-8 rounded shadow-sm bg-gray-200" />
-                        )}
-                        <div>
-                          <span className="font-medium text-gray-800">
-                            {merchant.name}
+                    .reduce((sum, t) => sum + Math.abs(t.total), 0)
+                    .toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                </p>
+                <p className="text-lg text-blue-700">
+                  on recurring payments
+                </p>
+              </div>
+              <div className="col-span-2 rounded-xl flex flex-col p-8 bg-blue-50 text-gray-800 border max-md:order-2  max-md:p-4">
+                <h3 className="text-2xl font-bold blue-lime-700 mb-6 max-md:mb-2">
+                  Subscriptions
+                </h3>
+                <div className="">
+
+                  {analytics.subscriptionSpending
+                    .sort((a, b) => b.total - a.total)
+                    .slice(0, 10)
+                    .map(({
+                      frequency,
+                      merchant,
+                      total,
+                      transactionCount,
+                      transactions,
+                      individualCharge
+                    }, index) => (
+                      <div
+                        className="flex justify-between items-center mt-4 pt-4 gap-2 border-t border-blue-200"
+                        key={merchant.name}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-blue-600 min-w-8">
+                            #{index + 1}
                           </span>
-                          <p className="text-sm text-gray-500"> 
-                            {transactionCount} transaction
-                            {transactionCount !== 1 ? "s" : ""} totaling
-                            ${Math.abs(total).toLocaleString(undefined, {
+                          {merchant.logo ? (
+                            <img
+                              src={merchant.logo}
+                              className="h-8 w-8 rounded shadow-sm object-cover"
+                            />
+                          ) : (
+                            <div className="h-8 w-8 rounded shadow-sm bg-gray-200" />
+                          )}
+                          <div>
+                            <span className="font-medium text-gray-800">
+                              {merchant.name}
+                            </span>
+                            <p className="text-sm text-gray-500">
+                              {transactionCount} transaction
+                              {transactionCount !== 1 ? "s" : ""} totaling
+                              ${Math.abs(total).toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                        <span className="text-gray-600 text-right">
+                          $
+                          {Math.abs(individualCharge).toLocaleString(undefined, {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
-                          })}
-                          </p>
-                        </div>
+                          })} / {frequency} {typeof frequency === "number" && "Days"}
+                        </span>
                       </div>
-                      <span className="text-gray-600">
-                        $
-                        {Math.abs(individualCharge).toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })} / {frequency} {typeof frequency === "number" && "Days"}
-                      </span>
-                    </div>
-                  )
-                )}
+                    )
+                    )}
+                </div>
               </div>
             </div>
-          </div>
 
           )}
           <div className="grid grid-cols-   max-md:flex max-md:flex-col gap-4">
@@ -1371,24 +1370,24 @@ export default function FinalResultsPage() {
                           name === "Appearance"
                             ? "bg-fuchsia-500"
                             : name === "Education"
-                            ? "bg-emerald-500"
-                            : name === "Food"
-                            ? "bg-amber-500"
-                            : name === "Health"
-                            ? "bg-rose-500"
-                            : name === "Household"
-                            ? "bg-sky-500"
-                            : name === "Housing"
-                            ? "bg-indigo-500"
-                            : name === "Lifestyle"
-                            ? "bg-violet-500"
-                            : name === "Professional Services"
-                            ? "bg-teal-500"
-                            : name === "Transport"
-                            ? "bg-orange-500"
-                            : name === "Utilities"
-                            ? "bg-cyan-500"
-                            : "bg-slate-500",
+                              ? "bg-emerald-500"
+                              : name === "Food"
+                                ? "bg-amber-500"
+                                : name === "Health"
+                                  ? "bg-rose-500"
+                                  : name === "Household"
+                                    ? "bg-sky-500"
+                                    : name === "Housing"
+                                      ? "bg-indigo-500"
+                                      : name === "Lifestyle"
+                                        ? "bg-violet-500"
+                                        : name === "Professional Services"
+                                          ? "bg-teal-500"
+                                          : name === "Transport"
+                                            ? "bg-orange-500"
+                                            : name === "Utilities"
+                                              ? "bg-cyan-500"
+                                              : "bg-slate-500",
                       }))
                       .sort((a, b) => b.amount - a.amount);
 
@@ -1401,18 +1400,18 @@ export default function FinalResultsPage() {
                     const cells = Array(100).fill(null);
                     let currentGroupIndex = 0;
                     let remainingGroupPercentage = (groups[0]?.amount / total) * 100 || 0;
-                    
+
                     const filledCells = cells.map((_, index) => {
                       if (remainingGroupPercentage <= 0) {
                         currentGroupIndex++;
                         remainingGroupPercentage = (groups[currentGroupIndex]?.amount / total) * 100 || 0;
                       }
-                      
+
                       const currentGroup = groups[currentGroupIndex];
                       if (!currentGroup) return null;
-                      
+
                       remainingGroupPercentage--;
-                      
+
                       return {
                         group: currentGroup,
                         colorClass: currentGroup.color,
@@ -1420,7 +1419,7 @@ export default function FinalResultsPage() {
                     });
 
                     return (
-                      <div className="grid grid-rows-[repeat(4,minmax(1rem,1fr))] md:grid-rows-[repeat(4,minmax(2rem,1fr))] gap-[0] grid-flow-col gap-[0.2rem] mx-auto rounded-md overflow-hidden">
+                      <div className="grid grid-rows-[repeat(4,1fr)] md:grid-rows-[repeat(4,1fr)] gap-[0] grid-flow-col  mx-auto rounded-lg">
                         {filledCells.map((cell, index) => (
                           cell && (
                             <div
@@ -1447,9 +1446,11 @@ export default function FinalResultsPage() {
                             </div>
                           )
                         ))}
+                        <div className="absolute -top-1 -left-1 -right-1 -bottom-1 border-white border-4 box-border rounded-lg md:rounded-xl z-200 pointer-events-none"></div>
                       </div>
                     );
                   })()}
+
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mt-6">
                   {(() => {
@@ -1474,24 +1475,24 @@ export default function FinalResultsPage() {
                           name === "Appearance"
                             ? "bg-fuchsia-500"
                             : name === "Education"
-                            ? "bg-emerald-500"
-                            : name === "Food"
-                            ? "bg-amber-500"
-                            : name === "Health"
-                            ? "bg-rose-500"
-                            : name === "Household"
-                            ? "bg-sky-500"
-                            : name === "Housing"
-                            ? "bg-indigo-500"
-                            : name === "Lifestyle"
-                            ? "bg-violet-500"
-                            : name === "Professional Services"
-                            ? "bg-teal-500"
-                            : name === "Transport"
-                            ? "bg-orange-500"
-                            : name === "Utilities"
-                            ? "bg-cyan-500"
-                            : "bg-slate-500",
+                              ? "bg-emerald-500"
+                              : name === "Food"
+                                ? "bg-amber-500"
+                                : name === "Health"
+                                  ? "bg-rose-500"
+                                  : name === "Household"
+                                    ? "bg-sky-500"
+                                    : name === "Housing"
+                                      ? "bg-indigo-500"
+                                      : name === "Lifestyle"
+                                        ? "bg-violet-500"
+                                        : name === "Professional Services"
+                                          ? "bg-teal-500"
+                                          : name === "Transport"
+                                            ? "bg-orange-500"
+                                            : name === "Utilities"
+                                              ? "bg-cyan-500"
+                                              : "bg-slate-500",
                       }))
                       .sort((a, b) => b.amount - a.amount);
 
