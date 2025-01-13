@@ -103,7 +103,7 @@ export function Welcome() {
           content="Get started with Money Wrapped and discover insights about your spending habits and financial patterns with our personalized year-end financial review."
         />
         <meta property="og:type" content="website" />
-        <meta property="og:image" content="/og-image.jpg" />
+        <meta property="og:image" content="https://money.haxx.nz/og-image.jpg" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta
           name="twitter:title"
