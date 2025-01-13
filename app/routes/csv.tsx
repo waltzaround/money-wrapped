@@ -252,7 +252,7 @@ export default function PreparePage() {
             <h1 className="text-4xl font-bold mb-2">
               Upload Your Bank Statement
             </h1>
-            &copy;{" "}
+      
             <p className="text-muted-foreground text-lg">
               We'll analyze your transactions to create your personalized Money
               Wrapped
@@ -386,19 +386,19 @@ export default function PreparePage() {
                   5. For best results, include at least the last 12 months of
                   transactions
                 </p>
-                <p>
+                {/* <p>
                   6. Make sure the CSV files are formatted in the same way as
                   the demo CSV file - download link below
-                </p>
+                </p> */}
               </CardDescription>
-              <a
+              {/* <a
                 className="text-blue-600 hover:underline p-4  border-t text-center flex items-center justify-center gap-2"
                 href="/test.csv"
                 download
               >
                 <Download className="h-4 w-4" />
                 Download demo CSV file
-              </a>
+              </a> */}
             </CardHeader>
           </Card>
         </div>

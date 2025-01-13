@@ -1,3 +1,4 @@
+import { Footer } from "~/components/footer";
 import { Header } from "~/components/header";
 import {
   Accordion,
@@ -83,6 +84,7 @@ Akahu also supports the development of <a  className="underline text-blue-700" h
       
         </Accordion>
       </div>
+      <Footer/>
     </>
   );
 }

@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Wallet } from "lucide-react";
+import { Footer } from "~/components/footer";
 
 export function Welcome() {
   const [selectedPeriod, setSelectedPeriod] = useState("monthly");
@@ -302,18 +303,18 @@ export function Welcome() {
                 <p className="text-xl font-semibold mb-6">Top Places</p>
                 <div className="space-y-4">
                   {[
-                    { name: "Countdown", count: 42 },
-                    { name: "BP Connect", count: 28 },
-                    { name: "Starbucks", count: 24 },
-                    { name: "McDonald's", count: 19 },
-                    { name: "Bunnings", count: 15 },
+                    { name: "Countdown", count: 42, spent: 4235 },
+                    { name: "BP Connect", count: 28, spent: 2890 },
+                    { name: "Starbucks", count: 24, spent: 1875 },
+                    { name: "McDonald's", count: 19, spent: 342 },
+                    { name: "Bunnings", count: 15, spent: 214  },
                   ].map((place, i) => (
                     <div key={place.name} className="flex items-center gap-3">
                       <span className="text-2xl font-bold">{i + 1}</span>
                       <div>
                         <p className="font-semibold">{place.name}</p>
                         <p className="text-orange-200">
-                          $2,000 spent over {place.count} visits
+                          ${place.spent.toLocaleString()} spent over {place.count} visits
                         </p>
                       </div>
                     </div>
@@ -330,45 +331,7 @@ export function Welcome() {
               </div>
             </div>
           </section>
-          <footer className="mt-16 pb-8 text-center text-sm text-gray-500 flex flex-col gap-2">
-            <div>
-              Built with care by{" "}
-              <a
-                href="https://walt.online"
-                className="underline hover:text-gray-700"
-              >
-                Walter Lim
-              </a>
-              ,{" "}
-              <a
-                href="https://laspruca.nz"
-                className="underline hover:text-gray-700"
-              >
-                Connor Hare
-              </a>
-              , and{" "}
-              <a
-                href="https://jmw.nz"
-                className="underline hover:text-gray-700"
-              >
-                Jasper Miller-Waugh
-              </a>
-            </div>
-            <div>
-              Made possible with support from{" "}
-              <a
-                href="https://akahu.nz"
-                className="underline hover:text-gray-700"
-              >
-                Akahu
-              </a>
-            </div>
-            <div>
-              <a href="/privacy" className="underline hover:text-gray-700">
-                Privacy Policy
-              </a>
-            </div>
-          </footer>
+          <Footer />
         </div>
       </main>
     </>
