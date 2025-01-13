@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Money Wrapped - Your Financial Year in Review</title>
+    <meta name="description" content="Discover insights about your spending habits and financial patterns with Money Wrapped. Get a personalized year-end financial review." />
+    <meta property="og:title" content="Money Wrapped - Your Financial Year in Review" />
+    <meta property="og:description" content="Discover insights about your spending habits and financial patterns with Money Wrapped. Get a personalized year-end financial review." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://money.haxx.nz/social.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Money Wrapped - Your Financial Year in Review" />
+    <meta name="twitter:description" content="Discover insights about your spending habits and financial patterns with Money Wrapped. Get a personalized year-end financial review." />
+    <meta name="twitter:image" content="https://money.haxx.nz/social.png" />
+    <style>
+      .loading-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background: linear-gradient(to bottom right, #4f46e5, #3b82f6);
+        color: white;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      }
+      .loading-title {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 1rem;
+      }
+      .loading-subtitle {
+        font-size: 1.25rem;
+        opacity: 0.9;
+      }
+      .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 2rem 0;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      #root:not(:empty) + .loading-container {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <div class="loading-container">
+      <h1 class="loading-title">Money Wrapped</h1>
+      <div class="loading-spinner"></div>
+      <p class="loading-subtitle">Loading your financial insights...</p>
+    </div>
+  </body>
+</html>
