@@ -24,6 +24,10 @@ const bankFilters = {
 			transaction.description.startsWith('TRANSFER FROM')
 		);
 	},
+	[BANK_CONNECTIONS.Westpac]: (transaction: RawTransaction) => {
+		// Filter out internal transfers and APs
+		return !transaction.description.includes('ONLINE BANKING') && !transaction.description.includes('AUTOMATIC PAYMENT');
+	},
 	[BANK_CONNECTIONS.BNZ]: (transaction: RawTransaction | Transaction) => {
 		// Debug logging
 		console.log('BNZ Transaction:', {
